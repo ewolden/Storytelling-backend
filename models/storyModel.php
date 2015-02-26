@@ -59,19 +59,19 @@ class storyModel{
             $this->subjectList[] = (string) $element;
         }
     }
-	
+    
 	//SETTERS
-	public function setstoryId($storyId)
+    public function setstoryId($storyId)
     {
         $this->storyId =$storyId;
     }
     
-	public function settitle($title)
+    public function settitle($title)
     {
         $this->title = $title;
     }
     
-	public function setCreator( $creator)
+    public function setCreator( $creator)
     {
         $this->creator = $creator;
     }
@@ -81,7 +81,7 @@ class storyModel{
         $this->introduction = $introduction;
     }
     
-	public function setTheStory($theStory)
+    public function setTheStory($theStory)
     {
         $this->theStory = $theStory;
     }   
@@ -125,30 +125,30 @@ class storyModel{
     {
         $this->audioList =$audioList;
     }
-	
-	public function setCategoryList($catergoryList)
+    
+    public function setCategoryList($catergoryList)
     {
         $this->categoryList = $catergoryList;
     }
-	
-	
-	public function setSubjectList($subjectList)
+    
+    
+    public function setSubjectList($subjectList)
     {
         $this->subjectList = $subjectList;
     }
-	
+    
 	//GETTERS
-	public function getstoryId()
+    public function getstoryId()
     {
         return $this->storyId;
     }
     
-	public function gettitle()
+    public function gettitle()
     {
         return $this->title;
     }
     
-	public function getCreator()
+    public function getCreator()
     {
         return $this->creator;
     }
@@ -158,7 +158,7 @@ class storyModel{
         return $this->introduction;
     }
     
-	public function getTheStory()
+    public function getTheStory()
     {
         return $this->theStory;
     }   
@@ -202,68 +202,68 @@ class storyModel{
     {
         return $this->audioList;
     }
-	
-	public function getCategoryList()
+    
+    public function getCategoryList()
     {
         return $this->categoryList;
     }
-	public function getSubjectList()
+    public function getSubjectList()
     {
         return $this->subjectList;
     }
 
-	public function getAll(){
-		return $this->storyId + $this->storyId + $this->title+ $this->creator+ $this->introduction+
-		$this->theStory+ $this->municipality+$this->county+$this->rights+$this->url+
-		$this->institution+ $this->imageList+$this->videoList+$this->audioList+$this->categoryList+
-		$this->subjectList;
-	}
-	
-	public function sendStory(){
-		$data = get_class($this).getAll();
-		echo json_encode($data);
-		return json_encode($data);
-}
-    
+    public function getAll(){
+      return $this->storyId + $this->storyId + $this->title+ $this->creator+ $this->introduction+
+      $this->theStory+ $this->municipality+$this->county+$this->rights+$this->url+
+      $this->institution+ $this->imageList+$this->videoList+$this->audioList+$this->categoryList+
+      $this->subjectList;
+  }
+  
+  public function sendStory(){
+      $data = get_class($this).getAll();
+      echo json_encode($data);
+      return json_encode($data);
+  }
+  
     //Helper functions
-    public function print_all_info(){
-        print_r('Story ID - '.$this->storyId.PHP_EOL.PHP_EOL);
-        print_r('Title- '.$this->title.PHP_EOL.PHP_EOL);
-        print_r('Creators- ');
-        print_r($this->creatorList);
-        print_r(PHP_EOL.PHP_EOL);
-        print_r('Introduction- '.$this->introduction.PHP_EOL.PHP_EOL);
-        print_r('The Story - '.$this->theStory.PHP_EOL.PHP_EOL);
-        print_r('Municipality - '.$this->municipality.PHP_EOL.PHP_EOL);
-        print_r('County - '.$this->county.PHP_EOL.PHP_EOL);
-        print_r('Rights - '.$this->rights.PHP_EOL.PHP_EOL);
-        print_r('Institution - '.$this->institution.PHP_EOL.PHP_EOL);
-        print_r('ImageID List - ');
-        print_r($this->imageList);
-        print_r(PHP_EOL.PHP_EOL);
-        print_r('VideoURL List - ');
-        print_r($this->videoList);
-        print_r(PHP_EOL.PHP_EOL);
-        print_r('AudioURL List - ');
-        print_r($this->audioList);
-        print_r(PHP_EOL.PHP_EOL);
-        print_r('Category List - ');
-        print_r($this->categoryList);
-        print_r(PHP_EOL.PHP_EOL);
-        print_r('Subject List - ');
-        print_r($this->subjectList);
-        print_r(PHP_EOL.PHP_EOL);
-    }
+  public function print_all_info(){
+    print_r('Story ID - '.$this->storyId.PHP_EOL.PHP_EOL);
+    print_r('Title- '.$this->title.PHP_EOL.PHP_EOL);
+    print_r('Creators- ');
+    print_r($this->creatorList);
+    print_r(PHP_EOL.PHP_EOL);
+    print_r('Introduction- '.$this->introduction.PHP_EOL.PHP_EOL);
+    print_r('The Story - '.$this->theStory.PHP_EOL.PHP_EOL);
+    print_r('Municipality - '.$this->municipality.PHP_EOL.PHP_EOL);
+    print_r('County - '.$this->county.PHP_EOL.PHP_EOL);
+    print_r('Rights - '.$this->rights.PHP_EOL.PHP_EOL);
+    print_r('Institution - '.$this->institution.PHP_EOL.PHP_EOL);
+    print_r('ImageID List - ');
+    print_r($this->imageList);
+    print_r(PHP_EOL.PHP_EOL);
+    print_r('VideoURL List - ');
+    print_r($this->videoList);
+    print_r(PHP_EOL.PHP_EOL);
+    print_r('AudioURL List - ');
+    print_r($this->audioList);
+    print_r(PHP_EOL.PHP_EOL);
+    print_r('Category List - ');
+    print_r($this->categoryList);
+    print_r(PHP_EOL.PHP_EOL);
+    print_r('Subject List - ');
+    print_r($this->subjectList);
+    print_r(PHP_EOL.PHP_EOL);
+}
 
-    private function file_get_contents_utf8($fn) {
-        $content = file_get_contents($fn);
-        return mb_convert_encoding($content, 'UTF-8',
-            mb_detect_encoding($content, 'UTF-8, ISO-8859-1', true));
-    }
+private function file_get_contents_utf8($fn) {
+    $content = file_get_contents($fn);
+    return mb_convert_encoding($content, 'UTF-8',
+        mb_detect_encoding($content, 'UTF-8, ISO-8859-1', true));
+}
 }
 
 // $story = new storyModel(); //example usage
 // $story->getFromDF('DF.6031');
 // $story->print_all_info();
-	
+
 ?>
