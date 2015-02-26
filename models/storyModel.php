@@ -46,7 +46,7 @@ class storyModel{
         }
         foreach ($xml->children('abm', TRUE)->media as $element)
         {
-            $this->audioList[] = (string) $element->children('abm', TRUE)->audioUri;
+            $this->audioList[] = (string) $element->children('abm', TRUE)->soundUri;
         }
         foreach ($xml->children('abm', TRUE)->classification as $element)
         {
@@ -261,8 +261,8 @@ class storyModel{
     }
 }
 
-// $story = new storyModel(); //example usage
-// $story->getFromDF('DF.6031');
-// $story->print_all_info();
+$story = new storyModel(); //example usage
+$story->getFromDF('DF.2545');
+$story->print_all_info();
 
 ?>
