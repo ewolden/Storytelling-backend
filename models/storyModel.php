@@ -17,82 +17,81 @@ class storyModel{
 	private $categoryList;
 	private $subjectList;
 	
-	
-	
 	//SETTERS
-	public function setstoryId()
+	public function setstoryId($storyId)
     {
-        return $this->storyId;
+        $this->storyId =$storyId;
     }
     
-	public function settitle()
+	public function settitle($title)
     {
-        return $this->title;
+        $this->title = $title;
     }
     
-	public function setCreator()
+	public function setCreator( $creator)
     {
-        return $this->creator;
+        $this->creator = $creator;
     }
     
-    public function setIntroduction()
+    public function setIntroduction($introduction)
     {
-        return $this->introduction;
+        $this->introduction = $introduction;
     }
     
-	public function setTheStory()
+	public function setTheStory($theStory)
     {
-        return $this->theStory;
+        $this->theStory = $theStory;
     }   
     
-    public function setMunicipality()
+    public function setMunicipality($municipality)
     {
-        return $this->municipality;
+    	$this->municipality = $municipality; 
     }   
     
-    public function setCounty()
+    public function setCounty($county)
     {
-        return $this->county;
+        $this->county = $county;
     }
     
-    public function setRights()
+    public function setRights($rights)
     {
-        return $this->rights;
+        $this->rights = $rights;
     }
     
-    public function setUrl()
+    public function setUrl($url)
     {
-        return $this->url;
+        $this->url = $url;
     }
     
-    public function setInstitution()
+    public function setInstitution($institution)
     {
-        return $this->institution;
+        $this->institution = $institution;
     }
     
-    public function setImageList()
+    public function setImageList($imageList)
     {
-        return $this->imageList;
+        $this->imageList = $imageList;
     }
     
-    public function setVideoList()
+    public function setVideoList($videoList)
     {
-        return $this->videoList;
+        $this->videoList = $videoList;
     }
     
-    public function setAudioList()
-    {
-        return $this->audioList;
+    public function setAudioList($audioList)
+    
+        $this->audioList =$audioList;
     }
 	
-	public function setCategoryList()
+	public function setCategoryList($catergoryList)
     {
-        return $this->categoryList;
+        $this->categoryList = $catergoryList;
     }
-	}
-	public function setSubjectList()
+	
+	
+	public function setSubjectList($subjectList)
     {
-        return $this->subjectList;
+        $this->subjectList = $subjectList;
     }
 	
 	//GETTERS
@@ -171,6 +170,18 @@ class storyModel{
         return $this->subjectList;
     }
 
+	public function getAll(){
+		return $this->storyId + $this->storyId + $this->title+ $this->creator+ $this->introduction+
+		$this->theStory+ $this->municipality+$this->county+$this->rights+$this->url+
+		$this->institution+ $this->imageList+$this->videoList+$this->audioList+$this->categoryList+
+		$this->subjectList;
+	}
+	
+	public function sendStory(){
+		$data = get_class($this).getAll();
+		echo json_encode($data);
+		return json_encode($data);
+}
 
-
+	
 ?>
