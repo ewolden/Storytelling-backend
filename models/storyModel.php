@@ -2,20 +2,63 @@
 class storyModel{
 	
 	private $storyId;
-	private $title;
-	private $creator;
-	private $introduction;
-	private $theStory;
-	private $municipality; 
-	private $county;
-	private $rights;
-	private $url; 
-	private $institution;
-	private $imageList;
-	private $videoList;
-	private $audioList;
-	private $categoryList;
-	private $subjectList;
+    private $title;
+    private $creatorList;
+    private $introduction;
+    private $theStory;
+    private $municipality; 
+    private $county;
+    private $rights;
+    private $institution;
+    private $imageList;
+    private $videoList;
+    private $audioList;
+    private $categoryList;
+    private $subjectList;
+
+    //Constructor
+    public function getFromDF($id)
+    {
+
+        $xml_from_API = $this->file_get_contents_utf8('http://api.digitaltmuseum.no/artifact?owner=H-DF&identifier='.$id.'&mapping=ABM&api.key=demo');
+        $xml = simplexml_load_string($xml_from_API);
+        
+        $this->storyId = $id;
+        $this->title = (string) $xml->children('dc', TRUE)->title;
+        $this->introduction = (string) $xml->children('abm', TRUE)->introduction;
+        $this->theStory = (string) $xml->children('dc', TRUE)->description;
+        $this->county = (string) $xml->children('abm', TRUE)->county;
+        $this->municipality = (string) $xml->children('abm', TRUE)->municipality;
+        $this->rights = (string) $xml->children('dc', TRUE)->rights;
+        $this->institution = (string) $xml->children('europeana', TRUE)->dataProvider;
+
+        foreach ($xml->children('dc', TRUE)->creator as $element)
+        {
+            $this->creatorList[] = (string) $element;
+        }
+        foreach ($xml->children('abm', TRUE)->image as $element)
+        {
+            preg_match('/\/\d{1,5}/',(string) $element->children('abm', TRUE)->imageUri,$match);
+            $this->imageList[] = substr($match[0],1);
+        }
+        foreach ($xml->children('abm', TRUE)->media as $element)
+        {
+            $this->videoList[] = (string) $element->children('abm', TRUE)->videoUri;
+        }
+        foreach ($xml->children('abm', TRUE)->media as $element)
+        {
+            $this->audioList[] = (string) $element->children('abm', TRUE)->audioUri;
+        }
+        foreach ($xml->children('abm', TRUE)->classification as $element)
+        {
+            preg_match('/\d+/',(string) $element,$match);
+            $this->categoryList[] = $match[0];
+        }        
+        foreach ($xml->children('dc', TRUE)->subject as $element)
+        {
+            $this->subjectList[] = (string) $element;
+        }
+    }
 	
 	//SETTERS
 	public function setstoryId($storyId)
@@ -79,7 +122,7 @@ class storyModel{
     }
     
     public function setAudioList($audioList)
-    
+    {
         $this->audioList =$audioList;
     }
 	
@@ -164,7 +207,6 @@ class storyModel{
     {
         return $this->categoryList;
     }
-	}
 	public function getSubjectList()
     {
         return $this->subjectList;
@@ -182,6 +224,46 @@ class storyModel{
 		echo json_encode($data);
 		return json_encode($data);
 }
+    
+    //Helper functions
+    public function print_all_info(){
+        print_r('Story ID - '.$this->storyId.PHP_EOL.PHP_EOL);
+        print_r('Title- '.$this->title.PHP_EOL.PHP_EOL);
+        print_r('Creators- ');
+        print_r($this->creatorList);
+        print_r(PHP_EOL.PHP_EOL);
+        print_r('Introduction- '.$this->introduction.PHP_EOL.PHP_EOL);
+        print_r('The Story - '.$this->theStory.PHP_EOL.PHP_EOL);
+        print_r('Municipality - '.$this->municipality.PHP_EOL.PHP_EOL);
+        print_r('County - '.$this->county.PHP_EOL.PHP_EOL);
+        print_r('Rights - '.$this->rights.PHP_EOL.PHP_EOL);
+        print_r('Institution - '.$this->institution.PHP_EOL.PHP_EOL);
+        print_r('ImageID List - ');
+        print_r($this->imageList);
+        print_r(PHP_EOL.PHP_EOL);
+        print_r('VideoURL List - ');
+        print_r($this->videoList);
+        print_r(PHP_EOL.PHP_EOL);
+        print_r('AudioURL List - ');
+        print_r($this->audioList);
+        print_r(PHP_EOL.PHP_EOL);
+        print_r('Category List - ');
+        print_r($this->categoryList);
+        print_r(PHP_EOL.PHP_EOL);
+        print_r('Subject List - ');
+        print_r($this->subjectList);
+        print_r(PHP_EOL.PHP_EOL);
+    }
 
+    private function file_get_contents_utf8($fn) {
+        $content = file_get_contents($fn);
+        return mb_convert_encoding($content, 'UTF-8',
+            mb_detect_encoding($content, 'UTF-8, ISO-8859-1', true));
+    }
+}
+
+// $story = new storyModel(); //example usage
+// $story->getFromDF('DF.6031');
+// $story->print_all_info();
 	
 ?>
