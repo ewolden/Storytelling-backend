@@ -212,10 +212,10 @@ class storyModel{
     }
 
     public function getAll(){
-      return $this->storyId + $this->storyId + $this->title+ $this->creator+ $this->introduction+
-      $this->theStory+ $this->municipality+$this->county+$this->rights+$this->url+
-      $this->institution+ $this->imageList+$this->videoList+$this->audioList+$this->categoryList+
-      $this->subjectList;
+      return getstoryId() + gettitle() + getCreator() + 
+      getIntroduction() + getTheStory() + getMunicipality() + 
+      getCounty() + getRights() + getUrl() + getInstitution() + 
+      getImageList() + getVideoList() + getAudioList() + getSubjectList();
     }
 
     public function sendStory(){
