@@ -1,17 +1,33 @@
 <?php
 require_once 'config.php'; // Database setting constants [DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD]
+header('Content-type: text/plain; charset=utf-8');//Just to make it look nice in the browser
 class DbHelper {
-    private $db;
+
+    private $db;	
 	private $tableColumns = array(
+			/*false = not auto incremented primary key*/
 			'story' => array(false,'storyId','title','author','thumbnailURL','institution','introduction'),
 			'user' => array(false,'userId','mail','age_group','gender','use_of_location'),
 			'subcategory' => array(false,'subcategoryId','subcategoryName'),
 			'story_subcategory' => array(false,'storyId', 'subcategoryId'),
-			'dftag' => array(false,'DFTagName'), //True = AUTO_INCREMENT primary key
+			'dftag' => array(false,'DFTagName'),
 			'story_dftags' => array(false,'storyId', 'DFTagName'),
 			'story_media' => array(false, 'storyId', 'mediaId'),
+			'category_mapping' => array(false, 'categoryId', 'subcategoryId'),
 			);
-
+	private $categoryMapping = array(
+			/*The numbers 1-9 is the primary keys in the category table*/
+			'art and design' => array(1,'bildekunst', 'design og formgjeving', 'film', 'fotografi', 'media', 'teater', 'dans'),
+			'architecture' => array(2,'arkitektur'),
+			'archeology' => array(3,'arkeologi og forminne'),
+			'history' => array(4,'historie', 'historie og geografi', 'språkhistorie', 'sjøfart og kystkultur','kulturminne'),
+			'local traditions and food' => array(5,'bunader og folkedrakter', 'hordaland', 'kulturminne', 'kultur og samfunn', 'rallarvegen', 'tradisjonsmat og drikke', 'dans', 'språk', 'fiske og fiskeindustri', 'samer', 'musikk', 'sjøfart og kystkultur', 'fleirkultur og minoritetar'),
+			'nature and adventure' => array(6,'fiske og fiskeindustri', 'naturhistorie', 'sport og friluftsliv', 'sjøfart og kystkultur', 'natur, teknikk og næring', 'fiske og fiskeindustri'),
+			'literature' => array(7,'teikneseriar', 'litteratur'),
+			'music' => array(8,'musikk'),
+			'science and technology' => array(9,'kjøretøy, bil og motor, veitransport', 'skip- og båtbygging', 'teknikk, industri og bergverk', 'natur, teknikk og næring', 'media', 'fotografi', 'fiske og fiskeindustri'),
+			);
+	
     function __construct() {
         $dsn = 'mysql:host='.DB_HOST.';dbname='.DB_NAME.';charset=utf8';
 
@@ -65,6 +81,17 @@ class DbHelper {
 	
 	function getTableColumn($tableName){
 		return $this->tableColumns[$tableName];
+	}
+	
+	function getCategories($subcategory){
+		$categories = array();
+		foreach ($this->categoryMapping as $subCategoryArray){
+			$key = in_array($subcategory, $subCategoryArray);
+			if($key){
+				array_push($categories, $subCategoryArray[0]);
+			}
+		}
+		return $categories;
 	}
 	
 	/* Inserts all values in $valuesArray in table $tableName. 

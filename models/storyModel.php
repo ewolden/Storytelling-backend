@@ -14,6 +14,7 @@ class storyModel{
     private $videoList;
     private $audioList;
     private $categoryList;
+	private $categoryNames;
     private $subjectList;
 	private $url;
 
@@ -54,6 +55,8 @@ class storyModel{
         {
             preg_match('/\d+/',(string) $element,$match);
             $this->categoryList[] = $match[0];
+			$name = substr((string) $element, 0, strpos((string) $element, '('));
+			$this->categoryNames[] = strtolower((string) $name);
         }        
         foreach ($xml->children('dc', TRUE)->subject as $element)
         {
@@ -208,6 +211,10 @@ class storyModel{
     {
         return $this->categoryList;
     }
+	public function getCategoryNames()
+    {
+        return $this->categoryNames;
+    }
     public function getSubjectList()
     {
         return $this->subjectList;
@@ -269,18 +276,28 @@ class storyModel{
 		$values = array($this->getstoryId(),$this->gettitle(),$this->getCreatorList()[0],$this->getUrl(),$this->getInstitution(),$this->getIntroduction());
 		$conn->insert('story',$values);
 		
-		/*Inserting subcategories and connects them to the story*/
-		foreach($this->getCategoryList() as $category){
-			$conn->insert('subcategory', array($category, null));
-			$conn->insert('story_subcategory', array($this->getstoryId(), $category));
+		/*Inserting subcategories, connects them to the story and maps them to our categories*/
+		if(!empty($this->getCategoryList())){
+			for($x=0; $x<sizeof($this->getCategoryList()); $x++){
+				$categories = array();
+				$conn->insert('subcategory', array($this->getCategoryList()[$x], $this->getCategoryNames()[$x]));
+				$categories = $conn->getCategories($this->getCategoryNames()[$x]);
+				if(!empty($categories)){
+					foreach($categories as $category){
+						/*Assumes that there exists a category table with ids 1-9*/
+						$conn->insert('category_mapping', array($category, $this->getCategoryList()[$x]));
+					}
+				}
+				$conn->insert('story_subcategory', array($this->getstoryId(), $this->getCategoryList()[$x]));
+			}
 		}
-		/*TODO: how to connect the inserted subcategories to our categories*/
-		
-		/*Inserting tags and connects them to the story*/
-		foreach($this->getSubjectList() as $tag){
-			$conn->insert('dftag', array($tag));
-			$conn->insert('story_dftags', array($this->getstoryId(), $tag));
 			
+		/*Inserting tags and connects them to the story*/
+		if(!empty($this->getSubjectList())){
+			foreach($this->getSubjectList() as $tag){
+				$conn->insert('dftag', array($tag));
+				$conn->insert('story_dftags', array($this->getstoryId(), $tag));	
+			}
 		}
 		
 		/*Inserting the stories media format
@@ -300,7 +317,7 @@ class storyModel{
 }
 
 $story = new storyModel(); //example usage
-$story->getFromDF('DF.3653');
+$story->getFromDF('DF.5736');
 $story->print_all_info();
 $story->insertStory();
 
