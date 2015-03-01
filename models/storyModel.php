@@ -1,4 +1,5 @@
 <?php
+include '../database/dbhelper.php';
 class storyModel{
     private $storyId;
     private $title;
@@ -14,6 +15,7 @@ class storyModel{
     private $audioList;
     private $categoryList;
     private $subjectList;
+	private $url;
 
     //Constructor
     public function getFromDF($id)
@@ -70,9 +72,9 @@ class storyModel{
         $this->title = $title;
     }
     
-    public function setCreator( $creator)
+    public function setCreatorList( $creatorList)
     {
-        $this->creator = $creator;
+        $this->creatorList = $creatorList;
     }
     
     public function setIntroduction($introduction)
@@ -147,9 +149,9 @@ class storyModel{
         return $this->title;
     }
     
-    public function getCreator()
+    public function getCreatorList()
     {
-        return $this->creator;
+        return $this->creatorList;
     }
     
     public function getIntroduction()
@@ -259,10 +261,47 @@ class storyModel{
         return mb_convert_encoding($content, 'UTF-8',
            mb_detect_encoding($content, 'UTF-8, ISO-8859-1', true));
     }
+	
+	public function insertStory(){
+		$conn = new dbHelper();
+		
+		/*Inserting story in story table*/
+		$values = array($this->getstoryId(),$this->gettitle(),$this->getCreatorList()[0],$this->getUrl(),$this->getInstitution(),$this->getIntroduction());
+		$conn->insert('story',$values);
+		
+		/*Inserting subcategories and connects them to the story*/
+		foreach($this->getCategoryList() as $category){
+			$conn->insert('subcategory', array($category, null));
+			$conn->insert('story_subcategory', array($this->getstoryId(), $category));
+		}
+		/*TODO: how to connect the inserted subcategories to our categories*/
+		
+		/*Inserting tags and connects them to the story*/
+		foreach($this->getSubjectList() as $tag){
+			$conn->insert('tag', array($tag));
+			$conn->insert('story_dftags', array($this->getstoryId(), $conn->getDB()->lastInsertId('tagId')));
+			
+		}
+		
+		/*Inserting the stories media format
+		  Assumes that a media_format table with 1=picture, 2=audio, 3=video exists
+		  array_filter removes empty values*/
+		if(!empty(array_filter(array($this->getImageList())))){
+			$conn->insert('story_media', array($this->getstoryId(), 1));
+		}
+		if(!empty(array_filter(array($this->getAudioList())))){
+			$conn->insert('story_media', array($this->getstoryId(), 2));
+		}
+		if(!empty(array_filter(array($this->getVideoList())))){
+			$conn->insert('story_media', array($this->getstoryId(), 3));
+		}
+	}
+	
 }
 
 $story = new storyModel(); //example usage
-$story->getFromDF('DF.2545');
+$story->getFromDF('DF.1610');
 $story->print_all_info();
+$story->insertStory();
 
 ?>

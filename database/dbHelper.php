@@ -2,6 +2,15 @@
 require_once 'config.php'; // Database setting constants [DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD]
 class DbHelper {
     private $db;
+	private $tableColumns = array(
+							'story' => array(false,'storyId','title','author','thumbnailURL','institution','introduction'),
+							'user' => array(false,'userId','mail','age_group','gender','use_of_location'),
+							'subcategory' => array(false,'subcategoryId','subcategoryName'),
+							'story_subcategory' => array(false,'storyId', 'subcategoryId'),
+							'tag' => array(true,'tagId', 'tagName'), //True = AUTO_INCREMENT primary key
+							'story_dftags' => array(false,'storyId', 'DFTagId'),
+							'story_media' => array(false, 'storyId', 'mediaId'),
+							);
 
     function __construct() {
         $dsn = 'mysql:host='.DB_HOST.';dbname='.DB_NAME.';charset=utf8';
@@ -50,13 +59,55 @@ class DbHelper {
 
     // }
 
-    function insert($table, $columnsArray, $valuesArray) {
-        $cols = implode(", ", $columnsArray);
-        $vals = implode(", ", $valuesArray);
+	function getDB(){
+		return $this->db;
+	}
+	
+	function getTableColumn($tableName){
+		return $this->tableColumns[$tableName];
+	}
+	
+	/* Inserts all values in $valuesArray in table $tableName. 
+		If the primary key already exists, it updates all other values.
+		Only works if the primary key consists of just one attribute and is the first column in the table 
+		(perhaps - seems to work on story_subcategory which has a two-attribute primary key) */
+    function insert($tableName,$valuesArray) {
+        $columnsArray = $this->getTableColumn($tableName);
+		$cols = implode(",", $columnsArray);
+		$cols = trim($cols,","); //Remove the comma before first attribute
+		
+		$update = array();
+		$values = array();
+		
+		/*Checking if the primary key is auto incremented or not*/
+		if($columnsArray[0] == false){
+			$insert = '?,';
+			/*The first $valuesArray is for the placeholders inside VALUES(), the sliced $valuesArray for the updating placeholders*/
+			$values = array_merge($valuesArray, array_slice($valuesArray,1));
+		}
+		else {
+			/* If the primary key is auto incremented, we need to remove the boolean true and the primary key from the array */
+			$cols = implode(",", array_slice($columnsArray,2));
+			$insert = '';
+			/* If the primary key is auto incremented, we parameter $valuesArray doesn't include a key, so we don't need to slice*/
+			$values = array_merge($valuesArray, $valuesArray);
+		}
+		
+		for ($x = 2; $x < sizeof($columnsArray); $x++){
+			/*Creating plateholders for each value for updating, except for primary key*/
+			$update[] = ''.$columnsArray[$x].'= ?';
+			/*Creating placeholders for each value*/
+			$insert .= '?,';
+		}
+		$insert = trim($insert,","); //Remove the extra comma at the end
+		$updateString = implode(",", $update);
+		
+		$query = 'INSERT INTO '.$tableName.' ('.$cols.') VALUES ('.$insert.')
+			ON DUPLICATE KEY UPDATE '.$updateString.'';
+		
+        $stmt = $this->db->prepare($query);
 
-        $stmt =  $this->db->prepare(
-            "INSERT INTO $table ($cols) VALUES ($vals)");
-        $stmt->execute();
+        $stmt->execute($values);
     }
 }
 
