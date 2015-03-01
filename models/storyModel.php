@@ -278,8 +278,8 @@ class storyModel{
 		
 		/*Inserting tags and connects them to the story*/
 		foreach($this->getSubjectList() as $tag){
-			$conn->insert('tag', array($tag));
-			$conn->insert('story_dftags', array($this->getstoryId(), $conn->getDB()->lastInsertId('tagId')));
+			$conn->insert('dftag', array($tag));
+			$conn->insert('story_dftags', array($this->getstoryId(), $tag));
 			
 		}
 		
@@ -300,7 +300,7 @@ class storyModel{
 }
 
 $story = new storyModel(); //example usage
-$story->getFromDF('DF.1610');
+$story->getFromDF('DF.3653');
 $story->print_all_info();
 $story->insertStory();
 

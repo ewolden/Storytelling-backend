@@ -3,14 +3,14 @@ require_once 'config.php'; // Database setting constants [DB_HOST, DB_NAME, DB_U
 class DbHelper {
     private $db;
 	private $tableColumns = array(
-							'story' => array(false,'storyId','title','author','thumbnailURL','institution','introduction'),
-							'user' => array(false,'userId','mail','age_group','gender','use_of_location'),
-							'subcategory' => array(false,'subcategoryId','subcategoryName'),
-							'story_subcategory' => array(false,'storyId', 'subcategoryId'),
-							'tag' => array(true,'tagId', 'tagName'), //True = AUTO_INCREMENT primary key
-							'story_dftags' => array(false,'storyId', 'DFTagId'),
-							'story_media' => array(false, 'storyId', 'mediaId'),
-							);
+			'story' => array(false,'storyId','title','author','thumbnailURL','institution','introduction'),
+			'user' => array(false,'userId','mail','age_group','gender','use_of_location'),
+			'subcategory' => array(false,'subcategoryId','subcategoryName'),
+			'story_subcategory' => array(false,'storyId', 'subcategoryId'),
+			'dftag' => array(false,'DFTagName'), //True = AUTO_INCREMENT primary key
+			'story_dftags' => array(false,'storyId', 'DFTagName'),
+			'story_media' => array(false, 'storyId', 'mediaId'),
+			);
 
     function __construct() {
         $dsn = 'mysql:host='.DB_HOST.';dbname='.DB_NAME.';charset=utf8';
@@ -89,7 +89,7 @@ class DbHelper {
 			/* If the primary key is auto incremented, we need to remove the boolean true and the primary key from the array */
 			$cols = implode(",", array_slice($columnsArray,2));
 			$insert = '';
-			/* If the primary key is auto incremented, we parameter $valuesArray doesn't include a key, so we don't need to slice*/
+			/* If the primary key is auto incremented, the parameter $valuesArray doesn't include a key, so we don't need to slice*/
 			$values = array_merge($valuesArray, $valuesArray);
 		}
 		
@@ -101,9 +101,16 @@ class DbHelper {
 		}
 		$insert = trim($insert,","); //Remove the extra comma at the end
 		$updateString = implode(",", $update);
-		
-		$query = 'INSERT INTO '.$tableName.' ('.$cols.') VALUES ('.$insert.')
-			ON DUPLICATE KEY UPDATE '.$updateString.'';
+				
+		$query = 'INSERT INTO '.$tableName.' ('.$cols.') VALUES ('.$insert.') ON DUPLICATE KEY UPDATE ';
+		if(!empty($updateString)){
+			$query .= ''.$updateString.'';
+		}
+		else {
+			/*Just a meaningless operation to avoid primary key error*/
+			$duplicatePrimary = ''.$columnsArray[1].'='.$columnsArray[1].'';
+			$query .= ''.$duplicatePrimary.'';
+		}
 		
         $stmt = $this->db->prepare($query);
 
