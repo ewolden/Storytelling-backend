@@ -1,5 +1,4 @@
 <?php
-include '../database/dbhelper.php';
 class storyModel{
     private $storyId;
     private $title;
@@ -13,15 +12,16 @@ class storyModel{
     private $imageList;
     private $videoList;
     private $audioList;
-    private $categoryList;
-	private $categoryNames;
+    private $subCategoryList;
+	private $subCategoryNames;
     private $subjectList;
 	private $url;
+	private $conn;
 
     //Constructor
     public function getFromDF($id)
     {
-
+	
         $xml_from_API = $this->file_get_contents_utf8('http://api.digitaltmuseum.no/artifact?owner=H-DF&identifier='.$id.'&mapping=ABM&api.key=demo');
         $xml = simplexml_load_string($xml_from_API);
         
@@ -54,9 +54,9 @@ class storyModel{
         foreach ($xml->children('abm', TRUE)->classification as $element)
         {
             preg_match('/\d+/',(string) $element,$match);
-            $this->categoryList[] = $match[0];
+            $this->subCategoryList[] = $match[0];
 			$name = substr((string) $element, 0, strpos((string) $element, '('));
-			$this->categoryNames[] = strtolower((string) $name);
+			$this->subCategoryNames[] = strtolower((string) $name);
         }        
         foreach ($xml->children('dc', TRUE)->subject as $element)
         {
@@ -130,12 +130,16 @@ class storyModel{
         $this->audioList =$audioList;
     }
 
-    public function setCategoryList($catergoryList)
+    public function setsubCategoryList($subCategoryList)
     {
-        $this->categoryList = $catergoryList;
+        $this->subCategoryList = $subCategoryList;
     }
 
-
+	public function setsubCategoryNames($subCategoryNames)
+    {
+        $this->subCategoryNames = $subCategoryNames;
+    }
+	
     public function setSubjectList($subjectList)
     {
         $this->subjectList = $subjectList;
@@ -207,13 +211,13 @@ class storyModel{
         return $this->audioList;
     }
 
-    public function getCategoryList()
+    public function getsubCategoryList()
     {
-        return $this->categoryList;
+        return $this->subCategoryList;
     }
-	public function getCategoryNames()
+	public function getsubCategoryNames()
     {
-        return $this->categoryNames;
+        return $this->subCategoryNames;
     }
     public function getSubjectList()
     {
@@ -256,7 +260,7 @@ class storyModel{
         print_r($this->audioList);
         print_r(PHP_EOL.PHP_EOL);
         print_r('Category List - ');
-        print_r($this->categoryList);
+        print_r($this->subCategoryList);
         print_r(PHP_EOL.PHP_EOL);
         print_r('Subject List - ');
         print_r($this->subjectList);
@@ -267,58 +271,10 @@ class storyModel{
         $content = file_get_contents($fn);
         return mb_convert_encoding($content, 'UTF-8',
            mb_detect_encoding($content, 'UTF-8, ISO-8859-1', true));
-    }
-	
-	public function insertStory(){
-		$conn = new dbHelper();
-		
-		/*Inserting story in story table*/
-		$values = array($this->getstoryId(),$this->gettitle(),$this->getCreatorList()[0],$this->getUrl(),$this->getInstitution(),$this->getIntroduction());
-		$conn->insert('story',$values);
-		
-		/*Inserting subcategories, connects them to the story and maps them to our categories*/
-		if(!empty($this->getCategoryList())){
-			for($x=0; $x<sizeof($this->getCategoryList()); $x++){
-				$categories = array();
-				$conn->insert('subcategory', array($this->getCategoryList()[$x], $this->getCategoryNames()[$x]));
-				$categories = $conn->getCategories($this->getCategoryNames()[$x]);
-				if(!empty($categories)){
-					foreach($categories as $category){
-						/*Assumes that there exists a category table with ids 1-9*/
-						$conn->insert('category_mapping', array($category, $this->getCategoryList()[$x]));
-					}
-				}
-				$conn->insert('story_subcategory', array($this->getstoryId(), $this->getCategoryList()[$x]));
-			}
-		}
-			
-		/*Inserting tags and connects them to the story*/
-		if(!empty($this->getSubjectList())){
-			foreach($this->getSubjectList() as $tag){
-				$conn->insert('dftag', array($tag));
-				$conn->insert('story_dftags', array($this->getstoryId(), $tag));	
-			}
-		}
-		
-		/*Inserting the stories media format
-		  Assumes that a media_format table with 1=picture, 2=audio, 3=video exists
-		  array_filter removes empty values*/
-		if(!empty(array_filter(array($this->getImageList())))){
-			$conn->insert('story_media', array($this->getstoryId(), 1));
-		}
-		if(!empty(array_filter(array($this->getAudioList())))){
-			$conn->insert('story_media', array($this->getstoryId(), 2));
-		}
-		if(!empty(array_filter(array($this->getVideoList())))){
-			$conn->insert('story_media', array($this->getstoryId(), 3));
-		}
-	}
-	
+    }	
 }
 
-$story = new storyModel(); //example usage
-$story->getFromDF('DF.5736');
-$story->print_all_info();
-$story->insertStory();
-
+//$story = new storyModel(); //example usage
+//$story->getFromDF('DF.5736');
+//$story->print_all_info();
 ?>

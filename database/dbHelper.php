@@ -7,7 +7,7 @@ class DbHelper {
 	private $tableColumns = array(
 			/*false = not auto incremented primary key*/
 			'story' => array(false,'storyId','title','author','thumbnailURL','institution','introduction'),
-			'user' => array(false,'userId','mail','age_group','gender','use_of_location'),
+			'user' => array(true,'userId','mail','age_group','gender','use_of_location'),
 			'subcategory' => array(false,'subcategoryId','subcategoryName'),
 			'story_subcategory' => array(false,'storyId', 'subcategoryId'),
 			'dftag' => array(false,'DFTagName'),
@@ -16,7 +16,7 @@ class DbHelper {
 			'category_mapping' => array(false, 'categoryId', 'subcategoryId'),
 			);
 	private $categoryMapping = array(
-			/*The numbers 1-9 is the primary keys in the category table*/
+			/*The numbers 1-9 are the primary keys in the category table*/
 			'art and design' => array(1,'bildekunst', 'design og formgjeving', 'film', 'fotografi', 'media', 'teater', 'dans'),
 			'architecture' => array(2,'arkitektur'),
 			'archeology' => array(3,'arkeologi og forminne'),
@@ -43,7 +43,8 @@ class DbHelper {
     }
 
     /**
-    * Retrieves story ID's from "digitalt fortalt" with digitaltmuseum.no's API
+    * Retrieves story ID's from "digitalt fortalt" with digitaltmuseum.no's API 
+	* and add the stories to the database
     */
     function addStoriesToDatabase(){
         $startDoc = 0;
@@ -58,11 +59,71 @@ class DbHelper {
                 $stmt = $this->db->prepare(
                     'INSERT INTO story (storyId) VALUES (:storyId) 
                     ON DUPLICATE KEY UPDATE storyId = :storyId');
-                $stmt->execute(array(':storyId' => (string)$doc['identifier.id']));
+                $id = (string)$doc['identifier.id'];
+				$stmt->execute(array(':storyId' => $id));
+				$storyModel = new storyModel();
+				$storyModel->getFromDF($id);
+				$this->insertStory($storyModel);
             }
         }
+		print_r('done harvesting');
     }
 
+	public function getConn(){
+		return $this->db;
+	}
+	
+	/*Inserting story in story table and related tables*/
+	public function insertStory($story){
+		
+		/*Inserting story in story table*/
+		$values = array($story->getstoryId(),$story->gettitle(),$story->getCreatorList()[0],$story->getUrl(),$story->getInstitution(),$story->getIntroduction());
+		$this->insertUpdateAll('story',$values);
+		
+		/*Inserting subcategories, $this->getConn()ects them to the story and maps them to our categories*/
+		if(!empty($story->getsubCategoryList())){
+			for($x=0; $x<sizeof($story->getsubCategoryList()); $x++){
+				$subcategory = ''.$story->getsubCategoryNames()[$x].'';
+				$categories = array();
+				$this->insertUpdateAll('subcategory', array($story->getsubCategoryList()[$x], $subcategory));
+				$categories = $this->getCategories($subcategory);
+				if(!empty($categories)){
+					foreach($categories as $category){
+						/*Assumes that there exists a category table with ids 1-9*/
+						$this->insertUpdateAll('category_mapping', array($category, $story->getsubCategoryList()[$x]));
+					}
+				}
+				$this->insertUpdateAll('story_subcategory', array($story->getstoryId(), $story->getsubCategoryList()[$x]));
+			}
+		}
+			
+		/*insertUpdateAlling tags and $this->getConn()ects them to the story*/
+		if(!empty($story->getSubjectList())){
+			foreach($story->getSubjectList() as $tag){
+				$this->insertUpdateAll('dftag', array($tag));//This table is perhaps not needed
+				$this->insertUpdateAll('story_dftags', array($story->getstoryId(), $tag));	
+			}
+		}
+		
+		/*insertUpdateAlling the stories media format
+		  Assumes that a media_format table with 1=picture, 2=audio, 3=video exists
+		  array_filter removes empty values*/
+		if(array_filter(array($story->getImageList()))){
+			if(array_filter($story->getImageList())){
+				$this->insertUpdateAll('story_media', array($story->getstoryId(), 1));
+			}
+		}
+		if(array_filter(array($story->getAudioList()))){
+			if(array_filter($story->getAudioList())){
+				$this->insertUpdateAll('story_media', array($story->getstoryId(), 2));
+			}
+		}
+		if(array_filter(array($story->getVideoList()))){
+			if(array_filter($story->getVideoList())){
+				$this->insertUpdateAll('story_media', array($story->getstoryId(), 3));
+			}
+		}
+	}
 
     // function addCategoryMapping(){
 
@@ -75,8 +136,8 @@ class DbHelper {
 
     // }
 
-	function getDB(){
-		return $this->db;
+	function close(){
+		$this->db = null;
 	}
 	
 	function getTableColumn($tableName){
@@ -95,14 +156,14 @@ class DbHelper {
 	}
 	
 	/* Inserts all values in $valuesArray in table $tableName. 
+		The number of values in $valuesArray needs to match the number of columns in the table.
 		If the primary key already exists, it updates all other values.
-		Only works if the primary key consists of just one attribute and is the first column in the table 
-		(perhaps - seems to work on story_subcategory which has a two-attribute primary key) */
-    function insert($tableName,$valuesArray) {
+	*/
+    public function insertUpdateAll($tableName,$valuesArray) {
         $columnsArray = $this->getTableColumn($tableName);
 		$cols = implode(",", $columnsArray);
 		$cols = trim($cols,","); //Remove the comma before first attribute
-		
+				
 		$update = array();
 		$values = array();
 		
@@ -123,7 +184,7 @@ class DbHelper {
 		for ($x = 2; $x < sizeof($columnsArray); $x++){
 			/*Creating plateholders for each value for updating, except for primary key*/
 			$update[] = ''.$columnsArray[$x].'= ?';
-			/*Creating placeholders for each value*/
+			/*Creating placeholders for each value for inserting values*/
 			$insert .= '?,';
 		}
 		$insert = trim($insert,","); //Remove the extra comma at the end
@@ -138,11 +199,10 @@ class DbHelper {
 			$duplicatePrimary = ''.$columnsArray[1].'='.$columnsArray[1].'';
 			$query .= ''.$duplicatePrimary.'';
 		}
-		
+
         $stmt = $this->db->prepare($query);
 
         $stmt->execute($values);
     }
 }
-
 ?>
