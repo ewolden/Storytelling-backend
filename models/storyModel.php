@@ -34,30 +34,36 @@ class storyModel{
         $this->rights = (string) $xml->children('dc', TRUE)->rights;
         $this->institution = (string) $xml->children('europeana', TRUE)->dataProvider;
 
+        //Create a list of all creators for the story
         foreach ($xml->children('dc', TRUE)->creator as $element)
         {
             $this->creatorList[] = (string) $element;
         }
-        foreach ($xml->children('abm', TRUE)->image as $element)
+        //Create a list of all image IDs for the story
+        foreach ($xml->children('abm', TRUE)->image as $element) 
         {
-            preg_match('/\/\d{1,5}/',(string) $element->children('abm', TRUE)->imageUri,$match);
+            preg_match('/\/\d{1,5}/',(string) $element->children('abm', TRUE)->imageUri,$match); //selects image ID from the URL
             $this->imageList[] = substr($match[0],1);
         }
+        //Create a list of all video URLs for the story
         foreach ($xml->children('abm', TRUE)->media as $element)
         {
             $this->videoList[] = (string) $element->children('abm', TRUE)->videoUri;
         }
+        //Create a list of all audio URLs for the story
         foreach ($xml->children('abm', TRUE)->media as $element)
         {
             $this->audioList[] = (string) $element->children('abm', TRUE)->soundUri;
         }
+        //Create a list of all category IDs for the story
         foreach ($xml->children('abm', TRUE)->classification as $element)
         {
-            preg_match('/\d+/',(string) $element,$match);
+            preg_match('/\d+/',(string) $element,$match); //Selects only the numerical category name
             $this->categoryList[] = $match[0];
 			$name = substr((string) $element, 0, strpos((string) $element, '('));
 			$this->categoryNames[] = strtolower((string) $name);
-        }        
+        }
+        //Create a list of all subjects for the story        
         foreach ($xml->children('dc', TRUE)->subject as $element)
         {
             $this->subjectList[] = (string) $element;
@@ -263,7 +269,7 @@ class storyModel{
         print_r(PHP_EOL.PHP_EOL);
     }
 
-    private function file_get_contents_utf8($fn) {
+    private function file_get_contents_utf8($fn) { //needed because the normal file_get_contents is not unicode
         $content = file_get_contents($fn);
         return mb_convert_encoding($content, 'UTF-8',
            mb_detect_encoding($content, 'UTF-8, ISO-8859-1', true));

@@ -7,13 +7,15 @@ class DbHelper {
 	private $tableColumns = array(
 			/*false = not auto incremented primary key*/
 			'story' => array(false,'storyId','title','author','thumbnailURL','institution','introduction'),
-			'user' => array(false,'userId','mail','age_group','gender','use_of_location'),
+			'user' => array(true,'userId','mail','age_group','gender','use_of_location'),
 			'subcategory' => array(false,'subcategoryId','subcategoryName'),
 			'story_subcategory' => array(false,'storyId', 'subcategoryId'),
 			'dftag' => array(false,'DFTagName'),
 			'story_dftags' => array(false,'storyId', 'DFTagName'),
 			'story_media' => array(false, 'storyId', 'mediaId'),
 			'category_mapping' => array(false, 'categoryId', 'subcategoryId'),
+			'category_preference' => array(false,'userId','categoryId'),
+			'media_preference' => array(false,'userId','mediaId','ranking'),
 			);
 	private $categoryMapping = array(
 			/*The numbers 1-9 is the primary keys in the category table*/
