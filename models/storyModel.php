@@ -275,56 +275,10 @@ class storyModel{
            mb_detect_encoding($content, 'UTF-8, ISO-8859-1', true));
     }
 	
-	public function insertStory(){
-		$conn = new dbHelper();
-		
-		/*Inserting story in story table*/
-		$values = array($this->getstoryId(),$this->gettitle(),$this->getCreatorList()[0],$this->getUrl(),$this->getInstitution(),$this->getIntroduction());
-		$conn->insert('story',$values);
-		
-		/*Inserting subcategories, connects them to the story and maps them to our categories*/
-		if(!empty($this->getCategoryList())){
-			for($x=0; $x<sizeof($this->getCategoryList()); $x++){
-				$categories = array();
-				$conn->insert('subcategory', array($this->getCategoryList()[$x], $this->getCategoryNames()[$x]));
-				$categories = $conn->getCategories($this->getCategoryNames()[$x]);
-				if(!empty($categories)){
-					foreach($categories as $category){
-						/*Assumes that there exists a category table with ids 1-9*/
-						$conn->insert('category_mapping', array($category, $this->getCategoryList()[$x]));
-					}
-				}
-				$conn->insert('story_subcategory', array($this->getstoryId(), $this->getCategoryList()[$x]));
-			}
-		}
-			
-		/*Inserting tags and connects them to the story*/
-		if(!empty($this->getSubjectList())){
-			foreach($this->getSubjectList() as $tag){
-				$conn->insert('dftag', array($tag));
-				$conn->insert('story_dftags', array($this->getstoryId(), $tag));	
-			}
-		}
-		
-		/*Inserting the stories media format
-		  Assumes that a media_format table with 1=picture, 2=audio, 3=video exists
-		  array_filter removes empty values*/
-		if(!empty(array_filter(array($this->getImageList())))){
-			$conn->insert('story_media', array($this->getstoryId(), 1));
-		}
-		if(!empty(array_filter(array($this->getAudioList())))){
-			$conn->insert('story_media', array($this->getstoryId(), 2));
-		}
-		if(!empty(array_filter(array($this->getVideoList())))){
-			$conn->insert('story_media', array($this->getstoryId(), 3));
-		}
-	}
-	
 }
 
 $story = new storyModel(); //example usage
 $story->getFromDF('DF.5736');
 $story->print_all_info();
-$story->insertStory();
 
 ?>

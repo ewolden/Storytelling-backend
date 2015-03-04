@@ -16,6 +16,7 @@ class DbHelper {
 			'category_mapping' => array(false, 'categoryId', 'subcategoryId'),
 			'category_preference' => array(false,'userId','categoryId'),
 			'media_preference' => array(false,'userId','mediaId','ranking'),
+			'stored_story' => array(false, 'userId', 'storyId', 'explanation', 'rating', 'false_recommend', 'type_of_recommendation'),
 			);
 	private $categoryMapping = array(
 			/*The numbers 1-9 are the primary keys in the category table*/
@@ -99,7 +100,7 @@ class DbHelper {
 			}
 		}
 			
-		/*insertUpdateAlling tags and $this->getConn()ects them to the story*/
+		/*Inserting tags and $this->getConn()ects them to the story*/
 		if(!empty($story->getSubjectList())){
 			foreach($story->getSubjectList() as $tag){
 				$this->insertUpdateAll('dftag', array($tag));//This table is perhaps not needed
@@ -107,7 +108,7 @@ class DbHelper {
 			}
 		}
 		
-		/*insertUpdateAlling the stories media format
+		/*Inserting the stories media format
 		  Assumes that a media_format table with 1=picture, 2=audio, 3=video exists
 		  array_filter removes empty values*/
 		if(array_filter(array($story->getImageList()))){
@@ -157,6 +158,37 @@ class DbHelper {
 		return $categories;
 	}
 	
+	/*Updates $insertColumn in $tableName with $updateValue
+	* $keyColumns and $keyValues define which row to update
+	*/
+	function updateOneValue($tableName, $insertColumn, $keyColumns, $updateValue, $keyValues){
+		/*If $keyColumns is an array we have a multiple-valued primary key
+		* We have to loop through the primary key columns to create placeholders.
+		* If $keyColumns is an array, so is $keyValues. 
+		*/
+		$whereString = '';
+		if (is_array($keyColumns)){
+			$whereString .= ''.$keyColumns[0].'=? ';
+			for($x=1; $x<sizeof($keyColumns); $x++){
+				$whereString .= 'AND '.$keyColumns[$x].'=? ';
+			}	
+			$values = array_merge(array($updateValue), $keyValues);
+		}
+		/*If $keyColumns is not an array, we need to create one for the values we are 
+		* inserting in the query.
+		*/
+		else {
+			$whereString .= ''.$keyColumns.'=? ';
+			$values = array($updateValue, $keyValues);
+		}
+		
+		$query = 'UPDATE '.$tableName.' SET '.$insertColumn.'=? WHERE '.$whereString.'';
+		print_r($query);
+		print_r($values);
+		$stmt = $this->db->prepare($query);
+		$stmt->execute($values);
+	}
+	
 	/* Inserts all values in $valuesArray in table $tableName. 
 		The number of values in $valuesArray needs to match the number of columns in the table.
 		If the primary key already exists, it updates all other values.
@@ -198,8 +230,8 @@ class DbHelper {
 		}
 		else {
 			/*Just a meaningless operation to avoid primary key error*/
-			$duplicatePrimary = ''.$columnsArray[1].'='.$columnsArray[1].'';
-			$query .= ''.$duplicatePrimary.'';
+			$duplicatePrimary = ''.$columnsArray[1].'='.$columnsArray[1].''; //Means that we are not updating anything
+			$query .= ''.$duplicatePrimary.''; 
 		}
 
         $stmt = $this->db->prepare($query);
@@ -207,4 +239,9 @@ class DbHelper {
         $stmt->execute($values);
     }
 }
+//$db = new dbHelper();
+//$db->insertUpdateAll('user', array(null, null, null, null));
+//$db->insertUpdateAll('stored_story', array(1,'DF.3886', null,2,0,0));
+//$db->updateOneValue('stored_story', 'rating', array('userId', 'storyId'),7, array(1, 'DF.3886'));
+//$db->updateOneValue('subcategory', 'subcategoryName', 'subcategoryId', 'arkitektur', '1');
 ?>

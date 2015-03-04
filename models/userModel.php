@@ -97,18 +97,18 @@ class userModel{
         
         /*Inserting story in story table*/
         $values = array($this->getUserId(),$this->getMail(),$this->getAgeGroup(),$this->getGender(),$this->getLocation());
-        $conn->insert('user',$values);
+        $conn->insertUpdateAll('user',$values);
         
         /*Inserting category preferences*/
         foreach($this->getCategoryPrefs() as $category){
-                $conn->insert('category_preference', array($this->getUserId,$category)); 
+                $conn->insertUpdateAll('category_preference', array($this->getUserId,$category)); 
             }
             
         /*Inserting media preferances*/
-        $conn->insert('media_preference',1,$this->getMediaPrefs()[0]); //picture
-        $conn->insert('media_preference',2,$this->getMediaPrefs()[1]); //picture
-        $conn->insert('media_preference',3,$this->getMediaPrefs()[2]); //audio
-        $conn->insert('media_preference',4,$this->getMediaPrefs()[3]); //video
+        $conn->insertUpdateAll('media_preference',1,$this->getMediaPrefs()[0]); //picture
+        $conn->insertUpdateAll('media_preference',2,$this->getMediaPrefs()[1]); //picture
+        $conn->insertUpdateAll('media_preference',3,$this->getMediaPrefs()[2]); //audio
+        $conn->insertUpdateAll('media_preference',4,$this->getMediaPrefs()[3]); //video
     }
 }
 
