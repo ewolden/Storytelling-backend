@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php'; // Database setting constants [DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD]
+require_once 'storyModel.php'
 header('Content-type: text/plain; charset=utf-8');//Just to make it look nice in the browser
 class DbHelper {
 
@@ -237,6 +238,31 @@ class DbHelper {
         $stmt = $this->db->prepare($query);
 
         $stmt->execute($values);
+    }
+
+
+    public function fetchStories($id_array){
+    	foreach($id_array as $id){
+    		$this->fetchStory($id);
+    	}
+    }
+
+    public function fetchStory($id){
+        $query ="SELECT * FROM Story WHERE storyId=?";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute(array($id));    
+        $result = $stmt->fetchAll();
+       // print_r($result); test
+        
+        foreach ($result as $row) {
+        	$newStory = new StoryModel();
+        	$newStory->setStoryID($row['storyId']);
+            $newStory->setTitle($row['title']);
+            $newStory->setCreator($row['author']); 
+            $newStory->setInstitution($row['institution']);
+            $newStory->setIntroduction($row['introduction']); 
+            // $newStory->getAll(); test
+        }
     }
 }
 //$db = new dbHelper();
