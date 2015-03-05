@@ -6,18 +6,21 @@ class DbHelper {
 
     private $db;	
 	private $tableColumns = array(
-			/*false = not auto incremented primary key*/
-			'story' => array(false,'storyId','title','author','thumbnailURL','institution','introduction'),
-			'user' => array(true,'userId','mail','age_group','gender','use_of_location'),
-			'subcategory' => array(false,'subcategoryId','subcategoryName'),
-			'story_subcategory' => array(false,'storyId', 'subcategoryId'),
-			'dftag' => array(false,'DFTagName'),
-			'story_dftags' => array(false,'storyId', 'DFTagName'),
-			'story_media' => array(false, 'storyId', 'mediaId'),
-			'category_mapping' => array(false, 'categoryId', 'subcategoryId'),
-			'category_preference' => array(false,'userId','categoryId'),
-			'media_preference' => array(false,'userId','mediaId','ranking'),
-			'stored_story' => array(false, 'userId', 'storyId', 'explanation', 'rating', 'false_recommend', 'type_of_recommendation'),
+			/*false = not auto incremented primary key
+			* the first number is the number of primary keys in the table
+			* It is assumed that the primary key columns are placed first in the table
+			*/
+			'story' => array(1,false,'storyId','title','author','thumbnailURL','institution','introduction'),
+			'user' => array(1,true,'userId','mail','age_group','gender','use_of_location'),
+			'subcategory' => array(1,false,'subcategoryId','subcategoryName'),
+			'story_subcategory' => array(2,false,'storyId', 'subcategoryId'),
+			'dftag' => array(1,false,'DFTagName'),
+			'story_dftags' => array(2,false,'storyId', 'DFTagName'),
+			'story_media' => array(2,false, 'storyId', 'mediaId'),
+			'category_mapping' => array(2,false, 'categoryId', 'subcategoryId'),
+			'category_preference' => array(2,false,'userId','categoryId'),
+			'media_preference' => array(2,false,'userId','mediaId','ranking'),
+			'stored_story' => array(2,false, 'userId', 'storyId', 'explanation', 'rating', 'false_recommend', 'type_of_recommendation'),
 			);
 	private $categoryMapping = array(
 			/*The numbers 1-9 are the primary keys in the category table*/
@@ -160,42 +163,47 @@ class DbHelper {
 	}
 	
 	/*Updates $insertColumn in $tableName with $updateValue
-	* $keyColumns and $keyValues define which row to update
+	* $keyValues define which row to update
 	*/
-	function updateOneValue($tableName, $insertColumn, $keyColumns, $updateValue, $keyValues){
-		/*If $keyColumns is an array we have a multiple-valued primary key
-		* We have to loop through the primary key columns to create placeholders.
-		* If $keyColumns is an array, so is $keyValues. 
-		*/
+	function updateOneValue($tableName, $insertColumn, $updateValue, $keyValues){
+		/*Get the columns in the table we are updating*/
+		$tableColumns = $this->getTableColumn($tableName);
+		
+		/*Find the key columns in the table. Assumes that these columns is placed first in the table
+		* $tableColumns[0] is the number of primary keys*/
+		$keyColumns = array_slice($tableColumns, 2, $tableColumns[0]);
 		$whereString = '';
-		if (is_array($keyColumns)){
+		
+		/*If $keyValues is an array we have a multiple-valued primary key
+		* We have to loop through the primary key columns to create placeholders.
+		* If $keyValues is an array, so is $keyColumns 
+		*/
+		if (is_array($keyValues)){
 			$whereString .= ''.$keyColumns[0].'=? ';
 			for($x=1; $x<sizeof($keyColumns); $x++){
 				$whereString .= 'AND '.$keyColumns[$x].'=? ';
 			}	
 			$values = array_merge(array($updateValue), $keyValues);
 		}
-		/*If $keyColumns is not an array, we need to create one for the values we are 
-		* inserting in the query.
-		*/
+		/*If $keyValues is not an array, we only have one where clause and 
+		* we need to create an array for the values we are inserting in the query.*/
 		else {
-			$whereString .= ''.$keyColumns.'=? ';
+			$keyColumn = implode(',', $keyColumns);
+			$whereString .= ''.$keyColumn.'=? ';
 			$values = array($updateValue, $keyValues);
 		}
 		
 		$query = 'UPDATE '.$tableName.' SET '.$insertColumn.'=? WHERE '.$whereString.'';
-		print_r($query);
-		print_r($values);
 		$stmt = $this->db->prepare($query);
 		$stmt->execute($values);
 	}
 	
-	/* Inserts all values in $valuesArray in table $tableName. 
+	/*  Inserts all values in $valuesArray in table $tableName. 
 		The number of values in $valuesArray needs to match the number of columns in the table.
 		If the primary key already exists, it updates all other values.
 	*/
     public function insertUpdateAll($tableName,$valuesArray) {
-        $columnsArray = $this->getTableColumn($tableName);
+        $columnsArray = array_slice($this->getTableColumn($tableName),1);
 		$cols = implode(",", $columnsArray);
 		$cols = trim($cols,","); //Remove the comma before first attribute
 				
@@ -231,7 +239,7 @@ class DbHelper {
 		}
 		else {
 			/*Just a meaningless operation to avoid primary key error*/
-			$duplicatePrimary = ''.$columnsArray[1].'='.$columnsArray[1].''; //Means that we are not updating anything
+			$duplicatePrimary = ''.$columnsArray[2].'='.$columnsArray[2].''; //Means that we are not updating anything
 			$query .= ''.$duplicatePrimary.''; 
 		}
 
@@ -265,9 +273,9 @@ class DbHelper {
         }
     }
 }
-//$db = new dbHelper();
+$db = new dbHelper();
 //$db->insertUpdateAll('user', array(null, null, null, null));
-//$db->insertUpdateAll('stored_story', array(1,'DF.3886', null,2,0,0));
-//$db->updateOneValue('stored_story', 'rating', array('userId', 'storyId'),7, array(1, 'DF.3886'));
-//$db->updateOneValue('subcategory', 'subcategoryName', 'subcategoryId', 'arkitektur', '1');
+$db->insertUpdateAll('stored_story', array(4,'DF.3963', null,5,0,0));
+//$db->updateOneValue('stored_story', 'rating', 7, array(4, 'DF.3886'));
+//$db->updateOneValue('subcategory', 'subcategoryName', 'arkitektur', '1');
 ?>
