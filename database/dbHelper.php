@@ -1,13 +1,13 @@
 <?php
 require_once 'config.php'; // Database setting constants [DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD]
-require_once 'storyModel.php'
+require_once '../models/storyModel.php';
 header('Content-type: text/plain; charset=utf-8');//Just to make it look nice in the browser
 class DbHelper {
 
     private $db;	
 	private $tableColumns = array(
 			/*false = not auto incremented primary key
-			* the first number is the number of primary keys in the table
+			* The first number is the number of primary keys in the table
 			* It is assumed that the primary key columns are placed first in the table
 			*/
 			'story' => array(1,false,'storyId','title','author','thumbnailURL','institution','introduction'),
@@ -20,6 +20,8 @@ class DbHelper {
 			'category_mapping' => array(2,false, 'categoryId', 'subcategoryId'),
 			'category_preference' => array(2,false,'userId','categoryId'),
 			'media_preference' => array(2,false,'userId','mediaId','ranking'),
+			'tag' => array(1,true, 'tagId', 'tagName'),
+			'user_tag' => array(3,false,'userId', 'storyId', 'tagId'),
 			'stored_story' => array(2,false, 'userId', 'storyId', 'explanation', 'rating', 'false_recommend', 'type_of_recommendation'),
 			);
 	private $categoryMapping = array(
@@ -29,7 +31,7 @@ class DbHelper {
 			'archeology' => array(3,'arkeologi og forminne'),
 			'history' => array(4,'historie', 'historie og geografi', 'språkhistorie', 'sjøfart og kystkultur','kulturminne'),
 			'local traditions and food' => array(5,'bunader og folkedrakter', 'hordaland', 'kulturminne', 'kultur og samfunn', 'rallarvegen', 'tradisjonsmat og drikke', 'dans', 'språk', 'fiske og fiskeindustri', 'samer', 'musikk', 'sjøfart og kystkultur', 'fleirkultur og minoritetar'),
-			'nature and adventure' => array(6,'fiske og fiskeindustri', 'naturhistorie', 'sport og friluftsliv', 'sjøfart og kystkultur', 'natur, teknikk og næring', 'fiske og fiskeindustri'),
+			'nature and adventure' => array(6,'fiske og fiskeindustri', 'naturhistorie', 'sport og friluftsliv', 'fiske og fiskeindustri'),
 			'literature' => array(7,'teikneseriar', 'litteratur'),
 			'music' => array(8,'musikk'),
 			'science and technology' => array(9,'kjøretøy, bil og motor, veitransport', 'skip- og båtbygging', 'teknikk, industri og bergverk', 'natur, teknikk og næring', 'media', 'fotografi', 'fiske og fiskeindustri'),
@@ -203,7 +205,7 @@ class DbHelper {
 		If the primary key already exists, it updates all other values.
 	*/
     public function insertUpdateAll($tableName,$valuesArray) {
-        $columnsArray = array_slice($this->getTableColumn($tableName),1);
+        $columnsArray = array_slice($this->getTableColumn($tableName),1);//Slice off the primary key number
 		$cols = implode(",", $columnsArray);
 		$cols = trim($cols,","); //Remove the comma before first attribute
 				
@@ -216,19 +218,34 @@ class DbHelper {
 			/*The first $valuesArray is for the placeholders inside VALUES(), the sliced $valuesArray for the updating placeholders*/
 			$values = array_merge($valuesArray, array_slice($valuesArray,1));
 		}
+		/*If the primary key is auto incremented*/
 		else {
-			/* If the primary key is auto incremented, we need to remove the boolean true and the primary key from the array */
-			$cols = implode(",", array_slice($columnsArray,2));
-			$insert = '';
-			/* If the primary key is auto incremented, the parameter $valuesArray doesn't include a key, so we don't need to slice*/
-			$values = array_merge($valuesArray, $valuesArray);
+			/*If we are updating a row with primary key that exists
+			$valuesArray+1 because $columnsArray[0] = the boolean value*/
+			if (sizeof($columnsArray) == sizeof($valuesArray)+1){
+				/*If we are updating,we need to remove the boolean true but not the primary key 
+				* (we need the primary key to know which row to update)*/
+				$cols = implode(",", array_slice($columnsArray,1));
+				$insert = '?,';
+				/*The $valuesArray include the primary key. We need this value in values(?,?,...,?),
+				* but not in the updateString, so we have to slice it away*/
+				$values = array_merge($valuesArray, array_slice($valuesArray, 1));
+			}
+			/*If we are inserting a new row*/
+			else {
+				/* If the primary key is auto incremented, we need to remove the boolean true and the primary key from the array */
+				$cols = implode(",", array_slice($columnsArray,2));
+				$insert = '';
+				/* If the primary key is auto incremented, the parameter $valuesArray doesn't include a key, so we don't need to slice*/
+				$values = array_merge($valuesArray, $valuesArray);
+			}
 		}
-		
+		/*Looping through the columns to create placeholders*/
 		for ($x = 2; $x < sizeof($columnsArray); $x++){
-			/*Creating plateholders for each value for updating, except for primary key*/
-			$update[] = ''.$columnsArray[$x].'= ?';
 			/*Creating placeholders for each value for inserting values*/
 			$insert .= '?,';
+			/*Creating plateholders for each value for updating, except for primary key*/
+			$update[] = ''.$columnsArray[$x].'=?';
 		}
 		$insert = trim($insert,","); //Remove the extra comma at the end
 		$updateString = implode(",", $update);
@@ -239,7 +256,7 @@ class DbHelper {
 		}
 		else {
 			/*Just a meaningless operation to avoid primary key error*/
-			$duplicatePrimary = ''.$columnsArray[2].'='.$columnsArray[2].''; //Means that we are not updating anything
+			$duplicatePrimary = ''.$columnsArray[1].'='.$columnsArray[1].''; //Means that we are not updating anything
 			$query .= ''.$duplicatePrimary.''; 
 		}
 
@@ -260,22 +277,27 @@ class DbHelper {
         $stmt = $this->db->prepare($query);
         $stmt->execute(array($id));    
         $result = $stmt->fetchAll();
-       // print_r($result); test
+        //print_r($result); //test
         
         foreach ($result as $row) {
-        	$newStory = new StoryModel();
+        	$newStory = new storyModel();
         	$newStory->setStoryID($row['storyId']);
             $newStory->setTitle($row['title']);
-            $newStory->setCreator($row['author']); 
+            $newStory->setCreatorList($row['author']); 
             $newStory->setInstitution($row['institution']);
             $newStory->setIntroduction($row['introduction']); 
-            // $newStory->getAll(); test
+            $newStory->getAll(); //test
+			//print_r($newStory->getAll());
         }
     }
 }
-$db = new dbHelper();
-//$db->insertUpdateAll('user', array(null, null, null, null));
-$db->insertUpdateAll('stored_story', array(4,'DF.3963', null,5,0,0));
-//$db->updateOneValue('stored_story', 'rating', 7, array(4, 'DF.3886'));
-//$db->updateOneValue('subcategory', 'subcategoryName', 'arkitektur', '1');
+$db = new DbHelper();
+//$db->fetchStory('DF.3963');
+//$db->insertUpdateAll('user', array(null, null, null, null)); //Testing inserting of new user
+//$db->insertUpdateAll('stored_story', array(24,'DF.3963', null,5,0,0)); //Testing updating of stored_story
+//$db->insertUpdateAll('tag', array(2,'tagTest4')); //Testing updating in auto incremented table
+//$db->insertUpdateAll('tag', array('tagtest5')); //Testing inserting of auto incremented table
+//$db->insertUpdateAll('user', array(34, null, 3, null, null)); //Testing updating of auto incremented table
+//$db->updateOneValue('user', 'age_group', 3, '24'); //Testing udating of one value in user table
+//$db->updateOneValue('subcategory', 'subcategoryName', 'arkitektur', '1'); //Testing updating of one value in subcategory table
 ?>

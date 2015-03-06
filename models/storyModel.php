@@ -1,5 +1,4 @@
 <?php
-include '../database/dbhelper.php';
 class storyModel{
     private $storyId;
     private $title;
@@ -17,7 +16,6 @@ class storyModel{
     private $subCategoryNames;
     private $subjectList;
     private $url;
-    private $conn;
 
     //Constructor
     public function getFromDF($id)
@@ -229,16 +227,13 @@ class storyModel{
     {
         return $this->subCategoryNames;
     }
-    public function getSubjectList()
-    {
-        return $this->subjectList;
-    }
+
 
     public function getAll(){
-      return getstoryId() + gettitle() + getCreator() + 
-      getIntroduction() + getTheStory() + getMunicipality() + 
-      getCounty() + getRights() + getUrl() + getInstitution() + 
-      getImageList() + getVideoList() + getAudioList() + getSubjectList();
+      return $this->getstoryId() + $this->gettitle() + $this->getCreatorList() + 
+      $this->getIntroduction() + $this->getTheStory() + $this->getMunicipality() + 
+      $this->getCounty() + $this->getRights() + $this->getUrl() + $this->getInstitution() + 
+      $this->getImageList() + $this->getVideoList() + $this->getAudioList() + $this->getSubjectList();
     }
 
     public function sendStory(){

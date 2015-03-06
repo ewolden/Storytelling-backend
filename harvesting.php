@@ -7,7 +7,7 @@ Remember to set constants in the config.php - file
 
 
 include '/database/dbHelper.php';
-include '/models/storyModel.php';
+//include '/models/storyModel.php';
 
 $db = new dbHelper();
 
