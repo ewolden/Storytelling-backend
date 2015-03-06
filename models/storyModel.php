@@ -13,10 +13,11 @@ class storyModel{
     private $imageList;
     private $videoList;
     private $audioList;
-    private $categoryList;
-	private $categoryNames;
+    private $subCategoryList;
+    private $subCategoryNames;
     private $subjectList;
-	private $url;
+    private $url;
+    private $conn;
 
     //Constructor
     public function getFromDF($id)
@@ -59,9 +60,9 @@ class storyModel{
         foreach ($xml->children('abm', TRUE)->classification as $element)
         {
             preg_match('/\d+/',(string) $element,$match); //Selects only the numerical category name
-            $this->categoryList[] = $match[0];
-			$name = substr((string) $element, 0, strpos((string) $element, '('));
-			$this->categoryNames[] = strtolower((string) $name);
+            $this->subCategoryList[] = $match[0];
+            $name = substr((string) $element, 0, strpos((string) $element, '('));
+            $this->subCategoryNames[] = strtolower((string) $name);
         }
         //Create a list of all subjects for the story        
         foreach ($xml->children('dc', TRUE)->subject as $element)
@@ -98,7 +99,7 @@ class storyModel{
     
     public function setMunicipality($municipality)
     {
-    	$this->municipality = $municipality; 
+        $this->municipality = $municipality; 
     }   
     
     public function setCounty($county)
@@ -136,11 +137,15 @@ class storyModel{
         $this->audioList =$audioList;
     }
 
-    public function setCategoryList($catergoryList)
+    public function setsubCategoryList($catergoryList)
     {
-        $this->categoryList = $catergoryList;
+        $this->subCategoryList = $catergoryList;
     }
-
+    
+    public function setsubCategoryNames($subCategoryNames)
+    {
+        $this->subCategoryNames = $subCategoryNames;
+    }
 
     public function setSubjectList($subjectList)
     {
@@ -212,14 +217,17 @@ class storyModel{
     {
         return $this->audioList;
     }
-
-    public function getCategoryList()
+    public function getSubjectList()
     {
-        return $this->categoryList;
+        return $this->subjectList;
     }
-	public function getCategoryNames()
+    public function getsubCategoryList()
     {
-        return $this->categoryNames;
+        return $this->subCategoryList;
+    }
+    public function getsubCategoryNames()
+    {
+        return $this->subCategoryNames;
     }
     public function getSubjectList()
     {
@@ -262,7 +270,7 @@ class storyModel{
         print_r($this->audioList);
         print_r(PHP_EOL.PHP_EOL);
         print_r('Category List - ');
-        print_r($this->categoryList);
+        print_r($this->subCategoryList);
         print_r(PHP_EOL.PHP_EOL);
         print_r('Subject List - ');
         print_r($this->subjectList);
@@ -274,11 +282,11 @@ class storyModel{
         return mb_convert_encoding($content, 'UTF-8',
            mb_detect_encoding($content, 'UTF-8, ISO-8859-1', true));
     }
-	
+    
 }
 
-$story = new storyModel(); //example usage
-$story->getFromDF('DF.5736');
-$story->print_all_info();
+//$story = new storyModel(); //example usage
+//$story->getFromDF('DF.5736');
+//$story->print_all_info();
 
 ?>
