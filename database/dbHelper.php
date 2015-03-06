@@ -133,7 +133,24 @@ class DbHelper {
 			}
 		}
 	}
-
+    public function uptadeUserInfo($user){
+        $values = array();
+        /*Inserting story in story table*/
+        if($user->getUserId() == -1){
+            $values = array($user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
+        } 
+        else{
+             $values = array($user->getUserId(),$user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
+        }
+        
+        $this->insertUpdateAll('user',$values);
+        $userId = $this->db->lastInsertId();
+        /*Inserting category preferences*/
+        foreach($user->getCategoryPrefs() as $category){
+        	print_r($userId ,$category);
+            $this->insertUpdateAll('category_preference', array($userId,$category)); 
+        }
+    }	
     // function addCategoryMapping(){
 
     // }
