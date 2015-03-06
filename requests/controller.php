@@ -2,8 +2,9 @@
 /**
 *Script that intercepts and interprets angular http requests and performe the desired action
 */
-require_once "database/dbHelper.php";
-require_once "models/storyModel.php";
+require_once(__DIR__."/../models/storyModel.php");
+require_once(__DIR__."/../models/userModel.php");
+require_once(__DIR__."/../database/dbHelper.php");
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -21,6 +22,19 @@ if($type == "getStory"){
 if($type == "getStories"){
 	$db = new DbHelper;
 	echo json_encode($db->getAllStories());
+}
+
+if($type == "addUser"){
+	$userModel = new userModel();
+	$userModel->setUserId($request->id);
+	$userModel->setMail($request->email);
+	$userModel->setAgeGroup($request->age_group);
+	$userModel->setGender($request->gender);
+	$userModel->setLocation($request->use_of_location);
+	$userModel->setCategoryPrefs($request->category_preference);
+	$db = new dbHelper();
+	$db->uptadeUserInfo($userModel);
+	$db->close();
 }
 
 ?>
