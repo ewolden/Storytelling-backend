@@ -1,7 +1,7 @@
 //BYGGER VIDERE PÅ services.js SOM ER LAGET I FRONT-END
 //BURDE KANSKJE LEGGES INN I services.js? ELLERS MÅ MODULEN ('starter.services') 
 //FÅ NYTT NAVN :)
-angular.module('starter.services', ['ngSanitize'])
+angular.module('backend.services', ['ngSanitize'])
 .factory("Story", function ($sce) {
 
 	 /**
@@ -36,7 +36,7 @@ angular.module('starter.services', ['ngSanitize'])
 		//Tror ikke denne trenger å hentes her??
 		this.categoryIDs = storyData.categoryList;
 		this.subjectList = storyData.subjectList;
-		this.url = "http://www.digitaltfortalt.no/things/thing/H-DF/"+this.storyId;
+		this.url = $sce.trustAsUrl("http://www.digitaltfortalt.no/things/thing/H-DF/"+this.storyId);
 
 		this.updateMedia();
 	}
@@ -61,27 +61,37 @@ angular.module('starter.services', ['ngSanitize'])
 		return Story;
 	})
 
+
+/**Handles communication with backend*/
 .factory("Requests", function ($http) {
 	var req = {
 		method: 'POST',
-		url: '../requests/controller.php',
+		url: '../../requests/controller.php',
 		headers: {'Content-Type': 'application/json'} // 'Content-Type': application/json???
 	}
 
-	return {
+	
 
-		/* DETTE MÅ BRUKES I StoryCtrl:
- 		Requests.getStory('DF.1001').then(function(response){
-    		$scope.story = new Story(response.data);
+	/* DETTE MÅ BRUKES I Controllere:
+ 	Requests."metode"().then(function(response){
+    		$scope."detsomskalbrukes" = new Story(response.data); eller bare response.data
     	}); TUNGVINT MÅTE?? :/*/
+
+	return {
+		/**Retrieves single story from digitalt fortalt*/
 		getStory: function(id){
-			req.data = {type: "getStory",
-			storyId: id };
+			req.data = {
+				type: "getStory",
+				storyId: id };
 			//Burde sikkert bruke .success osv, men det så mye finere ut uten :)
 			return $http(req);
 		},
 
-		//IKKE FUNKSJONELL ENNÅ
+		//PRØVER Å HENTE DE 20 FØRSTE HISTORIENE FRA DATABASEN NÅ OG LEGGE TIL I LISTE
+		//BRUKER GETALLSTORIES METODE I DBHELPER. SKAL SLETTES ETTERPÅ
+
+		/**Retrieves multiple stories from the database, now returns 500 error when
+		* story doesn't have pictures*/
 		getMultipleStories: function(idArray) {
 			req.data = { type: "getStories" };
 			return $http(req);

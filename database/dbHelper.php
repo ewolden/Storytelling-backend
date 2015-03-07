@@ -307,6 +307,27 @@ class DbHelper {
 			//print_r($newStory->getAll());
         }
     }
+
+    function getAllStories(){
+		$stmt = $this->db->prepare(
+			"SELECT story.storyId, title, author, introduction, group_concat(distinct categoryName)
+			FROM story, category_mapping, story_subcategory, subcategory, category
+			WHERE subcategory.subcategoryId = category_mapping.subcategoryId 
+			AND category.categoryId = category_mapping.categoryId
+			AND story_subcategory.subcategoryId = subcategory.subcategoryId
+			AND story.storyId = story_subcategory.storyId
+			GROUP BY story.storyId LIMIT 20");
+		$stmt->execute();
+		$stmt2 = $this->db->prepare(
+			"SELECT storyId, title, author, introduction
+			FROM story
+			WHERE storyId NOT IN (SELECT storyId FROM story_subcategory)");
+		$stmt2->execute();
+		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		$rows2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+		return array_merge($rows, $rows2);
+	}
+
 }
 $db = new DbHelper();
 //$db->fetchStory('DF.3963');

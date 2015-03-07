@@ -20,8 +20,23 @@ if($type == "getStory"){
 }
 
 if($type == "getStories"){
-	$db = new DbHelper;
-	echo json_encode($db->getAllStories());
+	$db = new DbHelper();
+	$data = $db->getAllStories();
+	$returnArray = array();
+	foreach ($data as $story) {
+		$list = array(
+			'id' => $story['storyId'],
+			'title' => $story['title'],
+			'description' => $story['introduction'],
+			'thumbnail' => "http://api.digitaltmuseum.no/media?owner=H-DF&identifier=".$story['storyId']."&type=thumbnail&api.key=demo",
+			'categories' => "",
+			'author' => $story['author'],
+			'date' => "");
+		if(array_key_exists('group_concat(distinct categoryName)', $story))
+			$list['categories'] = explode(",",$story['group_concat(distinct categoryName)']);
+		array_push($returnArray, $list);
+	}
+	print_r(json_encode($returnArray));
 }
 
 if($type == "addUser"){
