@@ -230,10 +230,22 @@ class storyModel{
 
 
     public function getAll(){
-      return $this->getstoryId() + $this->gettitle() + $this->getCreatorList() + 
-      $this->getIntroduction() + $this->getTheStory() + $this->getMunicipality() + 
-      $this->getCounty() + $this->getRights() + $this->getUrl() + $this->getInstitution() + 
-      $this->getImageList() + $this->getVideoList() + $this->getAudioList() + $this->getSubjectList();
+        return array(
+            'storyId' => $this->getstoryId(),
+            'title' =>  $this->gettitle(),
+            'creatorList' => $this->getCreatorList(),
+            'introduction' => $this->getIntroduction(),
+            'theStory' => $this->getTheStory(),
+            'municipality' => $this->getMunicipality(),
+            'county' => $this->getCounty(),
+            'rights' => $this->getRights(),
+            'institution' => $this->getInstitution(),
+            'imageList' => $this->getImageList(),
+            'videoList' => $this->getVideoList(), 
+            'audioList' => $this->getAudioList(),
+            'subCategoryList' => $this->getsubCategoryList(),
+            'subCategoryNames' => $this->getsubCategoryNames(),
+            'subjectList' => $this->getSubjectList());
     }
 
     public function sendStory(){
