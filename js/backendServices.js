@@ -106,6 +106,16 @@ angular.module('backend.services', ['ngSanitize'])
 				userId: userId,
 				rating: rating};
 			$http(req)
+		},
+		
+		addTag: function(tagName, userId, storyId){
+			req.data = {
+				type: "addTag",
+				userId: userId,
+				storyId: storyId,
+				tagName: tagName
+			};
+			$http(req)
 		}
 	}
 });
