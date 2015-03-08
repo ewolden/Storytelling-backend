@@ -13,7 +13,7 @@ angular.module('backend.services', ['ngSanitize'])
 	 	this.title = storyData.title;
 
 		//Returns an array, use author[0]
-		this.author = storyData.author;
+		this.author = storyData.creatorList;
 		this.imageList = storyData.imageList;
 		this.introduction = storyData.introduction;
 
@@ -31,10 +31,10 @@ angular.module('backend.services', ['ngSanitize'])
 		this.county = storyData.county;
 		this.institution = storyData.institution;
 
-		this.categoryList = storyData.categoryNames;
+		this.subcategoryList = storyData.subCategoryNames;
 
 		//Tror ikke denne trenger å hentes her??
-		this.categoryIDs = storyData.categoryList;
+		this.subcategoryIDs = storyData.subCategoryList;
 		this.subjectList = storyData.subjectList;
 		this.url = $sce.trustAsUrl("http://www.digitaltfortalt.no/things/thing/H-DF/"+this.storyId);
 
@@ -70,7 +70,6 @@ angular.module('backend.services', ['ngSanitize'])
 		headers: {'Content-Type': 'application/json'} // 'Content-Type': application/json???
 	}
 
-	
 
 	/* DETTE MÅ BRUKES I Controllere:
  	Requests."metode"().then(function(response){
@@ -95,7 +94,18 @@ angular.module('backend.services', ['ngSanitize'])
 		getMultipleStories: function(idArray) {
 			req.data = { type: "getStories" };
 			return $http(req);
+		},
+
+		//MENINGEN AT DET SKAL VÆRE MED DESCRIPTION. NOE SOM SKAL LEGGES TIL HER
+		//ELLEr ET ANNET STED?
+		/** Adds user rating to a story */
+		addRating: function(storyId, userId, rating){
+			req.data = {
+				type: "rating",
+				storyId: storyId,
+				userId: userId,
+				rating: rating};
+			$http(req)
 		}
 	}
-
 });
