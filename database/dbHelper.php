@@ -19,8 +19,8 @@ class DbHelper {
 			'category_mapping' => array(2,false, 'categoryId', 'subcategoryId'),
 			'category_preference' => array(2,false,'userId','categoryId'),
 			'media_preference' => array(2,false,'userId','mediaId','ranking'),
-			'tag' => array(1,true, 'tagId', 'tagName'),
-			'user_tag' => array(3,false,'userId', 'storyId', 'tagId'),
+			'tag' => array(1,true, 'tagName'),
+			'user_tag' => array(3,false,'userId', 'storyId', 'tagName'),
 			'stored_story' => array(2,false, 'userId', 'storyId', 'explanation', 'rating', 'false_recommend', 'type_of_recommendation'),
 			);
 	private $categoryMapping = array(
@@ -319,6 +319,8 @@ class DbHelper {
 
 }
 $db = new DbHelper();
+$db->insertUpdateAll('tag', array('name2'));
+$db->insertUpdateAll('user_tag', array(1, 'DF.3963', 'name2'));
 //$db->fetchStory('DF.3963');
 //$db->insertUpdateAll('user', array(null, null, null, null)); //Testing inserting of new user
 //$db->insertUpdateAll('stored_story', array(1,'DF.3963', null,5,0,0)); //Testing updating of stored_story

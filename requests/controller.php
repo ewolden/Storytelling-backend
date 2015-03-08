@@ -58,8 +58,7 @@ if($type == "rating"){
 
 if($type == "addTag"){
 	$db->insertUpdateAll('tag', array($request->tagName));
-	$tagId = $db->getConn()->lastInsertId();
-	$db->insertUpdateAll('user_tag', array($request->userId, $request->storyId, $tagId));
+	$db->insertUpdateAll('user_tag', array($request->userId, $request->storyId, $request->tagName));
 }
 
 
