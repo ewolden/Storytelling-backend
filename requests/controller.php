@@ -47,10 +47,8 @@ if($type == "addUser"){
 	$db->uptadeUserInfo($userModel);
 }
 
-/*Nå overskrives verdiene i tabellen som ikke er rating. Bedre å bruke updateOneValue-metoden. 
-Eventuelt må de tre andre verdiene også sendes fra frontend, men det er nok unødvendig*/
 if($type == "rating"){
-	$db->insertUpdateAll('stored_story', array($request->userId, $request->storyId, null,$request->rating,0,0));
+	$db->updateOneValue('stored_story', 'rating', $request->rating, array($request->userId, $request->storyId));
 }
 
 if($type == "addTag"){

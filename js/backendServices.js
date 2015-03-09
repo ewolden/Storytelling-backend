@@ -116,8 +116,6 @@ angular.module('backend.services', ['ngSanitize'])
 			return $http(req);
 		},
 
-		//MENINGEN AT DET SKAL VÆRE MED DESCRIPTION. NOE SOM SKAL LEGGES TIL HER
-		//ELLEr ET ANNET STED?
 		/** Adds user rating to a story */
 		addRating: function(storyId, userId, rating){
 			req.data = {
@@ -125,7 +123,7 @@ angular.module('backend.services', ['ngSanitize'])
 				storyId: storyId,
 				userId: userId,
 				rating: rating};
-			$http(req)
+			$http(req);
 		},
 		
 		addTag: function(tagName, userId, storyId){
@@ -135,7 +133,7 @@ angular.module('backend.services', ['ngSanitize'])
 				storyId: storyId,
 				tagName: tagName
 			};
-			$http(req)
+			$http(req);
 		}
 		addUpdateUser: function (userData){
 			req.data = {type: "addUpdateUser",
