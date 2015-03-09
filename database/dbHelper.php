@@ -10,18 +10,17 @@ class DbHelper {
 			* The first number is the number of primary keys in the table
 			* It is assumed that the primary key columns are placed first in the table
 			*/
-			'story' => array(1,false,'storyId','title','author','thumbnailURL','institution','introduction'),
+			'story' => array(1,false,'storyId','title','author','date','institution','introduction'),
 			'user' => array(1,true,'userId','mail','age_group','gender','use_of_location'),
 			'subcategory' => array(1,false,'subcategoryId','subcategoryName'),
 			'story_subcategory' => array(2,false,'storyId', 'subcategoryId'),
-			'dftag' => array(1,false,'DFTagName'),
 			'story_dftags' => array(2,false,'storyId', 'DFTagName'),
 			'story_media' => array(2,false, 'storyId', 'mediaId'),
 			'category_mapping' => array(2,false, 'categoryId', 'subcategoryId'),
 			'category_preference' => array(2,false,'userId','categoryId'),
 			'media_preference' => array(2,false,'userId','mediaId','ranking'),
-			'tag' => array(1,true, 'tagId', 'tagName'),
-			'user_tag' => array(3,false,'userId', 'storyId', 'tagId'),
+			'tag' => array(1,true, 'tagName'),
+			'user_tag' => array(3,false,'userId', 'storyId', 'tagName'),
 			'stored_story' => array(2,false, 'userId', 'storyId', 'explanation', 'rating', 'false_recommend', 'type_of_recommendation'),
 			);
 	private $categoryMapping = array(
@@ -89,7 +88,7 @@ class DbHelper {
 		$values = array($story->getstoryId(),$story->gettitle(),$story->getCreatorList()[0],$story->getUrl(),$story->getInstitution(),$story->getIntroduction());
 		$this->insertUpdateAll('story',$values);
 		
-		/*Inserting subcategories, $this->getConn()ects them to the story and maps them to our categories*/
+		/*Inserting subcategories, connects them to the story and maps them to our categories*/
 		if(!empty($story->getsubCategoryList())){
 			for($x=0; $x<sizeof($story->getsubCategoryList()); $x++){
 				$subcategory = ''.$story->getsubCategoryNames()[$x].'';
@@ -106,10 +105,9 @@ class DbHelper {
 			}
 		}
 			
-		/*Inserting tags and $this->getConn()ects them to the story*/
+		/*Inserting tags and connects them to the story*/
 		if(!empty($story->getSubjectList())){
 			foreach($story->getSubjectList() as $tag){
-				$this->insertUpdateAll('dftag', array($tag));//This table is perhaps not needed
 				$this->insertUpdateAll('story_dftags', array($story->getstoryId(), $tag));	
 			}
 		}
@@ -151,16 +149,6 @@ class DbHelper {
             $this->insertUpdateAll('category_preference', array($userId,$category)); 
         }
     }	
-    // function addCategoryMapping(){
-
-    // }
-    // function addCategories(){
-    //     $categories = array("Art and design", "Architecture", "History",
-    //         "Local traditions and food", "Nature and adventure",
-    //         "Religion/Spiritual experience", "Science and technology");
-    //     $subcategories = array();
-
-    // }
 
 	function close(){
 		$this->db = null;
@@ -183,19 +171,20 @@ class DbHelper {
 	
 	/*Updates $insertColumn in $tableName with $updateValue
 	* $keyValues define which row to update
+	* $keyValues might be a string or an array, depending on the number of primary keys.
 	*/
 	function updateOneValue($tableName, $insertColumn, $updateValue, $keyValues){
 		/*Get the columns in the table we are updating*/
 		$tableColumns = $this->getTableColumn($tableName);
 		
 		/*Find the key columns in the table. Assumes that these columns is placed first in the table
-		* $tableColumns[0] is the number of primary keys*/
+		* and start from number 2 in $tableColumns
+		* $tableColumns[0] is the number of primary keys in the table*/
 		$keyColumns = array_slice($tableColumns, 2, $tableColumns[0]);
 		$whereString = '';
 		
-		/*If $keyValues is an array we have a multiple-valued primary key
+		/*If $keyValues is an array we (probably) have a multiple-valued primary key (works with an array of one value as well)
 		* We have to loop through the primary key columns to create placeholders.
-		* If $keyValues is an array, so is $keyColumns 
 		*/
 		if (is_array($keyValues)){
 			$whereString .= ''.$keyColumns[0].'=? ';
@@ -207,7 +196,7 @@ class DbHelper {
 		/*If $keyValues is not an array, we only have one where clause and 
 		* we need to create an array for the values we are inserting in the query.*/
 		else {
-			$keyColumn = implode(',', $keyColumns);
+			$keyColumn = implode(',', $keyColumns); 
 			$whereString .= ''.$keyColumn.'=? ';
 			$values = array($updateValue, $keyValues);
 		}
@@ -307,14 +296,37 @@ class DbHelper {
 			//print_r($newStory->getAll());
         }
     }
+
+    function getAllStories(){
+		$stmt = $this->db->prepare(
+			"SELECT story.storyId, title, author, introduction, group_concat(distinct categoryName)
+			FROM story, category_mapping, story_subcategory, subcategory, category
+			WHERE subcategory.subcategoryId = category_mapping.subcategoryId 
+			AND category.categoryId = category_mapping.categoryId
+			AND story_subcategory.subcategoryId = subcategory.subcategoryId
+			AND story.storyId = story_subcategory.storyId
+			GROUP BY story.storyId LIMIT 20");
+		$stmt->execute();
+		$stmt2 = $this->db->prepare(
+			"SELECT storyId, title, author, introduction
+			FROM story
+			WHERE storyId NOT IN (SELECT storyId FROM story_subcategory)");
+		$stmt2->execute();
+		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		$rows2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+		return array_merge($rows, $rows2);
+	}
+
 }
 $db = new DbHelper();
+$db->insertUpdateAll('tag', array('name2'));
+$db->insertUpdateAll('user_tag', array(1, 'DF.3963', 'name2'));
 //$db->fetchStory('DF.3963');
 //$db->insertUpdateAll('user', array(null, null, null, null)); //Testing inserting of new user
-//$db->insertUpdateAll('stored_story', array(24,'DF.3963', null,5,0,0)); //Testing updating of stored_story
+//$db->insertUpdateAll('stored_story', array(1,'DF.3963', null,5,0,0)); //Testing updating of stored_story
 //$db->insertUpdateAll('tag', array(2,'tagTest4')); //Testing updating in auto incremented table
 //$db->insertUpdateAll('tag', array('tagtest5')); //Testing inserting of auto incremented table
 //$db->insertUpdateAll('user', array(34, null, 3, null, null)); //Testing updating of auto incremented table
 //$db->updateOneValue('user', 'age_group', 3, '24'); //Testing udating of one value in user table
-//$db->updateOneValue('subcategory', 'subcategoryName', 'arkitektur', '1'); //Testing updating of one value in subcategory table
+//$db->updateOneValue('subcategory', 'subcategoryName', 'arkitektur', array('1')); //Testing updating of one value in subcategory table
 ?>

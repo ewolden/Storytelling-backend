@@ -148,5 +148,4 @@ angular.module('backend.services', ['ngSanitize'])
 			return $http(req);
 		}
 	}
-	}
 });
