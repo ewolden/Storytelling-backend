@@ -1,6 +1,3 @@
-//BYGGER VIDERE PÅ services.js SOM ER LAGET I FRONT-END
-//BURDE KANSKJE LEGGES INN I services.js? ELLERS MÅ MODULEN ('starter.services') 
-//FÅ NYTT NAVN :)
 angular.module('backend.services', ['ngSanitize'])
 .factory("Story", function ($sce) {
 
@@ -107,7 +104,7 @@ angular.module('backend.services', ['ngSanitize'])
 		},
 
 		//PRØVER Å HENTE DE 20 FØRSTE HISTORIENE FRA DATABASEN NÅ OG LEGGE TIL I LISTE
-		//BRUKER GETALLSTORIES METODE I DBHELPER. SKAL SLETTES ETTERPÅ
+		//BRUKER GETALLSTORIES METODE I DBHELPER
 
 		/**Retrieves multiple stories from the database, now returns 500 error when
 		* story doesn't have pictures*/
