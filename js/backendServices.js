@@ -1,7 +1,7 @@
 //BYGGER VIDERE PÅ services.js SOM ER LAGET I FRONT-END
 //BURDE KANSKJE LEGGES INN I services.js? ELLERS MÅ MODULEN ('starter.services') 
 //FÅ NYTT NAVN :)
-angular.module('starter.services', ['ngSanitize'])
+angular.module('backend.services', ['ngSanitize'])
 .factory("Story", function ($sce) {
 
 	 /**
@@ -13,7 +13,7 @@ angular.module('starter.services', ['ngSanitize'])
 	 	this.title = storyData.title;
 
 		//Returns an array, use author[0]
-		this.author = storyData.author;
+		this.author = storyData.creatorList;
 		this.imageList = storyData.imageList;
 		this.introduction = storyData.introduction;
 
@@ -31,12 +31,12 @@ angular.module('starter.services', ['ngSanitize'])
 		this.county = storyData.county;
 		this.institution = storyData.institution;
 
-		this.categoryList = storyData.categoryNames;
+		this.subcategoryList = storyData.subCategoryNames;
 
 		//Tror ikke denne trenger å hentes her??
-		this.categoryIDs = storyData.categoryList;
+		this.subcategoryIDs = storyData.subCategoryList;
 		this.subjectList = storyData.subjectList;
-		this.url = "http://www.digitaltfortalt.no/things/thing/H-DF/"+this.storyId;
+		this.url = $sce.trustAsUrl("http://www.digitaltfortalt.no/things/thing/H-DF/"+this.storyId);
 
 		this.updateMedia();
 	}
@@ -60,32 +60,93 @@ angular.module('starter.services', ['ngSanitize'])
 		/** Return the constructor function */
 		return Story;
 	})
+.factory('User', function (){
+	function User(userData){
+		this.userId = userData.userId;
+		this.email = userData.email;
+		this.age_group = userData.age_group;
+		this.gender = userData.gender;
+		this.use_of_location = userData.use_of_location;
+		this.category_preference = userData.category_preference;
+	};
+	User.prototype.getUser = function() {
+		var userData;
+		userData.userId = this.userId;
+		userData.email = this.email;
+		userData.age_group = this.age_group;
+		userData.gender = this.gender;
+		userData.use_of_location = this.use_of_location;
+		userData.category_preference = this.category_preference;
+		return userData;
+	};
+	return User;
+})
 
+/**Handles communication with backend*/
 .factory("Requests", function ($http) {
 	var req = {
 		method: 'POST',
-		url: '../requests/controller.php',
+		url: '../../requests/controller.php',
 		headers: {'Content-Type': 'application/json'} // 'Content-Type': application/json???
 	}
 
-	return {
 
-		/* DETTE MÅ BRUKES I StoryCtrl:
- 		Requests.getStory('DF.1001').then(function(response){
-    		$scope.story = new Story(response.data);
+	/* DETTE MÅ BRUKES I Controllere:
+ 	Requests."metode"().then(function(response){
+    		$scope."detsomskalbrukes" = new Story(response.data); eller bare response.data
     	}); TUNGVINT MÅTE?? :/*/
+
+	return {
+		/**Retrieves single story from digitalt fortalt*/
 		getStory: function(id){
-			req.data = {type: "getStory",
-			storyId: id };
+			req.data = {
+				type: "getStory",
+				storyId: id };
 			//Burde sikkert bruke .success osv, men det så mye finere ut uten :)
 			return $http(req);
 		},
 
-		//IKKE FUNKSJONELL ENNÅ
+		//PRØVER Å HENTE DE 20 FØRSTE HISTORIENE FRA DATABASEN NÅ OG LEGGE TIL I LISTE
+		//BRUKER GETALLSTORIES METODE I DBHELPER. SKAL SLETTES ETTERPÅ
+
+		/**Retrieves multiple stories from the database, now returns 500 error when
+		* story doesn't have pictures*/
 		getMultipleStories: function(idArray) {
 			req.data = { type: "getStories" };
 			return $http(req);
+		},
+
+		//MENINGEN AT DET SKAL VÆRE MED DESCRIPTION. NOE SOM SKAL LEGGES TIL HER
+		//ELLEr ET ANNET STED?
+		/** Adds user rating to a story */
+		addRating: function(storyId, userId, rating){
+			req.data = {
+				type: "rating",
+				storyId: storyId,
+				userId: userId,
+				rating: rating};
+			$http(req)
+		},
+		
+		addTag: function(tagName, userId, storyId){
+			req.data = {
+				type: "addTag",
+				userId: userId,
+				storyId: storyId,
+				tagName: tagName
+			};
+			$http(req)
+		}
+		addUpdateUser: function (userData){
+			req.data = {type: "addUpdateUser",
+				userData};
+			$http(req);
+		},
+		getUser: function(mail){
+			req.data = {type: "getUser",
+				'email': mail};
+			return $http(req);
 		}
 	}
-
+	}
 });
