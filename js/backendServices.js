@@ -122,15 +122,50 @@ angular.module('backend.services', ['ngSanitize'])
 				rating: rating};
 			$http(req);
 		},
-		
-		addTag: function(tagName, userId, storyId){
+		/*Add new tag and connects it to user*/
+		addNewTag: function(tagName, userId){
 			req.data = {
-				type: "addTag",
+				type: "addNewTag",
 				userId: userId,
-				storyId: storyId,
 				tagName: tagName
 			};
 			$http(req);
+		}
+		/*Connects tag, user and story*/
+		tagStory: function (tagName, userId, storyId){
+			req.data = {
+				type: "tagStory",
+				userId: userId,
+				storyId: storyId,
+				tagName: tagStory
+			};
+			$http(req);
+		}
+		/*Get all stories that a user has connected to tagName*/
+		getList: function (tagName, userId){
+			req.data = {
+				type: "getList",
+				userId: userId,
+				tagName: tagName
+			};
+			return $http(req);
+		}
+		/*Get all list for a user*/
+		getAllLists: function (userId){
+			req.data = {
+				type: "getAllLists",
+				userId: userId
+			};
+			return $http(req);
+		}
+		/*Get all tags a user has connected to a story*/
+		getStoryTags: function (userId, storyId){
+			req.data = {
+				type: "getStoryTags",
+				userId: userId,
+				storyId: storyId
+			};
+			return $http(req);
 		}
 		addUpdateUser: function (userData){
 			req.data = {type: "addUpdateUser",
@@ -142,5 +177,6 @@ angular.module('backend.services', ['ngSanitize'])
 				'email': mail};
 			return $http(req);
 		}
+		
 	}
 });

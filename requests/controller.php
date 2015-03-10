@@ -50,10 +50,30 @@ if($type == "addUser"){
 if($type == "rating"){
 	$db->updateOneValue('stored_story', 'rating', $request->rating, array($request->userId, $request->storyId));
 }
-
-if($type == "addTag"){
-	$db->insertUpdateAll('tag', array($request->tagName));
-	$db->insertUpdateAll('user_tag', array($request->userId, $request->storyId, $request->tagName));
+/*Add a new tag and connect it to the user, and the story*/
+if($type == "addNewTag"){
+	$db->insertUpdateAll('user_tag', array($request->userId, $request->tagName));
+	$db->insertUpdateAll('user_storytag', array($request->userId, $request->storyId, $request->tagName));
 }
+/*Tag a story*/
+if($type == "tagStory"){
+	$db->insertUpdateAll('user_storytag', array($request->userId, $request->storyId, $request->tagName));
+}
+/*Get all stories connected to a user and the tagName*/
+if($type == "getList"){
+	$returnArray = $db->getStoryList($request->userId, $request->tagName);
+	print_r(json_encode($returnArray));
+}
+/*Get all tags connected to a user*/
+if($type == "getAllLists"){
+	$returnArray = $db->getAll('user_tag', 'tagName', array('userId'), array($request->userId));
+	print_r(json_encode($returnArray));
+}
+/*Get all tags connected to a story by a user*/
+if($type == "getStoryTags"){
+	$returnArray = $db->getAll('user_storytag', 'tagName', array('userId', 'storyId'), array($request->userId, $request->storyId));
+	print_r(json_encode($returnArray));
+}
+
 $db->close();
 ?>

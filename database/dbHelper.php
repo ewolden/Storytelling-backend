@@ -19,8 +19,8 @@ class DbHelper {
 			'category_mapping' => array(2,false, 'categoryId', 'subcategoryId'),
 			'category_preference' => array(2,false,'userId','categoryId'),
 			'media_preference' => array(2,false,'userId','mediaId','ranking'),
-			'tag' => array(1,true, 'tagName'),
-			'user_tag' => array(3,false,'userId', 'storyId', 'tagName'),
+			'user_tag' => array(2, false, 'userId', 'tagName'),
+			'user_storytag' => array(3,false,'userId', 'storyId', 'tagName'),
 			'stored_story' => array(2,false, 'userId', 'storyId', 'explanation', 'rating', 'false_recommend', 'type_of_recommendation'),
 			);
 	private $categoryMapping = array(
@@ -46,6 +46,7 @@ class DbHelper {
             $response["status"] = "error";
             $response["message"] = 'Connection failed: ' . $e->getMessage();
             $response["data"] = null;
+			print_r($response);
             exit;
         }
     }
@@ -167,7 +168,7 @@ class DbHelper {
 			}
 		}
 		return $categories;
-	}
+	}	
 	
 	/*Updates $insertColumn in $tableName with $updateValue
 	* $keyValues define which row to update
@@ -316,16 +317,70 @@ class DbHelper {
 		$rows2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 		return array_merge($rows, $rows2);
 	}
+	/* Get $selectColumns in $tableName based on $whereValues*/
+	function getAll($tableName, $selectColumns, $whereColumns, $whereValues){
+		$values = array();
+		if (is_array($selectColumns)){
+			$selectColumns = implode(",", $selectColumns);
+			$values = $selectColumns;
+		}
+		else {
+			$values = array($selectColumns);
+		}
+		$whereString = "";
+		if (is_array($whereValues)){
+			if (is_array($whereColumns)){
+				$whereString .= ''.$whereColumns[0].'=? ';
+				for($x=1; $x<sizeof($whereColumns); $x++){
+					$whereString .= 'AND '.$whereColumns[$x].'=? ';
+				}
+			}
+			else {
+				$whereString .= ''.$whereColumns.'=? ';
+			}
+			$values = $whereValues;
+		}
+		else { 
+			if (is_array($whereColumns)){
+				$whereColumn = implode(",", $whereColumns);
+				$whereString .= ''.$whereColumn.'=? ';
+			}
+			else {
+				$whereString .= ''.$whereColumns.'=? ';
+			}
+			$values = array($whereValues);
+		}		
+		$query = "SELECT ".$selectColumns." FROM ".$tableName." WHERE ".$whereString."";
+		$stmt = $this->db->prepare($query);
+		$stmt->execute($values);
+		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		print_r($rows);
+		return($rows);
+	}
+	
+	function getStoryList($userId, $tagName){
+		$query = "SELECT s.storyId, title, author, date, institution, introduction 
+				  FROM story as s
+				  JOIN user_storytag as us ON s.storyId=us.storyId
+				  WHERE us.userId = ? AND us.tagName = ?";
+		$stmt = $this->db->prepare($query);
+		$stmt->execute(array($userId, $tagName));
+		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		print_r($rows);
+		return($rows);
+	}
 
 }
 $db = new DbHelper();
-$db->insertUpdateAll('tag', array('name2'));
-$db->insertUpdateAll('user_tag', array(1, 'DF.3963', 'name2'));
+$db->insertUpdateAll('user_storytag', array(1, 'DF.1295', 'tes'));
+$db->getStoryList(1, 'test');
+$db->getAll('user_storytag', 'tagName', array('userId', 'storyId'), array(1, 'DF.1295'));
+//$db->getAll('user_storytag','*', array('userId', 'tagName'), array(1, 'test'));
+//$db->insertUpdateAll('user', array(null, null, null, null));
+//$db->insertUpdateAll('user_tag', array(2,'test3'));
+//$db->getAll('user_tag','tagName', array('userId'), array(2));
 //$db->fetchStory('DF.3963');
-//$db->insertUpdateAll('user', array(null, null, null, null)); //Testing inserting of new user
 //$db->insertUpdateAll('stored_story', array(1,'DF.3963', null,5,0,0)); //Testing updating of stored_story
-//$db->insertUpdateAll('tag', array(2,'tagTest4')); //Testing updating in auto incremented table
-//$db->insertUpdateAll('tag', array('tagtest5')); //Testing inserting of auto incremented table
 //$db->insertUpdateAll('user', array(34, null, 3, null, null)); //Testing updating of auto incremented table
 //$db->updateOneValue('user', 'age_group', 3, '24'); //Testing udating of one value in user table
 //$db->updateOneValue('subcategory', 'subcategoryName', 'arkitektur', array('1')); //Testing updating of one value in subcategory table
