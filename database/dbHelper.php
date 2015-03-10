@@ -300,18 +300,19 @@ class DbHelper {
 
     function getAllStories(){
 		$stmt = $this->db->prepare(
-			"SELECT story.storyId, title, author, introduction, group_concat(distinct categoryName)
-			FROM story, category_mapping, story_subcategory, subcategory, category
+			"SELECT story.storyId, title, author, introduction, group_concat(distinct categoryName), mediaId
+			FROM story, category_mapping, story_subcategory, subcategory, category, story_media
 			WHERE subcategory.subcategoryId = category_mapping.subcategoryId 
 			AND category.categoryId = category_mapping.categoryId
 			AND story_subcategory.subcategoryId = subcategory.subcategoryId
 			AND story.storyId = story_subcategory.storyId
+			AND story.storyId = story_media.storyId
 			GROUP BY story.storyId LIMIT 20");
 		$stmt->execute();
 		$stmt2 = $this->db->prepare(
-			"SELECT storyId, title, author, introduction
-			FROM story
-			WHERE storyId NOT IN (SELECT storyId FROM story_subcategory)");
+			"SELECT story.storyId, title, author, introduction, mediaId
+			FROM story, story_media
+			WHERE story.storyId NOT IN (SELECT storyId FROM story_subcategory)");
 		$stmt2->execute();
 		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		$rows2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);

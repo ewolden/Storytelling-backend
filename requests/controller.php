@@ -26,12 +26,14 @@ if($type == "getStories"){
 			'id' => $story['storyId'],
 			'title' => $story['title'],
 			'description' => $story['introduction'],
-			'thumbnail' => "http://api.digitaltmuseum.no/media?owner=H-DF&identifier=".$story['storyId']."&type=thumbnail&api.key=demo",
+			'thumbnail' => "",
 			'categories' => "",
 			'author' => $story['author'],
 			'date' => "");
 		if(array_key_exists('group_concat(distinct categoryName)', $story))
 			$list['categories'] = explode(",",$story['group_concat(distinct categoryName)']);
+		if($story['mediaId'] == 1)
+			$list['thumbnail'] = "http://api.digitaltmuseum.no/media?owner=H-DF&identifier=".$story['storyId']."&type=thumbnail&api.key=demo";
 		array_push($returnArray, $list);
 	}
 	print_r(json_encode($returnArray));
