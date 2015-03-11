@@ -312,7 +312,8 @@ class DbHelper {
 		$stmt2 = $this->db->prepare(
 			"SELECT story.storyId, title, author, introduction, mediaId
 			FROM story, story_media
-			WHERE story.storyId NOT IN (SELECT storyId FROM story_subcategory)");
+			WHERE story.storyId = story_media.storyId AND story.storyId NOT IN (SELECT storyId FROM story_subcategory)
+group by story.storyId");
 		$stmt2->execute();
 		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		$rows2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);
