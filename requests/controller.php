@@ -6,6 +6,7 @@ require_once(__DIR__."/../models/storyModel.php");
 require_once(__DIR__."/../models/userModel.php");
 require_once(__DIR__."/../database/dbHelper.php");
 header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
 header("Content-Type: application/json; charset=UTF-8");
 
 $db = new DbHelper();
