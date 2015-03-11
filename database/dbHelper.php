@@ -316,7 +316,6 @@ class DbHelper {
 		$stmt2->execute();
 		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		$rows2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);
-		print_r(array_merge($rows, $rows2));
 		return array_merge($rows, $rows2);
 	}
 	/* Get $selectColumns in $tableName based on $whereValues*/
