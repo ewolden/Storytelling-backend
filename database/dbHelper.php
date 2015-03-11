@@ -316,18 +316,41 @@ class DbHelper {
 		$stmt2->execute();
 		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		$rows2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+		print_r(array_merge($rows, $rows2));
 		return array_merge($rows, $rows2);
 	}
 	/* Get $selectColumns in $tableName based on $whereValues*/
-	function getAll($tableName, $selectColumns, $whereColumns, $whereValues){
+	function getAllSelected($tableName, $selectColumns, $whereColumns, $whereValues){
 		$values = array();
 		if (is_array($selectColumns)){
 			$selectColumns = implode(",", $selectColumns);
-			$values = $selectColumns;
 		}
-		else {
-			$values = array($selectColumns);
-		}
+		list($where, $values) = $this->getWhereStringAndValuesArray($whereColumns, $whereValues);
+		$query = "SELECT ".$selectColumns." FROM ".$tableName." WHERE ".$where."";
+		$stmt = $this->db->prepare($query);
+		$stmt->execute($values);
+		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		return($rows);
+	}
+	/*Get all stories a user has tagged with $tagName*/
+	function getStoryList($userId, $tagName){
+		$query = "SELECT s.storyId, title, author, introduction, date, us.tagName, 
+				group_concat(distinct categoryName), mediaId
+				FROM story as s, user_storytag as us, story_subcategory as ss, 
+				category_mapping as cm, category as c, story_media as sm
+				WHERE s.storyId = us.storyId
+				AND us.userId = ? AND us.tagName = ?
+				AND s.storyId = ss.storyId
+				AND ss.subcategoryId = cm.subcategoryId
+				AND cm.categoryId = c.categoryId
+				AND s.storyId = sm.storyId
+				GROUP BY s.storyId";
+		$stmt = $this->db->prepare($query);
+		$stmt->execute(array($userId, $tagName));
+		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		return($rows);
+	}
+	function getWhereStringAndValuesArray($whereColumns, $whereValues){
 		$whereString = "";
 		if (is_array($whereValues)){
 			if (is_array($whereColumns)){
@@ -350,39 +373,21 @@ class DbHelper {
 				$whereString .= ''.$whereColumns.'=? ';
 			}
 			$values = array($whereValues);
-		}		
-		$query = "SELECT ".$selectColumns." FROM ".$tableName." WHERE ".$whereString."";
+		}	
+		return array($whereString, $values);
+	}
+	/*Delete the rows in $tableName that match the where-clauses*/
+	function deleteFromTable($tableName, $whereColumns, $whereValues){
+		list($where, $values) = $this->getWhereStringAndValuesArray($whereColumns, $whereValues);
+		$query = "DELETE FROM ".$tableName." WHERE ".$where."";
 		$stmt = $this->db->prepare($query);
 		$stmt->execute($values);
-		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-		print_r($rows);
-		return($rows);
 	}
 	
-	function getStoryList($userId, $tagName){
-		$query = "SELECT s.storyId, title, author, date, institution, introduction 
-				  FROM story as s
-				  JOIN user_storytag as us ON s.storyId=us.storyId
-				  WHERE us.userId = ? AND us.tagName = ?";
-		$stmt = $this->db->prepare($query);
-		$stmt->execute(array($userId, $tagName));
-		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-		print_r($rows);
-		return($rows);
-	}
 
 }
 $db = new DbHelper();
-$db->insertUpdateAll('user_storytag', array(1, 'DF.1295', 'tes'));
-$db->getStoryList(1, 'test');
-$db->getAll('user_storytag', 'tagName', array('userId', 'storyId'), array(1, 'DF.1295'));
-//$db->getAll('user_storytag','*', array('userId', 'tagName'), array(1, 'test'));
-//$db->insertUpdateAll('user', array(null, null, null, null));
-//$db->insertUpdateAll('user_tag', array(2,'test3'));
-//$db->getAll('user_tag','tagName', array('userId'), array(2));
-//$db->fetchStory('DF.3963');
-//$db->insertUpdateAll('stored_story', array(1,'DF.3963', null,5,0,0)); //Testing updating of stored_story
-//$db->insertUpdateAll('user', array(34, null, 3, null, null)); //Testing updating of auto incremented table
-//$db->updateOneValue('user', 'age_group', 3, '24'); //Testing udating of one value in user table
-//$db->updateOneValue('subcategory', 'subcategoryName', 'arkitektur', array('1')); //Testing updating of one value in subcategory table
+//$db->insertUpdateAll('user_storytag', array(1, 'DF.1295', 'test'));
+//$db->deleteFromTable('user_storytag', array('userId', 'tagName'), array(1, 'test'));
+//$db->deleteFromTable('user_tag', array('userId', 'tagName'), array(1, 'test'));
 ?>

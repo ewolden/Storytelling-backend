@@ -141,6 +141,25 @@ angular.module('backend.services', ['ngSanitize'])
 			};
 			$http(req);
 		}
+		/*Remove tag from specific story/remove from list*/
+		removeTagStory: function (tagName, userId, storyId){
+			req.data = {
+				type: "removeTagStory",
+				userId: userId,
+				storyId: storyId,
+				tagName: tagName
+			};
+			$http(req);
+		}
+		/*Remove tag altogether from user, that is, remove the whole list*/
+		removeTag: function (userId, tagName){
+			req.data = {
+				type: "removeTag",
+				userId: userId,
+				tagName: tagName
+			};
+			$http(req);
+		}
 		/*Get all stories that a user has connected to tagName*/
 		getList: function (tagName, userId){
 			req.data = {
@@ -150,7 +169,7 @@ angular.module('backend.services', ['ngSanitize'])
 			};
 			return $http(req);
 		}
-		/*Get all list for a user*/
+		/*Get all lists for a user*/
 		getAllLists: function (userId){
 			req.data = {
 				type: "getAllLists",

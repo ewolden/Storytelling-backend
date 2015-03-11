@@ -63,18 +63,59 @@ if($type == "tagStory"){
 }
 /*Get all stories connected to a user and the tagName*/
 if($type == "getList"){
-	$returnArray = $db->getStoryList($request->userId, $request->tagName);
+	$data = $db->getStoryList($request->userId, $request->tagName);
+	$returnArray = array();
+	foreach($data as $story){
+		$list = array(
+			'id' => $story['storyId'],
+			'title' => $story['title'],
+			'description' => $story['introduction'],
+			'thumbnail' => "",
+			'categories' => "",
+			'author' => $story['author'],
+			'date' => "");
+		if(array_key_exists('group_concat(distinct categoryName)', $story))
+			$list['categories'] = explode(",",$story['group_concat(distinct categoryName)']);
+		if($story['mediaId'] == 1)
+			$list['thumbnail'] = "http://api.digitaltmuseum.no/media?owner=H-DF&identifier=".$story['storyId']."&type=thumbnail&api.key=demo";
+		array_push($returnArray, $list);
+	}
 	print_r(json_encode($returnArray));
 }
 /*Get all tags connected to a user*/
 if($type == "getAllLists"){
-	$returnArray = $db->getAll('user_tag', 'tagName', array('userId'), array($request->userId));
+	$data = $db->getAllSelected('user_tag', 'tagName', array('userId'), array($request->userId));
+	$returnArray = array();
+	foreach($data as $tag){
+		$list = array(
+			'text' => $tag['tagName'],
+			'checked' => ''
+		);
+		array_push($returnArray, $list);
+	}
 	print_r(json_encode($returnArray));
 }
-/*Get all tags connected to a story by a user*/
+/*Get all tags connected to a story for a user*/
 if($type == "getStoryTags"){
-	$returnArray = $db->getAll('user_storytag', 'tagName', array('userId', 'storyId'), array($request->userId, $request->storyId));
+	$data = $db->getAllSelected('user_storytag', 'tagName', array('userId', 'storyId'), array($request->userId, $request->storyId));
+	$returnArray = array();
+	foreach($data as $tag){
+		$list = array(
+			'text' => $tag['tagName'],
+			'checked' => true
+		);
+		array_push($returnArray, $list);
+	}
 	print_r(json_encode($returnArray));
+}
+/*Remove a tag connected to a story (remove from list)*/
+if($type == "removeTagStory"){
+	$db->deleteFromTable('user_storytag', array('userId', 'storyId', 'tagName'), array($request->userId, $request->storyId, $request->tagName));
+}
+/*Remove a tag (list) altogether for a user, both the connection to the user and for all stories connected to the tag*/
+if($type == "removeTag"){
+	$db->deleteFromTable('user_storytag', array('userId', 'tagName'), array($request->userId, $request->tagName));
+	$db->deleteFromTable('user_tag', array('userId', 'tagName'), array($request->userId, $request->tagName));
 }
 
 $db->close();
