@@ -47,6 +47,7 @@ class DbHelper {
             $response["message"] = 'Connection failed: ' . $e->getMessage();
             $response["data"] = null;
 			print_r($response);
+			print_r($e->getTraceAsString());
             exit;
         }
     }

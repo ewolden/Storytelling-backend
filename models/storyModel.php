@@ -17,7 +17,6 @@ class storyModel{
     private $subjectList;
     private $url;
 
-    //Constructor
     public function getFromDF($id)
     {
 
