@@ -141,6 +141,7 @@ INSERT INTO `state`(`stateName`) VALUES ('rejected');
 INSERT INTO `state`(`stateName`) VALUES ('to-be-read');
 INSERT INTO `state`(`stateName`) VALUES ('read');
 INSERT INTO `state`(`stateName`) VALUES ('rated');
+INSERT INTO `state`(`stateName`) VALUES ('not interested');
 
 #Every story that has been linked to a user by recommendation
 CREATE TABLE stored_story

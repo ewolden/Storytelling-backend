@@ -22,6 +22,8 @@ class DbHelper {
 			'user_tag' => array(2, false, 'userId', 'tagName'),
 			'user_storytag' => array(3,false,'userId', 'storyId', 'tagName'),
 			'stored_story' => array(2,false, 'userId', 'storyId', 'explanation', 'rating', 'false_recommend', 'type_of_recommendation'),
+			'story_state' => array(1,true, 'recordedStateId', 'storyId', 'userId', 'stateId'),
+			'user_usage' => array(1, true, 'usageId', 'userId')
 			);
 	private $categoryMapping = array(
 			/*The numbers 1-9 are the primary keys in the category table*/
@@ -384,7 +386,6 @@ group by story.storyId");
 		$stmt = $this->db->prepare($query);
 		$stmt->execute($values);
 	}
-	
 
 }
 $db = new DbHelper();

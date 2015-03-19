@@ -50,8 +50,16 @@ if($type == "addUser"){
 	$db->uptadeUserInfo($userModel);
 }
 
+/**Saves a users rating of a story. A story is only marked as read if the user rates the story,
+if user does not rate the story will be recommended later*/
 if($type == "rating"){
-	$db->updateOneValue('stored_story', 'rating', $request->rating, array($request->userId, $request->storyId));
+	if($request->rating > 0){
+		$db->updateOneValue('stored_story', 'rating', $request->rating, array($request->userId, $request->storyId));
+		$db->insertUpdateAll('story_state', array($request->storyId, $request->userId, 5));	
+	}else {
+		$db->insertUpdateAll('story_state', array($request->storyId, $request->userId, 6));
+	}
+	$db->insertUpdateAll('story_state', array($request->storyId, $request->userId, 4));
 }
 /*Add a new tag and connect it to the user, and the story*/
 if($type == "addNewTag"){
