@@ -17,6 +17,7 @@ $type = $request->type;
 if($type == "getStory"){
 	$storyModel = new storyModel();
 	$storyModel->getFromDF($request->storyId);
+	$db->insertUpdateAll('story_state', array($request->storyId, $request->userId, 4));
 	print_r (json_encode($storyModel->getAll()));
 }
 if($type == "getStories"){
@@ -59,7 +60,6 @@ if($type == "rating"){
 	}else {
 		$db->insertUpdateAll('story_state', array($request->storyId, $request->userId, 6));
 	}
-	$db->insertUpdateAll('story_state', array($request->storyId, $request->userId, 4));
 }
 /*Add a new tag and connect it to the user, and the story*/
 if($type == "addNewTag"){
