@@ -17,6 +17,7 @@ class storyModel{
     private $subjectList;
     private $url;
 
+    //Constructor
     public function getFromDF($id)
     {
 
@@ -43,10 +44,14 @@ class storyModel{
             preg_match('/\/\d{1,5}/',(string) $element->children('abm', TRUE)->imageUri,$match); //selects image ID from the URL
             $this->imageList[] = substr($match[0],1);
         }
-        //Create a list of all video URLs for the story
+        //Create a nested list of all video URLs with posters for the story
         foreach ($xml->children('abm', TRUE)->media as $element)
         {
-            $this->videoList[] = (string) $element->children('abm', TRUE)->videoUri;
+            $url = (string) $element->children('abm', TRUE)->videoUri;
+            parse_str(parse_url($url, PHP_URL_QUERY), $urlquery);
+            $this->videoList[] = array(
+                'videourl' => $url, 
+                'posterurl' => "http://mm01.dimu.no/image/".$urlquery['mmid']);
         }
         //Create a list of all audio URLs for the story
         foreach ($xml->children('abm', TRUE)->media as $element)
