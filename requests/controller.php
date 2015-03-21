@@ -17,6 +17,7 @@ $type = $request->type;
 if($type == "getStory"){
 	$storyModel = new storyModel();
 	$storyModel->getFromDF($request->storyId);
+	$storyModel->getFromDB();	//Should use $request->userId
 	$db->insertUpdateAll('story_state', array($request->storyId, $request->userId, 4));
 	print_r (json_encode($storyModel->getAll()));
 }
@@ -32,8 +33,8 @@ if($type == "getStories"){
 			'categories' => "",
 			'author' => $story['author'],
 			'date' => "");
-		if(array_key_exists('group_concat(distinct categoryName)', $story))
-			$list['categories'] = explode(",",$story['group_concat(distinct categoryName)']);
+		if(array_key_exists('categories', $story))
+			$list['categories'] = explode(",",$story['categories']);
 		if($story['mediaId'] == 1)
 			$list['thumbnail'] = "http://api.digitaltmuseum.no/media?owner=H-DF&identifier=".$story['storyId']."&type=thumbnail&api.key=demo";
 		array_push($returnArray, $list);
@@ -83,8 +84,8 @@ if($type == "getList"){
 			'categories' => "",
 			'author' => $story['author'],
 			'date' => "");
-		if(array_key_exists('group_concat(distinct categoryName)', $story))
-			$list['categories'] = explode(",",$story['group_concat(distinct categoryName)']);
+		if(array_key_exists('categories', $story))
+			$list['categories'] = explode(",",$story['categories']);
 		if($story['mediaId'] == 1)
 			$list['thumbnail'] = "http://api.digitaltmuseum.no/media?owner=H-DF&identifier=".$story['storyId']."&type=thumbnail&api.key=demo";
 		array_push($returnArray, $list);

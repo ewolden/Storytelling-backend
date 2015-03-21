@@ -282,28 +282,29 @@ class DbHelper {
     	}
     }
 
-    public function fetchStory($id){
-        $query ="SELECT * FROM Story WHERE storyId=?";
-        $stmt = $this->db->prepare($query);
-        $stmt->execute(array($id));    
-        $result = $stmt->fetchAll();
-        //print_r($result); //test
-        
-        foreach ($result as $row) {
-        	$newStory = new storyModel();
-        	$newStory->setStoryID($row['storyId']);
-            $newStory->setTitle($row['title']);
-            $newStory->setCreatorList($row['author']); 
-            $newStory->setInstitution($row['institution']);
-            $newStory->setIntroduction($row['introduction']); 
-            $newStory->getAll(); //test
-			//print_r($newStory->getAll());
-        }
+    /**Returns story information stored in database, should take userId as parameter*/
+    public function fetchStory($storyId){
+    	$category = $this->db->prepare(
+    		"SELECT group_concat(distinct categoryName) as categories
+    		FROM story as s, category_mapping as cm, story_subcategory as ss, subcategory as sc, category as c, story_media as sm
+    		WHERE sc.subcategoryId = cm.subcategoryId 
+    		AND c.categoryId = cm.categoryId
+    		AND ss.subcategoryId = sc.subcategoryId
+    		AND s.storyId = ss.storyId
+    		AND s.storyId = ?");
+    	//$storedStory = $this->db->prepare(
+    	//	"SELECT * FROM stored_story WHERE storyId = ? AND userId = ?");
+		$category->execute(array($storyId));
+		//$storedStory->execute(array($storyId, $userId));
+		$rows = $category->fetchAll(PDO::FETCH_ASSOC);
+		//$rows2 = $storedStory->fetchAll(PDO::FETCH_ASSOC);
+		//if(count($rows2) > 0) return array_merge($rows[0], $rows2[0]);
+		return $rows[0];
     }
 
     function getAllStories(){
 		$stmt = $this->db->prepare(
-			"SELECT story.storyId, title, author, introduction, group_concat(distinct categoryName), mediaId
+			"SELECT story.storyId, title, author, introduction, group_concat(distinct categoryName) as categories, mediaId
 			FROM story, category_mapping, story_subcategory, subcategory, category, story_media
 			WHERE subcategory.subcategoryId = category_mapping.subcategoryId 
 			AND category.categoryId = category_mapping.categoryId
@@ -338,7 +339,7 @@ group by story.storyId");
 	/*Get all stories a user has tagged with $tagName*/
 	function getStoryList($userId, $tagName){
 		$query = "SELECT s.storyId, title, author, introduction, date, us.tagName, 
-				group_concat(distinct categoryName), mediaId
+				group_concat(distinct categoryName) as categories, mediaId
 				FROM story as s, user_storytag as us, story_subcategory as ss, 
 				category_mapping as cm, category as c, story_media as sm
 				WHERE s.storyId = us.storyId

@@ -1,4 +1,5 @@
 <?php
+require_once(__DIR__."/../database/dbHelper.php");
 class storyModel{
     private $storyId;
     private $title;
@@ -16,6 +17,11 @@ class storyModel{
     private $subCategoryNames;
     private $subjectList;
     private $url;
+    private $categoryList;
+    private $rating;
+    private $explanation;
+    private $falseRecommend;
+    private $typeOfRecommendation;
 
     //Constructor
     public function getFromDF($id)
@@ -32,6 +38,7 @@ class storyModel{
         $this->municipality = (string) $xml->children('abm', TRUE)->municipality;
         $this->rights = (string) $xml->children('dc', TRUE)->rights;
         $this->institution = (string) $xml->children('europeana', TRUE)->dataProvider;
+        $this->url = "http://digitaltfortalt.no/things/thing/H-DF/".$this->storyId;
 
         //Create a list of all creators for the story
         foreach ($xml->children('dc', TRUE)->creator as $element)
@@ -71,6 +78,20 @@ class storyModel{
         {
             $this->subjectList[] = (string) $element;
         }
+    }
+
+    /**Gets story information stored in database, should take userId as parameter*/
+    public function getFromDB(){
+        $db = new DbHelper;
+        $data = $db->fetchStory($this->storyId);
+        $this->categoryList = explode(",", $data['categories']);
+        if(array_key_exists('rating', $data)){
+            $this->rating = $data['rating'];
+            $this->explanation = $data['explanation'];
+            $this->falseRecommend = $data['false_recommend'];
+            $this->typeOfRecommendation = $data['type_of_recommendation'];
+        }
+        $db->close();
     }
 
     //SETTERS
@@ -231,6 +252,12 @@ class storyModel{
     {
         return $this->subCategoryNames;
     }
+    public function getCategories(){
+        return $this->categoryList;
+    }
+    public function getRating(){
+        return $this->rating;
+    }
 
 
     public function getAll(){
@@ -247,9 +274,13 @@ class storyModel{
             'imageList' => $this->getImageList(),
             'videoList' => $this->getVideoList(), 
             'audioList' => $this->getAudioList(),
-            'subCategoryList' => $this->getsubCategoryList(),
             'subCategoryNames' => $this->getsubCategoryNames(),
-            'subjectList' => $this->getSubjectList());
+            'url' => $this->getUrl(),
+            'rating' => $this->getRating(),
+            'categoryList' => $this->getCategories(),
+            'typeOfRecommendation' => $this->typeOfRecommendation,
+            'explanation' => $this->explanation,
+            'falseRecommend' => $this->falseRecommend);
     }
 
     public function sendStory(){
