@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -18,18 +17,18 @@ import org.apache.mahout.cf.taste.impl.similarity.GenericItemSimilarity.ItemItem
 
 public class StoryCorrelations implements Collection<ItemItemSimilarity> {
 		
-	/*Testing values*/
-	private LinkedHashMap<Integer, ArrayList<Integer>> storyCategories = new LinkedHashMap<Integer, ArrayList<Integer>>();
-	/*The 9 0-1 values indicates whether the item(story) has the attribute(category) or not*/
-	private ArrayList<Integer> row1 = new ArrayList<Integer>(Arrays.asList(1,1,0,0,1,0,0,0,0));
-	private ArrayList<Integer> row2 = new ArrayList<Integer>(Arrays.asList(0,0,1,0,0,0,1,0,0));
-	private ArrayList<Integer> row3 = new ArrayList<Integer>(Arrays.asList(1,1,0,0,1,0,1,0,0));
-	private ArrayList<Integer> row4 = new ArrayList<Integer>(Arrays.asList(0,0,1,0,1,1,0,1,1));
-	private ArrayList<Integer> row5 = new ArrayList<Integer>(Arrays.asList(0,1,0,0,1,1,0,1,1));
-	private ArrayList<Integer> row6 = new ArrayList<Integer>(Arrays.asList(1,1,0,0,1,0,1,1,0));
-	private ArrayList<Integer> row7 = new ArrayList<Integer>(Arrays.asList(1,0,1,0,1,1,0,0,0));
-	private ArrayList<Integer> row8 = new ArrayList<Integer>(Arrays.asList(0,0,0,1,1,1,0,0,0));
-	private ArrayList<Integer> row9 = new ArrayList<Integer>(Arrays.asList(1,1,0,0,1,1,0,0,0));
+	/*Testing values
+	/*The first integer is the storyId, the 9 0-1 values indicates whether the item(story) has the attribute(category) or not*/
+	private ArrayList<Integer> row1 = new ArrayList<Integer>(Arrays.asList(15,1,1,0,0,1,0,0,0,0));
+	private ArrayList<Integer> row2 = new ArrayList<Integer>(Arrays.asList(13,0,0,1,0,0,0,1,0,0));
+	private ArrayList<Integer> row3 = new ArrayList<Integer>(Arrays.asList(12,1,1,0,0,1,0,1,0,0));
+	private ArrayList<Integer> row4 = new ArrayList<Integer>(Arrays.asList(11,0,0,1,0,1,1,0,1,1));
+	private ArrayList<Integer> row5 = new ArrayList<Integer>(Arrays.asList(14,0,1,0,0,1,1,0,1,1));
+	private ArrayList<Integer> row6 = new ArrayList<Integer>(Arrays.asList(43,1,1,0,0,1,0,1,1,0));
+	private ArrayList<Integer> row7 = new ArrayList<Integer>(Arrays.asList(24,1,0,1,0,1,1,0,0,0));
+	private ArrayList<Integer> row8 = new ArrayList<Integer>(Arrays.asList(65,0,0,0,1,1,1,0,0,0));
+	private ArrayList<Integer> row9 = new ArrayList<Integer>(Arrays.asList(34,1,1,0,0,1,1,0,0,0));
+	private ArrayList<ArrayList<Integer>> storyCategories = new ArrayList<ArrayList<Integer>>();	
 	
 	private Collection<ItemItemSimilarity> result = new ArrayList<ItemItemSimilarity>();
 	
@@ -39,24 +38,28 @@ public class StoryCorrelations implements Collection<ItemItemSimilarity> {
 	}
 
 	private void initialize() {
-		storyCategories.put(1, row1);
-		storyCategories.put(2, row2);
-		storyCategories.put(3, row3);
-		storyCategories.put(4, row4);
-		storyCategories.put(5, row5);
-		storyCategories.put(6, row6);
-		storyCategories.put(7, row7);
-		storyCategories.put(8, row8);
-		storyCategories.put(9, row9);
+		storyCategories.add(row1);
+		storyCategories.add(row2);
+		storyCategories.add(row3);
+		storyCategories.add(row4);
+		storyCategories.add(row5);
+		storyCategories.add(row6);
+		storyCategories.add(row7);
+		storyCategories.add(row8);
+		storyCategories.add(row9);
 	}
 
-	/*Computing the cosine similarities between all possible pairs of items (stories)*/
+	/*Computing the similarities between all possible pairs of items (stories)*/
 	public void compute() {
 		Collection<ItemItemSimilarity> list = new ArrayList<ItemItemSimilarity>();
-		for(int i=1; i<storyCategories.size(); i++){
-			for(int j=i+1; j<=storyCategories.size(); j++){
-				double value = computeCosineSimilarity(storyCategories.get(i), storyCategories.get(j));
-				list.add(new ItemItemSimilarity(i, j, value));
+		for(int i=0; i<storyCategories.size(); i++){
+			for(int j=i+1; j<storyCategories.size(); j++){
+				double cosine = computeCosineSimilarity(storyCategories.get(i), storyCategories.get(j));
+				//double euclid = computeEuclideanDistance(storyCategories.get(i), storyCategories.get(j));
+				//double jaccard = computeJaccardCoefficient(storyCategories.get(i), storyCategories.get(j));
+				int itemId1 = storyCategories.get(i).get(0);
+				int itemId2 = storyCategories.get(j).get(0);
+				list.add(new ItemItemSimilarity(itemId1, itemId2, cosine));
 			}
 			
 		}
@@ -66,21 +69,20 @@ public class StoryCorrelations implements Collection<ItemItemSimilarity> {
 	public Collection<ItemItemSimilarity> getResult(){
 		return result;
 	}
-	/* The actual cosine similarity computation
-	 * Cosine similarity is chosen pretty much at random, other methods exists and may be better*/
+	
 	private double computeCosineSimilarity(ArrayList<Integer> item1List,
-			ArrayList<Integer> item2list) {
+			ArrayList<Integer> item2List) {
 		double sum = 0;
 		double item1ListCount = 0;
 		double item2ListCount = 0;
-		for(int i=0; i<item1List.size(); i++){
+		for(int i=1; i<item1List.size(); i++){
 			if (item1List.get(i) == 1){
 				item1ListCount++;			
 			}
-			if (item2list.get(i) == 1){
+			if (item2List.get(i) == 1){
 				item2ListCount++;
 			}
-			if (item1List.get(i) == 1 && item2list.get(i) == 1){
+			if (item1List.get(i) == 1 && item2List.get(i) == 1){
 				sum++;
 			}
 		}
@@ -91,6 +93,43 @@ public class StoryCorrelations implements Collection<ItemItemSimilarity> {
 		return similarity;
 	}
 
+	private double computeEuclideanDistance(ArrayList<Integer> item1List, 
+			ArrayList<Integer> item2List){
+		double sim = 0;
+		double sum = 0;
+		for(int i=1; i<item1List.size(); i++){
+			sum += Math.pow(item1List.get(i)-item2List.get(i),2);
+		}		
+		sim = Math.sqrt(sum);
+		/*Return a normalized euclidean distance*/
+		return 1/(1+sim);
+	}
+	
+	private double computeJaccardCoefficient(ArrayList<Integer> item1List, 
+			ArrayList<Integer> item2List){
+		double coeff = 0;
+		double m11 = 0;
+		double m01 = 0;
+		double m10 = 0;
+		for(int i=0; i<item1List.size(); i++){
+			if (item1List.get(i)==1){
+				if (item2List.get(i)==1){
+					m11++;
+				}
+				else{
+					m10++;
+				}
+			}
+			else {
+				if(item2List.get(i)==1){
+					m01++;
+				}
+			}
+		}
+		coeff = m11/(m10+m01+m11);
+		return coeff;
+	}
+	
 	public void forEach(Consumer<? super ItemItemSimilarity> arg0) {
 		// TODO Auto-generated method stub
 		

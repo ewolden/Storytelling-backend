@@ -20,33 +20,46 @@ import org.apache.mahout.cf.taste.similarity.ItemSimilarity;
 user-story triples									|	story-categories matrix
 ---------------------------------------------------------------------------------------------
 (<userId>,<itemId(storyId)>,<preferenceValue>)      | 
-(1, 1, 0.8)											|	1	(1,1,0,0,1,0,0,0,0)
-(1, 2, 0.0)											|	2	(0,0,1,0,0,0,1,0,0)
-(1, 3, 0.3)											|	3	(1,1,0,0,1,0,1,0,0)
-(1, 4, 0.2)											|	4	(0,0,1,0,1,1,0,1,1)
-(1, 5, 0.4)											|	5	(0,1,0,0,1,1,0,1,1)
-(1, 6, 0.2)											|	6	(1,1,0,0,1,0,1,1,0)
-(1, 7, 0.0)											|	7	(1,0,1,0,1,1,0,0,0)
-(1, 8, 1.0)											|	8	(0,0,0,1,1,1,0,0,0)
-(1, 9, 0.0)											|	9   (1,1,0,0,1,1,0,0,0)
+(1, 15, 0.8)										|	15	(1,1,0,0,1,0,0,0,0)
+(1, 13, 0.0)										|	13	(0,0,1,0,0,0,1,0,0)
+(1, 12, 0.3)										|	12	(1,1,0,0,1,0,1,0,0)
+(1, 11, 0.2)										|	11	(0,0,1,0,1,1,0,1,1)
+(1, 14, 0.4)										|	14	(0,1,0,0,1,1,0,1,1)
+(1, 43, 0.2)										|	43	(1,1,0,0,1,0,1,1,0)
+(1, 24, 0.0)										|	24	(1,0,1,0,1,1,0,0,0)
+(1, 65, 1.0)										|	65	(0,0,0,1,1,1,0,0,0)
+(1, 34, 0.0)										|	34  (1,1,0,0,1,1,0,0,0)
 
  The preferenceValue is a measure on how well a certain story suits the user. Needs to be calculated for every story for a user
  and will be based on the user's category preferences, ratings, number of times recommended and so on, using weights.
  
- This test data produces the following recommendations:
+ This test data produces the following recommendations with different similarity measures:
 
-RecommendedItem[item:8, value:0.4215518]
-RecommendedItem[item:5, value:0.34887257]
-RecommendedItem[item:1, value:0.3478976]
-RecommendedItem[item:9, value:0.3466549]
-RecommendedItem[item:3, value:0.31633085]
-RecommendedItem[item:6, value:0.31077296]
-RecommendedItem[item:4, value:0.30006462]
-RecommendedItem[item:7, value:0.29899922]
-RecommendedItem[item:2, value:0.09940198]
+Cosine similarity:								|	Euclidean distance:
+												|
+RecommendedItem[item:65, value:0.4215518]		|	RecommendedItem[item:65, value:0.4443294]
+RecommendedItem[item:14, value:0.34887257]		|	RecommendedItem[item:15, value:0.38496244]
+RecommendedItem[item:15, value:0.3478976]		|	RecommendedItem[item:14, value:0.33824167]
+RecommendedItem[item:34, value:0.3466549]		|	RecommendedItem[item:12, value:0.32404113]
+RecommendedItem[item:12, value:0.31633085]		|	RecommendedItem[item:43, value:0.3050273]
+RecommendedItem[item:43, value:0.31077296]		|	RecommendedItem[item:11, value:0.2987439]
+RecommendedItem[item:11, value:0.30006462]		|	RecommendedItem[item:34, value:0.29107738]
+RecommendedItem[item:24, value:0.29899922]		|	RecommendedItem[item:24, value:0.26796514]
+RecommendedItem[item:13, value:0.09940198]		|	RecommendedItem[item:13, value:0.25658306]
 
-Which looks OK, I suppose. The numbers doesn't say much, the ranking is the important thing. If every preferencesValue is set to 1.0 
-all recommendation values will be 1 as well, so it seems like the maximum value is 1.0 and the minimum value is 0. 
+
+Jaccard coefficient:
+
+RecommendedItem[item:65, value:0.48336]
+RecommendedItem[item:15, value:0.3608324]
+RecommendedItem[item:14, value:0.34037268]
+RecommendedItem[item:34, value:0.33158708]
+RecommendedItem[item:12, value:0.32059234]
+RecommendedItem[item:43, value:0.30770108]
+RecommendedItem[item:11, value:0.28867924]
+RecommendedItem[item:24, value:0.2725327]
+RecommendedItem[item:13, value:0.073076926]
+
 
 TODO: Fetch data about user's preferences from database.
 TODO: Compute preferenceValues for all stories for a user by using weighting and other stuff.
