@@ -22,6 +22,7 @@ class storyModel{
     private $explanation;
     private $falseRecommend;
     private $typeOfRecommendation;
+	private $createdDate;
 
     //Constructor
     public function getFromDF($id)
@@ -39,6 +40,7 @@ class storyModel{
         $this->rights = (string) $xml->children('dc', TRUE)->rights;
         $this->institution = (string) $xml->children('europeana', TRUE)->dataProvider;
         $this->url = "http://digitaltfortalt.no/things/thing/H-DF/".$this->storyId;
+		$this->createdDate = (string) $xml->children('dcterms', TRUE)->created; 
 
         //Create a list of all creators for the story
         foreach ($xml->children('dc', TRUE)->creator as $element)
@@ -211,6 +213,10 @@ class storyModel{
         return $this->county;
     }
     
+	public function getDate(){
+		return $this->createdDate;
+	}
+	
     public function getRights()
     {
         return $this->rights;

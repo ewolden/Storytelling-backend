@@ -89,7 +89,7 @@ class DbHelper {
 	public function insertStory($story){
 		
 		/*Inserting story in story table*/
-		$values = array($story->getstoryId(),$story->gettitle(),$story->getCreatorList()[0],$story->getUrl(),$story->getInstitution(),$story->getIntroduction());
+		$values = array($story->getstoryId(),$story->gettitle(),$story->getCreatorList()[0],$story->getDate(),$story->getInstitution(),$story->getIntroduction());
 		$this->insertUpdateAll('story',$values);
 		
 		/*Inserting subcategories, connects them to the story and maps them to our categories*/
