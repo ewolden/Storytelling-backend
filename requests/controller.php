@@ -14,14 +14,17 @@ $postdata = file_get_contents("php://input");
 //$postdata = $_POST['data'];
 $request = json_decode($postdata);
 $type = $request->type;
-if($type == "getStory"){
+switch ($type) {
+
+	case("getStory"):
 	$storyModel = new storyModel();
 	$storyModel->getFromDF($request->storyId);
 	$storyModel->getFromDB();	//Should use $request->userId
 	$db->insertUpdateAll('story_state', array($request->storyId, $request->userId, 4));
 	print_r (json_encode($storyModel->getAll()));
-}
-if($type == "getStories"){
+	break;
+
+	case("getStories"):
 	$data = $db->getAllStories();
 	$returnArray = array();
 	foreach ($data as $story) {
@@ -40,8 +43,9 @@ if($type == "getStories"){
 		array_push($returnArray, $list);
 	}
 	print_r(json_encode($returnArray));
-}
-if($type == "addUser"){
+	break;
+
+	case("addUser"):
 	$userModel = new userModel();
 	$userModel->setUserId($request->userId);
 	$userModel->setMail($request->email);
@@ -50,29 +54,32 @@ if($type == "addUser"){
 	$userModel->setLocation($request->use_of_location);
 	$userModel->setCategoryPrefs($request->category_preference);
 	$db->uptadeUserInfo($userModel);
-}
+	break;
 
-/**Saves a users rating of a story. A story is only marked as read if the user rates the story,
-if user does not rate the story will be recommended later*/
-if($type == "rating"){
+	/**Saves a users rating of a story. A story is only marked as read if the user rates the story,
+	if user does not rate the story will be recommended later*/
+	case("rating"):
 	if($request->rating > 0){
 		$db->updateOneValue('stored_story', 'rating', $request->rating, array($request->userId, $request->storyId));
 		$db->insertUpdateAll('story_state', array($request->storyId, $request->userId, 5));	
 	}else {
 		$db->insertUpdateAll('story_state', array($request->storyId, $request->userId, 6));
 	}
-}
-/*Add a new tag and connect it to the user, and the story*/
-if($type == "addNewTag"){
+	break;
+
+	/*Add a new tag and connect it to the user, and the story*/
+	case("addNewTag"):
 	$db->insertUpdateAll('user_tag', array($request->userId, $request->tagName));
 	$db->insertUpdateAll('user_storytag', array($request->userId, $request->storyId, $request->tagName));
-}
-/*Tag a story*/
-if($type == "tagStory"){
+	break;
+
+	/*Tag a story*/
+	case("tagStory"):
 	$db->insertUpdateAll('user_storytag', array($request->userId, $request->storyId, $request->tagName));
-}
-/*Get all stories connected to a user and the tagName*/
-if($type == "getList"){
+	break;
+
+	/*Get all stories connected to a user and the tagName*/
+	case("getList"):
 	$data = $db->getStoryList($request->userId, $request->tagName);
 	$returnArray = array();
 	foreach($data as $story){
@@ -91,42 +98,47 @@ if($type == "getList"){
 		array_push($returnArray, $list);
 	}
 	print_r(json_encode($returnArray));
-}
-/*Get all tags connected to a user*/
-if($type == "getAllLists"){
+	break;
+
+	/*Get all tags connected to a user*/
+	case("getAllLists"):
 	$data = $db->getAllSelected('user_tag', 'tagName', array('userId'), array($request->userId));
 	$returnArray = array();
 	foreach($data as $tag){
 		$list = array(
 			'text' => $tag['tagName'],
 			'checked' => ''
-		);
+			);
 		array_push($returnArray, $list);
 	}
 	print_r(json_encode($returnArray));
-}
-/*Get all tags connected to a story for a user*/
-if($type == "getStoryTags"){
+	break;
+
+	/*Get all tags connected to a story for a user*/
+	case("getStoryTags"):
 	$data = $db->getAllSelected('user_storytag', 'tagName', array('userId', 'storyId'), array($request->userId, $request->storyId));
 	$returnArray = array();
 	foreach($data as $tag){
 		$list = array(
 			'text' => $tag['tagName'],
 			'checked' => true
-		);
+			);
 		array_push($returnArray, $list);
 	}
 	print_r(json_encode($returnArray));
-}
-/*Remove a tag connected to a story (remove from list)*/
-if($type == "removeTagStory"){
+	break;
+
+	/*Remove a tag connected to a story (remove from list)*/
+	case("removeTagStory"):
 	$db->deleteFromTable('user_storytag', array('userId', 'storyId', 'tagName'), array($request->userId, $request->storyId, $request->tagName));
-}
-/*Remove a tag (list) altogether for a user, both the connection to the user and for all stories connected to the tag*/
-if($type == "removeTag"){
+	break;
+
+	/*Remove a tag (list) altogether for a user, both the connection to the user and for all stories connected to the tag*/
+	case("removeTag"):
 	$db->deleteFromTable('user_storytag', array('userId', 'tagName'), array($request->userId, $request->tagName));
 	$db->deleteFromTable('user_tag', array('userId', 'tagName'), array($request->userId, $request->tagName));
-}
+	break;
 
+}
 $db->close();
 ?>
