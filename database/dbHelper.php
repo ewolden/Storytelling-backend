@@ -487,7 +487,7 @@ group by story.storyId");
 
 }
 $db = new DbHelper();
-$db->getUserCategories(1);
+//$db->getUserCategories(1);
 //print_r('Running');
 //$db->insertUpdateAll('category_preference', array(1,2));
 //$db->getMailFromId('5');
