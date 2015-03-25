@@ -45,7 +45,24 @@ switch ($type) {
 	print_r(json_encode($returnArray));
 	break;
 
+/** Recieves request from frotned, adds a new user to the database with autoincremented userId **/
 	case("addUser"):
+	$userModel = new userModel();
+	$userModel->setUserId(-1);
+	$userModel->setMail($request->email);
+	$userModel->setAgeGroup($request->age_group);
+	$userModel->setGender($request->gender);
+	$userModel->setLocation($request->use_of_location);
+	$userModel->setCategoryPrefs($request->category_preference);
+	if($db->uptadeUserInfo($userModel)){ /** User sucessfully added, returns returns sucess message and newly assigned userId **/
+		print_r(json_encode(array('status' => "sucessfull",'userId' => $db->uptadeUserInfo($userModel))));
+	}
+	else { /** User entered an email that is already in the DB, returns status failed **/
+		print_r(json_encode(array('status' => "failed")));
+	}
+	break;
+
+	case("updateUser"):
 	$userModel = new userModel();
 	$userModel->setUserId($request->userId);
 	$userModel->setMail($request->email);
@@ -54,6 +71,43 @@ switch ($type) {
 	$userModel->setLocation($request->use_of_location);
 	$userModel->setCategoryPrefs($request->category_preference);
 	$db->uptadeUserInfo($userModel);
+	
+	if($db->uptadeUserInfo($userModel)){/** User sucessfully updated, returns sucess message and userId **/
+		print_r(json_encode(array('status' => "sucessfull",'userId' => $db->uptadeUserInfo($userModel))));
+	}
+	else { /** User entered an email that is already in the DB, returns status failed **/
+		print_r(json_encode(array('status' => "failed")));
+	}
+	break;
+
+/** Invoked when frontend is trying to retrive a user instance using email as identifier **/
+	case("getUserFromEmail"):
+	$userFromDB = $db->getUserFromEmail($request->email);
+
+	$userModel = new userModel();
+	$userModel->setUserId($userFromDB[0]['userId']);
+	$userModel->setMail($userFromDB[0]['mail']);
+	$userModel->setAgeGroup($userFromDB[0]['age_group']);
+	$userModel->setGender($userFromDB[0]['gender']);
+	$userModel->setLocation($userFromDB[0]['use_of_location']);
+	if(array_key_exists('group_concat(distinct categoryName)', $userFromDB))
+			$userModel->setCategoryPrefs = explode(",",$userFromDB[1]['group_concat(distinct categoryName)']);
+	$userModel->json_print();
+	break;
+
+/** Invoked when frontend is trying to retrive a user instance using a userId as identifier **/
+	case("getUserFromId")
+	$userFromDB = $db->getUserFromId($request->userId);
+
+	$userModel = new userModel();
+	$userModel->setUserId($userFromDB[0]['userId']);
+	$userModel->setMail($userFromDB[0]['mail']);
+	$userModel->setAgeGroup($userFromDB[0]['age_group']);
+	$userModel->setGender($userFromDB[0]['gender']);
+	$userModel->setLocation($userFromDB[0]['use_of_location']);
+	if(array_key_exists('group_concat(distinct categoryName)', $userFromDB))
+			$userModel->setCategoryPrefs = explode(",",$userFromDB[1]['group_concat(distinct categoryName)']);
+	$userModel->json_print();
 	break;
 
 	/**Saves a users rating of a story. A story is only marked as read if the user rates the story,
