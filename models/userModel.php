@@ -63,7 +63,7 @@ class userModel{
 	//GETTERS
 	public function getUserId()
     {
-        return $this->storyId;
+        return $this->userId;
     }
     
 	public function getMail()

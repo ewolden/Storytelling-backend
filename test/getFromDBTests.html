@@ -1,0 +1,54 @@
+<?php
+require_once '../models/storyModel.php';
+require_once '../database/dbHelper.php';
+require_once '../models/userModel.php';
+class dbhelperTest extends PHPUnit_Framework_TestCase{
+
+	public $test;
+
+	public function setup(){
+		/*Connection to database*/
+		$this->db = New dbHelper();
+		
+		//SKRIV INN DET SOM PASSER TIL DIN LOKALE DB
+
+		/*Create a user that does not exist in the system. SHOULD BE TRUE*/
+		$this->newUser1 = New userModel('6', 'kjerstiii@gmail.com', '1', '1', '0');
+
+		/*Try to create a user with an existing email. SHOULD BE FALSE*/
+		$this->newUser2 = New userModel('7', 'kjersti@gmail.com', '1', '1', '0');
+
+		/*Update other fields in userprofile (user has a email registered in the system)*/
+		$this->updateuser1 = New userModel('1', 'kjersti@gmail.com', '0', '0', '0');
+
+		/*Update other fields in userprofile (user do not have a email registered)*/
+		$this->updateuser2 = New userModel('5', '-1' , '1', '1', '0');
+
+		/*Try to update userprofile with typing an already existing email*/
+		$this->updateuser3 = New userModel('1', 'kjerstiii@gmail.com', '0', '1', '0');
+		/**/
+
+
+	}
+	public function testUpdateUser(){
+		/*Create a user that does not exist in the system. SHOULD BE TRUE*/
+		$this->assertTrue($this->db->updateUserInfo($newUser1->getUserId()));
+
+		/*Try to create a user with an existing email. SHOULD BE FALSE*/
+		$this->assertFalse($this->db->updateUserInfo($newUser2->getUserId()));
+
+		/*Update other fields in userprofile (user has a email registered in the system)*/
+		$this->assertTrue($this->db->updateUserInfo($updateuser1->getUserId()));
+
+		/*Update other fields in userprofile (user do not have a email registered)*/
+		$this->assertTrue($this->db->updateUserInfo($updateuser2->getUserId()));
+
+		/*Try to update a user that type in a already existing email*/
+		$this->assertFalse($this->db->updateUserInfo($updateuser3->getUserId()));
+
+
+		/**/
+	}
+}
+?>
+		
