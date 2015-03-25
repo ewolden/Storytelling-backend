@@ -8,13 +8,23 @@ class userModel{
     private $category_preference; //list of categories preffered
 	
     //CONSTRUCTOR
-    function __construct($userId,$email,$age_group,$gender,$user_of_location,$category_preference){
+    function addUserValues($userId,$email,$age_group,$gender,$user_of_location,$category_preference){
         $this->userId = $userId;
         $this->email = $email;
         $this->age_group = $age_group;
         $this->gender = $gender;
         $this->user_of_location = $user_of_location;
         $this->category_preference = $category_preference;
+    }
+
+    function addFromDB($userFromDB){
+        $this->setUserId($userFromDB[0]['userId']);
+        $this->setMail($userFromDB[0]['mail']);
+        $this->setAgeGroup($userFromDB[0]['age_group']);
+        $this->setGender($userFromDB[0]['gender']);
+        $this->setLocation($userFromDB[0]['use_of_location']);
+        if(array_key_exists('categories', $userFromDB))
+            $userModel->setCategoryPrefs = explode(",",$userFromDB[1]['categories']);
     }
 
     //Print userModel as JSON

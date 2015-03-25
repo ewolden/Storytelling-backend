@@ -1,6 +1,6 @@
 <?php
 /**
-*Script that intercepts and interprets angular http requests and performe the desired action
+*Script that intercepts and interprets angular http requests and perform the desired action
 */
 require_once(__DIR__."/../models/storyModel.php");
 require_once(__DIR__."/../models/userModel.php");
@@ -24,7 +24,7 @@ switch ($type) {
 	print_r (json_encode($storyModel->getAll()));
 	break;
 
-	case "getStories" :
+	case "getStories":
 	$data = $db->getAllStories();
 	$returnArray = array();
 	foreach ($data as $story) {
@@ -48,12 +48,8 @@ switch ($type) {
 /** Recieves request from frotned, adds a new user to the database with autoincremented userId **/
 	case "addUser":
 	$userModel = new userModel();
-	$userModel->setUserId(-1);
-	$userModel->setMail($request->email);
-	$userModel->setAgeGroup($request->age_group);
-	$userModel->setGender($request->gender);
-	$userModel->setLocation($request->use_of_location);
-	$userModel->setCategoryPrefs($request->category_preference);
+	$userModel->addUserValues(-1, $request->email, $request->age_group, $request->gender,
+		$request->use_of_location, $request->category_preference);
 	if($db->uptadeUserInfo($userModel)){ /** User sucessfully added, returns returns sucess message and newly assigned userId **/
 		print_r(json_encode(array('status' => "sucessfull",'userId' => $db->uptadeUserInfo($userModel))));
 	}
@@ -63,17 +59,12 @@ switch ($type) {
 	break;
 
 	case "updateUser":
-	$userModel = new userModel();
-	$userModel->setUserId($request->userId);
-	$userModel->setMail($request->email);
-	$userModel->setAgeGroup($request->age_group);
-	$userModel->setGender($request->gender);
-	$userModel->setLocation($request->use_of_location);
-	$userModel->setCategoryPrefs($request->category_preference);
+	$userModel = new userModel();	
+	$userModel->addUserValues($request->userId, $request->email, $request->age_group, $request->gender,
+		$request->use_of_location, $request->category_preference);
 	$db->uptadeUserInfo($userModel);
-	
 	if($db->uptadeUserInfo($userModel)){/** User sucessfully updated, returns sucess message and userId **/
-		print_r(json_encode(array('status' => "sucessfull",'userId' => $db->uptadeUserInfo($userModel))));
+		print_r(json_encode(array('status' => "successfull",'userId' => $db->uptadeUserInfo($userModel))));
 	}
 	else { /** User entered an email that is already in the DB, returns status failed **/
 		print_r(json_encode(array('status' => "failed")));
@@ -85,13 +76,7 @@ switch ($type) {
 	$userFromDB = $db->getUserFromEmail($request->email);
 
 	$userModel = new userModel();
-	$userModel->setUserId($userFromDB[0]['userId']);
-	$userModel->setMail($userFromDB[0]['mail']);
-	$userModel->setAgeGroup($userFromDB[0]['age_group']);
-	$userModel->setGender($userFromDB[0]['gender']);
-	$userModel->setLocation($userFromDB[0]['use_of_location']);
-	if(array_key_exists('group_concat(distinct categoryName)', $userFromDB))
-			$userModel->setCategoryPrefs = explode(",",$userFromDB[1]['group_concat(distinct categoryName)']);
+	$userModel->addFromDB($userFromDB);
 	$userModel->json_print();
 	break;
 
@@ -100,13 +85,7 @@ switch ($type) {
 	$userFromDB = $db->getUserFromId($request->userId);
 
 	$userModel = new userModel();
-	$userModel->setUserId($userFromDB[0]['userId']);
-	$userModel->setMail($userFromDB[0]['mail']);
-	$userModel->setAgeGroup($userFromDB[0]['age_group']);
-	$userModel->setGender($userFromDB[0]['gender']);
-	$userModel->setLocation($userFromDB[0]['use_of_location']);
-	if(array_key_exists('group_concat(distinct categoryName)', $userFromDB))
-			$userModel->setCategoryPrefs = explode(",",$userFromDB[1]['group_concat(distinct categoryName)']);
+	$userModel->addFromDB($userFromDB);
 	$userModel->json_print();
 	break;
 
@@ -192,6 +171,8 @@ switch ($type) {
 	$db->deleteFromTable('user_storytag', array('userId', 'tagName'), array($request->userId, $request->tagName));
 	$db->deleteFromTable('user_tag', array('userId', 'tagName'), array($request->userId, $request->tagName));
 	break;
+
+	default: echo "Unknown type";
 
 }
 $db->close();

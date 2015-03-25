@@ -175,12 +175,7 @@ class DbHelper {
         $sql = "SELECT COUNT(*) from user WHERE mail = (:mail)";
         $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':mail', $user->getMail);
-		if( $stmt->execute()){
-			echo "Prepared statemtent was executed";
-		}else{
-			echo "Prepared statement was not executed";
-			echo $stmt->error;
-		}
+        $stmt->execute();
 
 		$numberOfEmailsFound = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -208,10 +203,7 @@ class DbHelper {
 				$userid=$user->getUserId();
 				//binding the parameters
 				$stmt->bindParam(':userid', $userid);
-        		if($stmt->execute()){
-				}else{					
-					echo $stmt->error;
-				}
+				$stmt->execute();
         		if(strcmp($stmt->fetch(PDO::FETCH_ASSOC)['mail'],$user->getMail())){ /** Compares DB mail to user mail. The user is trying to change something other than his email **/
         			$values = array($user->getUserId(),$user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
 				} 
@@ -238,11 +230,7 @@ class DbHelper {
     	$sql = "SELECT * from user where mail = (:usermail)";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindParam(':usermail',$email);
-        if($stmt->execute()){
-		}else{					
-		echo $stmt->error;
-		}
-
+        $stmt->execute();
 		$userrow = $stmt->fetch(PDO::FETCH_ASSOC);
 		return array($userrow, $this->getUserCategories($userrow['userId']));
     }
@@ -252,38 +240,25 @@ class DbHelper {
     	$sql = "SELECT * from user where userId = (:userid)";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindParam(':userid',$userId);
-        if($stmt->execute()){
-		}else{					
-		echo $stmt->error;
-		}
+		$stmt->execute();
 		$userrow = $stmt->fetch(PDO::FETCH_ASSOC);
 		return array($userrow, $this->getUserCategories($userrow['userId']));
     }
     public function getUserCategories($userId)
     {
-   		$sql = "SELECT group_concat(distinct categoryName) from category,category_preference where userId = (:userid) AND category.categoryId = category_preference.categoryId";
+   		$sql = "SELECT group_concat(distinct categoryName) as categories from category,category_preference where userId = (:userid) AND category.categoryId = category_preference.categoryId";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindParam(':userid',$userId);
-        if($stmt->execute()){
-        	echo 'SPørring ble utført';
-		}else{					
-			echo $stmt->error;
-		}
+		$stmt->execute();
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 		return $row;
-		echo $row;
     }
 
     function getMailFromId($userId){
     	$sql = "SELECT mail from user where userId = (:userid)";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindParam(':userid', $userId);
-        if($stmt->execute()){
-		}else{					
-			echo $stmt->error;
-		}
     	$row = $stmt->fetch(PDO::FETCH_ASSOC);
-    	print_r($row);
     	return $row;
     }
 
