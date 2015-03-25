@@ -164,24 +164,72 @@ class DbHelper {
 			}
 		}
 	}
-    public function uptadeUserInfo($user){
+
+	//TODO: handle changes in preferences
+	//TODO: Handle users not having inputed any email address
+	/** Adds or updates a user and chosen preferences to the database, does not allow duplicate email adresses in the DB, returns userId if user is added/changed, false if email exists**/
+    public function updateUserInfo($user){
         $values = array();
-        /*Inserting story in story table*/
-        if($user->getUserId() == -1){
-            $values = array($user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
-        } 
-        else{
-             $values = array($user->getUserId(),$user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
-        }
-        
+
+        /** Find if the email address that the user tries to add/change is in the DB **/
+		$stmt = $this->db->prepare("SELECT COUNT(*) from user WHERE mail =".$user->getMail);
+		$stmt->execute();
+		$numberOfEmailsFound = $stmt->fetch(PDO::FETCH_ASSOC);
+
+		if($numberOfEmailsFound == 0){ /** Checks if there are no users with that email address **/
+			if($user->getUserId() == -1){ /** User is creating a new user with unique email address **/
+				$values = array($user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
+			}
+			else { /** We are updating a user which have inputed a new unique email address **/
+				$values = array($user->getUserId(),$user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
+			}
+		} else{ /** There exists a user with the same email in the DB **/
+			if($user->getUserId() == -1){ /** User is trying to create a new user and assign an existing email **/
+				return false;
+			}
+			else{ /** User is either updating other fields or is chaning his email to an already chosen address **/
+				$stmt = $this->db->prepare("SELECT mail from user WHERE userId =".$user->userId);
+        		$stmt->execute();
+        		if(strcmp($stmt->fetch(PDO::FETCH_ASSOC)['mail'],$user->getMail())){ /** Compares DB mail to user mail. The user is trying to change something other than his email **/
+        			$values = array($user->getUserId(),$user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
+				} 
+				else{ /** The user is trying to change from an email that is in the DB, to a new different email that already exists in the DB */
+					return false;
+				}
+			}
+		}
         $this->insertUpdateAll('user',$values);
         $userId = $this->db->lastInsertId();
         /*Inserting category preferences*/
         foreach($user->getCategoryPrefs() as $category){
-        	print_r($userId ,$category);
             $this->insertUpdateAll('category_preference', array($userId,$category)); 
         }
-    }	
+        return $userId;
+    }
+
+    //TODO: Handle users not having inputed any email address
+    /** Returns a(1) userModel from the database based on email **/	
+    public function getUserFromEmail($email){
+    	$stmt = $this->db->prepare("SELECT * from user WHERE mail =".$user->getMail."");
+		$stmt->execute();
+		$userrow = $stmt->fetch(PDO::FETCH_ASSOC);
+		return($userrow, $this->getUserCategories($userrow['userId']));
+    }
+
+    /** Returns a(1) userModel from the database based on userId **/	
+    public function getUserFromId($userId){
+    	$stmt = $this->db->prepare("SELECT * from user WHERE userId =".$user->getUserId);
+		$stmt->execute();
+		$userrow = $stmt->fetch(PDO::FETCH_ASSOC);
+		return($userrow, $this->getUserCategories($userrow['userId']));
+    }
+    private function getUserCategories($userId)
+    {
+    	$stmt = $this->db->prepare("SELECT group_concat(distinct categoryName) from category,category_preference WHERE userId =".$userId." AND category.categoryId = category_preference.categoryId");
+		$stmt->execute();
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+		return $row;
+    }
 
 	function close(){
 		$this->db = null;
