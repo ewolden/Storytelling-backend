@@ -172,7 +172,9 @@ switch ($type) {
 	$db->deleteFromTable('user_tag', array('userId', 'tagName'), array($request->userId, $request->tagName));
 	break;
 
-	default: echo "Unknown type";
+	default: 
+	echo "Unknown type";
+	break;
 
 }
 $db->close();
