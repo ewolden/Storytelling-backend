@@ -10,7 +10,7 @@ class DbHelper {
 			* The first number is the number of primary keys in the table
 			* It is assumed that the primary key columns are placed first in the table
 			*/
-			'story' => array(1,false,'storyId','title','author','date','institution','introduction'),
+			'story' => array(1,false,'storyId','title','author','date','institution','introduction', 'lastChangedTime'),
 			'user' => array(1,true,'userId','mail','age_group','gender','use_of_location'),
 			'subcategory' => array(1,false,'subcategoryId','subcategoryName'),
 			'story_subcategory' => array(2,false,'storyId', 'subcategoryId'),
@@ -58,7 +58,7 @@ class DbHelper {
     * Retrieves story ID's from "digitalt fortalt" with digitaltmuseum.no's API 
 	* and add the stories to the database
     */
-    function addStoriesToDatabase(){
+    function addStoriesToDatabase($harvestTime){
         $startDoc = 0;
         $numberOfDocs = -1;
 
@@ -75,21 +75,50 @@ class DbHelper {
 				$stmt->execute(array(':storyId' => $id));
 				$storyModel = new storyModel();
 				$storyModel->getFromDF($id);
-				$this->insertStory($storyModel);
+				$this->insertStory($storyModel, $harvestTime);
             }
         }
+		$this->deleteNotUpdatedStories($harvestTime);
 		print_r('done harvesting');
     }
 
+	/*Remove the stories that are no longer there, according to the harvesting*/
+	public function deleteNotUpdatedStories($harvestTime){
+		$stories = $this->getAllSelected('story', array('storyId', 'lastChangedTime'), null, null);
+		foreach($stories as $story){
+			/*If the lastChangedTime was not updated to harvestTime, we must remove the story*/
+			if ($story['lastChangedTime'] !== $harvestTime ){
+				$this->deleteFromTable('story_dftags', 'storyId', $story['storyId']);
+				$this->deleteFromTable('story_media', 'storyId', $story['storyId']);
+				$subcategories = $this->getAllSelected('story_subcategory', 'subcategoryId', 'storyId',$story['storyId']);
+				$this->deleteFromTable('story_subcategory', 'storyId', $story['storyId']);
+				
+				/*Remove the whole subcategory and the mapping if this was
+				 the last story in this subcategory*/
+				if(!is_null($subcategories)){
+					foreach ($subcategories as $subcategory){
+						$numberOfStories = $this->getAllSelected('story_subcategory', 'storyId','subcategoryId', $subcategory['subcategoryId']);
+						/*Find the subcategories with zeros stories connected to them and remove them*/
+						if(is_null($numberOfStories)){
+							$this->deleteFromTable('category_mapping', 'subcategoryId', $subcategory['subcategoryId']);
+							$this->deleteFromTable('subcategory', 'subcategoryId', $subcategory['subcategoryId']);	
+						}					
+					}
+				}
+				$this->deleteFromTable('story', 'storyId', $story['storyId']);
+			}
+		}
+	}
+	
 	public function getConn(){
 		return $this->db;
 	}
 	
 	/*Inserting story in story table and related tables*/
-	public function insertStory($story){
+	public function insertStory($story, $harvestTime){
 		
 		/*Inserting story in story table*/
-		$values = array($story->getstoryId(),$story->gettitle(),$story->getCreatorList()[0],$story->getDate(),$story->getInstitution(),$story->getIntroduction());
+		$values = array($story->getstoryId(),$story->gettitle(),$story->getCreatorList()[0],$story->getDate(),$story->getInstitution(),$story->getIntroduction(), $harvestTime);
 		$this->insertUpdateAll('story',$values);
 		
 		/*Inserting subcategories, connects them to the story and maps them to our categories*/
@@ -329,12 +358,26 @@ group by story.storyId");
 		if (is_array($selectColumns)){
 			$selectColumns = implode(",", $selectColumns);
 		}
-		list($where, $values) = $this->getWhereStringAndValuesArray($whereColumns, $whereValues);
-		$query = "SELECT ".$selectColumns." FROM ".$tableName." WHERE ".$where."";
-		$stmt = $this->db->prepare($query);
-		$stmt->execute($values);
+		if(!is_null($whereValues)){
+			list($where, $values) = $this->getWhereStringAndValuesArray($whereColumns, $whereValues);
+			$query = "SELECT ".$selectColumns." FROM ".$tableName." WHERE ".$where."";
+			$stmt = $this->db->prepare($query);
+			$stmt->execute($values);
+		}
+		else{
+			$query = "SELECT ".$selectColumns." FROM ".$tableName."";
+			$stmt = $this->db->prepare($query);
+			$stmt->execute();
+		}
+		//$stmt = $this->db->prepare($query);
+		//$stmt->execute($values);
 		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-		return($rows);
+		if ($stmt->rowCount() > 0){
+			return($rows);
+		}
+		else {
+			return null;
+		}
 	}
 	/*Get all stories a user has tagged with $tagName*/
 	function getStoryList($userId, $tagName){

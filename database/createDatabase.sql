@@ -1,4 +1,4 @@
-CREATE TABLE user 
+﻿CREATE TABLE user 
 	(userId				INT			NOT NULL  AUTO_INCREMENT,
 	 mail				VARCHAR(255),
 	 age_group			TINYINT,
@@ -13,7 +13,8 @@ CREATE TABLE story
 	 author				VARCHAR(255),
 	 date				VARCHAR(255),
  	 institution			VARCHAR(255),
-	 introduction			TEXT,	
+	 introduction			TEXT,
+	 lastChangedTime		VARCHAR(255),	
 
 	PRIMARY KEY (storyId));
 
