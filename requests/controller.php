@@ -16,7 +16,7 @@ $request = json_decode($postdata);
 $type = $request->type;
 switch ($type) {
 
-	case("getStory"):
+	case "getStory":
 	$storyModel = new storyModel();
 	$storyModel->getFromDF($request->storyId);
 	$storyModel->getFromDB();	//Should use $request->userId
@@ -24,7 +24,7 @@ switch ($type) {
 	print_r (json_encode($storyModel->getAll()));
 	break;
 
-	case("getStories"):
+	case "getStories" :
 	$data = $db->getAllStories();
 	$returnArray = array();
 	foreach ($data as $story) {
@@ -46,7 +46,7 @@ switch ($type) {
 	break;
 
 /** Recieves request from frotned, adds a new user to the database with autoincremented userId **/
-	case("addUser"):
+	case "addUser":
 	$userModel = new userModel();
 	$userModel->setUserId(-1);
 	$userModel->setMail($request->email);
@@ -62,7 +62,7 @@ switch ($type) {
 	}
 	break;
 
-	case("updateUser"):
+	case "updateUser":
 	$userModel = new userModel();
 	$userModel->setUserId($request->userId);
 	$userModel->setMail($request->email);
@@ -81,7 +81,7 @@ switch ($type) {
 	break;
 
 /** Invoked when frontend is trying to retrive a user instance using email as identifier **/
-	case("getUserFromEmail"):
+	case "getUserFromEmail":
 	$userFromDB = $db->getUserFromEmail($request->email);
 
 	$userModel = new userModel();
@@ -96,7 +96,7 @@ switch ($type) {
 	break;
 
 /** Invoked when frontend is trying to retrive a user instance using a userId as identifier **/
-	case("getUserFromId")
+	case "getUserFromId":
 	$userFromDB = $db->getUserFromId($request->userId);
 
 	$userModel = new userModel();
@@ -112,7 +112,7 @@ switch ($type) {
 
 	/**Saves a users rating of a story. A story is only marked as read if the user rates the story,
 	if user does not rate the story will be recommended later*/
-	case("rating"):
+	case "rating":
 	if($request->rating > 0){
 		$db->updateOneValue('stored_story', 'rating', $request->rating, array($request->userId, $request->storyId));
 		$db->insertUpdateAll('story_state', array($request->storyId, $request->userId, 5));	
@@ -122,18 +122,18 @@ switch ($type) {
 	break;
 
 	/*Add a new tag and connect it to the user, and the story*/
-	case("addNewTag"):
+	case "addNewTag":
 	$db->insertUpdateAll('user_tag', array($request->userId, $request->tagName));
 	$db->insertUpdateAll('user_storytag', array($request->userId, $request->storyId, $request->tagName));
 	break;
 
 	/*Tag a story*/
-	case("tagStory"):
+	case "tagStory":
 	$db->insertUpdateAll('user_storytag', array($request->userId, $request->storyId, $request->tagName));
 	break;
 
 	/*Get all stories connected to a user and the tagName*/
-	case("getList"):
+	case "getList":
 	$data = $db->getStoryList($request->userId, $request->tagName);
 	$returnArray = array();
 	foreach($data as $story){
@@ -155,7 +155,7 @@ switch ($type) {
 	break;
 
 	/*Get all tags connected to a user*/
-	case("getAllLists"):
+	case "getAllLists":
 	$data = $db->getAllSelected('user_tag', 'tagName', array('userId'), array($request->userId));
 	$returnArray = array();
 	foreach($data as $tag){
@@ -169,7 +169,7 @@ switch ($type) {
 	break;
 
 	/*Get all tags connected to a story for a user*/
-	case("getStoryTags"):
+	case "getStoryTags":
 	$data = $db->getAllSelected('user_storytag', 'tagName', array('userId', 'storyId'), array($request->userId, $request->storyId));
 	$returnArray = array();
 	foreach($data as $tag){
@@ -183,12 +183,12 @@ switch ($type) {
 	break;
 
 	/*Remove a tag connected to a story (remove from list)*/
-	case("removeTagStory"):
+	case "removeTagStory":
 	$db->deleteFromTable('user_storytag', array('userId', 'storyId', 'tagName'), array($request->userId, $request->storyId, $request->tagName));
 	break;
 
 	/*Remove a tag (list) altogether for a user, both the connection to the user and for all stories connected to the tag*/
-	case("removeTag"):
+	case "removeTag":
 	$db->deleteFromTable('user_storytag', array('userId', 'tagName'), array($request->userId, $request->tagName));
 	$db->deleteFromTable('user_tag', array('userId', 'tagName'), array($request->userId, $request->tagName));
 	break;

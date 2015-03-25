@@ -1,6 +1,7 @@
 <?php
 require_once 'config.php'; // Database setting constants [DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD]
 require_once '../models/storyModel.php';
+require_once '../models/userModel.php';
 header('Content-type: text/plain; charset=utf-8');//Just to make it look nice in the browser
 class DbHelper {
 
@@ -48,6 +49,7 @@ class DbHelper {
             $response["status"] = "error";
             $response["message"] = 'Connection failed: ' . $e->getMessage();
             $response["data"] = null;
+            print_r("Connection failed\n");
 			print_r($response);
 			print_r($e->getTraceAsString());
             exit;
@@ -165,22 +167,34 @@ class DbHelper {
 		}
 	}
 
-	//TODO: handle changes in preferences
-	//TODO: Handle users not having inputed any email address
 	/** Adds or updates a user and chosen preferences to the database, does not allow duplicate email adresses in the DB, returns userId if user is added/changed, false if email exists**/
     public function updateUserInfo($user){
         $values = array();
 
         /** Find if the email address that the user tries to add/change is in the DB **/
-		$stmt = $this->db->prepare("SELECT COUNT(*) from user WHERE mail =".$user->getMail);
-		$stmt->execute();
+        $sql = "SELECT COUNT(*) from user WHERE mail = (:mail)";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':mail', $user->getMail);
+		if( $stmt->execute()){
+			echo "Prepared statemtent was executed";
+		}else{
+			echo "Prepared statement was not executed";
+			echo $stmt->error;
+		}
+
 		$numberOfEmailsFound = $stmt->fetch(PDO::FETCH_ASSOC);
 
 		if($numberOfEmailsFound == 0){ /** Checks if there are no users with that email address **/
 			if($user->getUserId() == -1){ /** User is creating a new user with unique email address **/
 				$values = array($user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
 			}
-			else { /** We are updating a user which have inputed a new unique email address **/
+			else if($user->getUserId() == -1 && $user->getMail() == -1){ /** Create user without email **/
+				$values = array(null,$user->getAgeGroup(),$user->getGender(),$user->getLocation());
+			}
+			else if($user->getUserId() != -1 && $user->getMail() == -1){ /**Update user who has not got an email registrated in db**/
+				$values = array($user->getUserId(),null,$user->getAgeGroup(),$user->getGender(),$user->getLocation());
+			}
+			else { /** We are updating a user who have inputed a new unique email address **/
 				$values = array($user->getUserId(),$user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
 			}
 		} else{ /** There exists a user with the same email in the DB **/
@@ -188,8 +202,16 @@ class DbHelper {
 				return false;
 			}
 			else{ /** User is either updating other fields or is chaning his email to an already chosen address **/
-				$stmt = $this->db->prepare("SELECT mail from user WHERE userId =".$user->userId);
-        		$stmt->execute();
+				$sql = "SELECT mail from user where userId = (:userid)";
+				$stmt = $this->db->prepare($sql);
+				//Setting the parameters
+				$userid=$user->getUserId();
+				//binding the parameters
+				$stmt->bindParam(':userid', $userid);
+        		if($stmt->execute()){
+				}else{					
+					echo $stmt->error;
+				}
         		if(strcmp($stmt->fetch(PDO::FETCH_ASSOC)['mail'],$user->getMail())){ /** Compares DB mail to user mail. The user is trying to change something other than his email **/
         			$values = array($user->getUserId(),$user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
 				} 
@@ -200,35 +222,69 @@ class DbHelper {
 		}
         $this->insertUpdateAll('user',$values);
         $userId = $this->db->lastInsertId();
-        /*Inserting category preferences*/
+
+        /*Deleting all existing category preferences*/
+        $this->deleteFromTable('category_preference', array('userId'), array($user->getUserId()));
+
+         /*Inserting category preferences*/
         foreach($user->getCategoryPrefs() as $category){
             $this->insertUpdateAll('category_preference', array($userId,$category)); 
         }
         return $userId;
     }
 
-    //TODO: Handle users not having inputed any email address
     /** Returns a(1) userModel from the database based on email **/	
     public function getUserFromEmail($email){
-    	$stmt = $this->db->prepare("SELECT * from user WHERE mail =".$user->getMail."");
-		$stmt->execute();
+    	$sql = "SELECT * from user where mail = (:usermail)";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindParam(':usermail',$email);
+        if($stmt->execute()){
+		}else{					
+		echo $stmt->error;
+		}
+
 		$userrow = $stmt->fetch(PDO::FETCH_ASSOC);
-		return($userrow, $this->getUserCategories($userrow['userId']));
+		return array($userrow, $this->getUserCategories($userrow['userId']));
     }
 
     /** Returns a(1) userModel from the database based on userId **/	
     public function getUserFromId($userId){
-    	$stmt = $this->db->prepare("SELECT * from user WHERE userId =".$user->getUserId);
-		$stmt->execute();
+    	$sql = "SELECT * from user where userId = (:userid)";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindParam(':userid',$userId);
+        if($stmt->execute()){
+		}else{					
+		echo $stmt->error;
+		}
 		$userrow = $stmt->fetch(PDO::FETCH_ASSOC);
-		return($userrow, $this->getUserCategories($userrow['userId']));
+		return array($userrow, $this->getUserCategories($userrow['userId']));
     }
-    private function getUserCategories($userId)
+    public function getUserCategories($userId)
     {
-    	$stmt = $this->db->prepare("SELECT group_concat(distinct categoryName) from category,category_preference WHERE userId =".$userId." AND category.categoryId = category_preference.categoryId");
-		$stmt->execute();
+   		$sql = "SELECT group_concat(distinct categoryName) from category,category_preference where userId = (:userid) AND category.categoryId = category_preference.categoryId";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindParam(':userid',$userId);
+        if($stmt->execute()){
+        	echo 'SPørring ble utført';
+		}else{					
+			echo $stmt->error;
+		}
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 		return $row;
+		echo $row;
+    }
+
+    function getMailFromId($userId){
+    	$sql = "SELECT mail from user where userId = (:userid)";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindParam(':userid', $userId);
+        if($stmt->execute()){
+		}else{					
+			echo $stmt->error;
+		}
+    	$row = $stmt->fetch(PDO::FETCH_ASSOC);
+    	print_r($row);
+    	return $row;
     }
 
 	function close(){
@@ -281,7 +337,6 @@ class DbHelper {
 			$whereString .= ''.$keyColumn.'=? ';
 			$values = array($updateValue, $keyValues);
 		}
-		
 		$query = 'UPDATE '.$tableName.' SET '.$insertColumn.'=? WHERE '.$whereString.'';
 		$stmt = $this->db->prepare($query);
 		$stmt->execute($values);
@@ -346,12 +401,9 @@ class DbHelper {
 			$duplicatePrimary = ''.$columnsArray[1].'='.$columnsArray[1].''; //Means that we are not updating anything
 			$query .= ''.$duplicatePrimary.''; 
 		}
-
         $stmt = $this->db->prepare($query);
-
         $stmt->execute($values);
     }
-
 
     public function fetchStories($id_array){
     	foreach($id_array as $id){
@@ -481,6 +533,13 @@ group by story.storyId");
 
 }
 $db = new DbHelper();
+//$db->getUserCategories(1);
+//print_r('Running');
+//$db->insertUpdateAll('category_preference', array(1,2));
+//$db->getMailFromId('5');
+//$newUser1 = New userModel('6', 'kjerstiii@gmail.com', '1', '1', '0');
+//$db->updateUserInfo($newUser1);
+
 //$db->insertUpdateAll('user_storytag', array(1, 'DF.1295', 'test'));
 //$db->deleteFromTable('user_storytag', array('userId', 'tagName'), array(1, 'test'));
 //$db->deleteFromTable('user_tag', array('userId', 'tagName'), array(1, 'test'));
