@@ -63,7 +63,7 @@ class DbHelper {
         $numberOfDocs = -1;
 
         while($startDoc < $numberOfDocs || $numberOfDocs == -1){
-            $obj = json_decode(file_get_contents(API_URL.'select?q=artifact.event.place:(s%C3%B8r-tr%C3%B8ndelag%20)&fq=(identifier.owner:H-DF)&start='.$startDoc.'&wt=json&api.key='.API_KEY));
+            $obj = json_decode(file_get_contents(API_URL.'select?q=artifact.event.place:(s%C3%B8r-tr%C3%B8ndelag%20OR%20nord-tr%C3%B8ndelag)&fq=(identifier.owner:H-DF)&start='.$startDoc.'&wt=json&api.key='.API_KEY));
             $numberOfDocs = $obj->response->numFound;
             foreach($obj->response->docs as $doc) {
                 $doc = get_object_vars($doc);
