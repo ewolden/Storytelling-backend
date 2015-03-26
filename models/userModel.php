@@ -18,25 +18,25 @@ class userModel{
     }
 
     function addFromDB($userFromDB){
-        $this->setUserId($userFromDB[0]['userId']);
-        $this->setMail($userFromDB[0]['mail']);
-        $this->setAgeGroup($userFromDB[0]['age_group']);
-        $this->setGender($userFromDB[0]['gender']);
-        $this->setLocation($userFromDB[0]['use_of_location']);
-        if(array_key_exists('categories', $userFromDB))
-            $userModel->setCategoryPrefs = explode(",",$userFromDB[1]['categories']);
+        $this->setUserId($userFromDB[1]['userId']);
+        $this->setMail($userFromDB[1]['mail']);
+        $this->setAgeGroup($userFromDB[1]['age_group']);
+        $this->setGender($userFromDB[1]['gender']);
+        $this->setLocation($userFromDB[1]['use_of_location']);
+        if(array_key_exists('categories', $userFromDB[2]))
+            $this->setCategoryPrefs(explode(",",$userFromDB[2]['categories']));
     }
 
-    //Print userModel as JSON
-    public function json_print(){
-        print_r(json_encode(array(
+    //Print userModel as array for exporting
+    public function printAll(){
+        return array(
             'userId' => $this->getUserId(),
             'email' => $this->getMail(),
             'age_group' => $this->getAgeGroup(),
             'gender' => $this->getGender(),
             'user_of_location' => $this->getLocation(),
             'category_preference' => $this->getCategoryPrefs()
-            )));
+            );
     }
 
 	//SETTERS

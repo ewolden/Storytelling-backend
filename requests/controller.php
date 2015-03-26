@@ -50,8 +50,9 @@ switch ($type) {
 	$userModel = new userModel();
 	$userModel->addUserValues(-1, $request->email, $request->age_group, $request->gender,
 		$request->use_of_location, $request->category_preference);
-	if($db->uptadeUserInfo($userModel)){ /** User sucessfully added, returns returns sucess message and newly assigned userId **/
-		print_r(json_encode(array('status' => "sucessfull",'userId' => $db->uptadeUserInfo($userModel))));
+	$userId = $db->updateUserInfo($userModel);
+	if($userId){ /** User sucessfully added, returns returns sucess message and newly assigned userId **/
+		print_r(json_encode(array('status' => "sucessfull",'userId' => $userId)));
 	}
 	else { /** User entered an email that is already in the DB, returns status failed **/
 		print_r(json_encode(array('status' => "failed")));
@@ -62,9 +63,9 @@ switch ($type) {
 	$userModel = new userModel();	
 	$userModel->addUserValues($request->userId, $request->email, $request->age_group, $request->gender,
 		$request->use_of_location, $request->category_preference);
-	$db->uptadeUserInfo($userModel);
-	if($db->uptadeUserInfo($userModel)){/** User sucessfully updated, returns sucess message and userId **/
-		print_r(json_encode(array('status' => "successfull",'userId' => $db->uptadeUserInfo($userModel))));
+	$userId = $db->updateUserInfo($userModel);
+	if($userId){/** User sucessfully updated, returns sucess message and userId **/
+		print_r(json_encode(array('status' => "successfull",'userId' => $userId)));
 	}
 	else { /** User entered an email that is already in the DB, returns status failed **/
 		print_r(json_encode(array('status' => "failed")));
@@ -74,19 +75,27 @@ switch ($type) {
 /** Invoked when frontend is trying to retrive a user instance using email as identifier **/
 	case "getUserFromEmail":
 	$userFromDB = $db->getUserFromEmail($request->email);
-
-	$userModel = new userModel();
-	$userModel->addFromDB($userFromDB);
-	$userModel->json_print();
+	if($userFromDB[0]) { /** user exists returning status successfull and user instance **/
+		$userModel = new userModel();
+		$userModel->addFromDB($userFromDB);
+		print_r(json_encode(array('status' => "successfull", 'userModel' => $userModel->printAll())));
+	}
+	else { /** user does not exist, returning status failed**/
+		print_r(json_encode(array('status' => "failed")));
+	}
 	break;
 
 /** Invoked when frontend is trying to retrive a user instance using a userId as identifier **/
 	case "getUserFromId":
 	$userFromDB = $db->getUserFromId($request->userId);
-
-	$userModel = new userModel();
-	$userModel->addFromDB($userFromDB);
-	$userModel->json_print();
+	if($userFromDB[0]) { /** user exists returning status successfull and user instance **/
+		$userModel = new userModel();
+		$userModel->addFromDB($userFromDB);
+		print_r(json_encode(array('status' => "successfull", 'userModel' => $userModel->printAll())));
+	}
+	else { /** user does not exist, returning status failed**/
+		print_r(json_encode(array('status' => "failed")));
+	}
 	break;
 
 	/**Saves a users rating of a story. A story is only marked as read if the user rates the story,

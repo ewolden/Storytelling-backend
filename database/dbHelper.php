@@ -170,16 +170,14 @@ class DbHelper {
 	/** Adds or updates a user and chosen preferences to the database, does not allow duplicate email adresses in the DB, returns userId if user is added/changed, false if email exists**/
     public function updateUserInfo($user){
         $values = array();
-
         /** Find if the email address that the user tries to add/change is in the DB **/
-        $sql = "SELECT COUNT(*) from user WHERE mail = (:mail)";
+        $sql = "SELECT COUNT(*) as count from user WHERE mail = (:mail)";
         $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':mail', $user->getMail);
+        $stmt->bindParam(':mail', $user->getMail());
         $stmt->execute();
-
+		
 		$numberOfEmailsFound = $stmt->fetch(PDO::FETCH_ASSOC);
-
-		if($numberOfEmailsFound == 0){ /** Checks if there are no users with that email address **/
+		if($numberOfEmailsFound['count'] == 0){ /** Checks if there are no users with that email address **/
 			if($user->getUserId() == -1 && $user->getMail() == -1){ /** Create user without email **/
 				$values = array(null,$user->getAgeGroup(),$user->getGender(),$user->getLocation());
 			}
@@ -204,7 +202,7 @@ class DbHelper {
 				//binding the parameters
 				$stmt->bindParam(':userid', $userid);
 				$stmt->execute();
-        		if(strcmp($stmt->fetch(PDO::FETCH_ASSOC)['mail'],$user->getMail())){ /** Compares DB mail to user mail. The user is trying to change something other than his email **/
+        		if(strcmp($stmt->fetch(PDO::FETCH_ASSOC)['mail'],$user->getMail()) == 0){ /** Compares DB mail to user mail. The user is trying to change something other than his email **/
         			$values = array($user->getUserId(),$user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
 				} 
 				else{ /** The user is trying to change from an email that is in the DB, to a new different email that already exists in the DB */
@@ -231,9 +229,15 @@ class DbHelper {
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindParam(':usermail',$email);
         $stmt->execute();
-		$userrow = $stmt->fetch(PDO::FETCH_ASSOC);
-		return array($userrow, $this->getUserCategories($userrow['userId']));
-    }
+        $userrow = $stmt->fetchAll();
+        if(count($userrow) > 0){ /** User with the inputed email exists **/
+			return array(true,$userrow[0], $this->getUserCategories($userrow[0]['userId']));
+    	}
+    	else { /** User with the inputed email cannot be found **/
+    		return array(false);
+    	}
+	}
+
 
     /** Returns a(1) userModel from the database based on userId **/	
     public function getUserFromId($userId){
@@ -241,8 +245,13 @@ class DbHelper {
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindParam(':userid',$userId);
 		$stmt->execute();
-		$userrow = $stmt->fetch(PDO::FETCH_ASSOC);
-		return array($userrow, $this->getUserCategories($userrow['userId']));
+        $userrow = $stmt->fetchAll();
+        if(count($userrow) > 0){ /** User with the inputed email exists **/
+			return array(true,$userrow[0], $this->getUserCategories($userrow[0]['userId']));
+    	}
+    	else { /** User with the inputed email cannot be found **/
+    		return array(false);
+    	}
     }
     public function getUserCategories($userId)
     {
@@ -507,7 +516,6 @@ group by story.storyId");
 	}
 
 }
-$db = new DbHelper();
 //$db->getUserCategories(1);
 //print_r('Running');
 //$db->insertUpdateAll('category_preference', array(1,2));
