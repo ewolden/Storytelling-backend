@@ -180,11 +180,11 @@ class DbHelper {
 		$numberOfEmailsFound = $stmt->fetch(PDO::FETCH_ASSOC);
 
 		if($numberOfEmailsFound == 0){ /** Checks if there are no users with that email address **/
-			if($user->getUserId() == -1){ /** User is creating a new user with unique email address **/
-				$values = array($user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
-			}
-			else if($user->getUserId() == -1 && $user->getMail() == -1){ /** Create user without email **/
+			if($user->getUserId() == -1 && $user->getMail() == -1){ /** Create user without email **/
 				$values = array(null,$user->getAgeGroup(),$user->getGender(),$user->getLocation());
+			}
+			else if($user->getUserId() == -1){ /** User is creating a new user with unique email address **/
+				$values = array($user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
 			}
 			else if($user->getUserId() != -1 && $user->getMail() == -1){ /**Update user who has not got an email registrated in db**/
 				$values = array($user->getUserId(),null,$user->getAgeGroup(),$user->getGender(),$user->getLocation());
