@@ -8,7 +8,7 @@ class userModel{
     private $category_preference; //list of categories preffered
 	
     //CONSTRUCTOR
-    function __construct($userId,$email,$age_group,$gender,$user_of_location,$category_preference){
+    function addUserValues($userId,$email,$age_group,$gender,$user_of_location,$category_preference){
         $this->userId = $userId;
         $this->email = $email;
         $this->age_group = $age_group;
@@ -17,16 +17,26 @@ class userModel{
         $this->category_preference = $category_preference;
     }
 
-    //Print userModel as JSON
-    public function json_print(){
-        print_r(json_encode(array(
+    function addFromDB($userFromDB){
+        $this->setUserId($userFromDB[1]['userId']);
+        $this->setMail($userFromDB[1]['mail']);
+        $this->setAgeGroup($userFromDB[1]['age_group']);
+        $this->setGender($userFromDB[1]['gender']);
+        $this->setLocation($userFromDB[1]['use_of_location']);
+        if(array_key_exists('categories', $userFromDB[2]))
+            $this->setCategoryPrefs(explode(",",$userFromDB[2]['categories']));
+    }
+
+    //Print userModel as array for exporting
+    public function printAll(){
+        return array(
             'userId' => $this->getUserId(),
             'email' => $this->getMail(),
             'age_group' => $this->getAgeGroup(),
             'gender' => $this->getGender(),
             'user_of_location' => $this->getLocation(),
             'category_preference' => $this->getCategoryPrefs()
-            )));
+            );
     }
 
 	//SETTERS
