@@ -168,12 +168,13 @@ class DbHelper {
 	}
 
 	/** Adds or updates a user and chosen preferences to the database, does not allow duplicate email adresses in the DB, returns userId if user is added/changed, false if email exists**/
-    public function updateUserInfo($user){
+     public function updateUserInfo($user){
         $values = array();
         /** Find if the email address that the user tries to add/change is in the DB **/
         $sql = "SELECT COUNT(*) as count from user WHERE mail = (:mail)";
         $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':mail', $user->getMail());
+		$mail = $user->getMail();
+        $stmt->bindParam(':mail', $mail);
         $stmt->execute();
 		
 		$numberOfEmailsFound = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -217,9 +218,11 @@ class DbHelper {
         $this->deleteFromTable('category_preference', array('userId'), array($user->getUserId()));
 
          /*Inserting category preferences*/
-        foreach($user->getCategoryPrefs() as $category){
-            $this->insertUpdateAll('category_preference', array($userId,$category)); 
-        }
+		if(!is_null($user->getCategoryPrefs())){
+			foreach($user->getCategoryPrefs() as $category){
+				$this->insertUpdateAll('category_preference', array($userId,$category)); 
+			}
+		}
         return $userId;
     }
 
