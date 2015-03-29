@@ -4,14 +4,14 @@
 Harvests stories from Digitalt fortalt.
 Remember to set constants in the config.php - file
 */
-require_once 'dbHelper.php';
+require_once 'dbStory.php';
 
-$db = new dbHelper();
+$dbStory = new dbStory();
 
 $harvestTime = date('m/d/Y h:i:s');
 
-$db->addStoriesToDatabase($harvestTime);
+$dbStory->addStoriesToDatabase($harvestTime);
 
-$db->close();
+$dbStory->close();
 
 ?>

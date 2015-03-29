@@ -4,12 +4,14 @@
 */
 require_once(__DIR__."/../models/storyModel.php");
 require_once(__DIR__."/../models/userModel.php");
-require_once(__DIR__."/../database/dbHelper.php");
+require_once(__DIR__."/../database/dbUser.php");
+require_once(__DIR__."/../database/dbStory.php");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
 header("Content-Type: application/json; charset=UTF-8");
 
-$db = new DbHelper();
+$dbUser = new dbUser();
+$dbStory = new dbStory();
 $postdata = file_get_contents("php://input");
 //$postdata = $_POST['data'];
 $request = json_decode($postdata);
@@ -20,12 +22,12 @@ switch ($type) {
 	$storyModel = new storyModel();
 	$storyModel->getFromDF($request->storyId);
 	$storyModel->getFromDB();	//Should use $request->userId
-	$db->insertUpdateAll('story_state', array($request->storyId, $request->userId, 4));
+	$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 4));
 	print_r (json_encode($storyModel->getAll()));
 	break;
 
 	case "getStories":
-	$data = $db->getAllStories();
+	$data = $dbStory->getAllStories();
 	$returnArray = array();
 	foreach ($data as $story) {
 		$list = array(
@@ -50,7 +52,7 @@ switch ($type) {
 	$userModel = new userModel();
 	$userModel->addUserValues(-1, $request->email, $request->age_group, $request->gender,
 		$request->use_of_location, $request->category_preference);
-	$userId = $db->updateUserInfo($userModel);
+	$userId = $dbUser->updateUserInfo($userModel);
 	if($userId){ /** User sucessfully added, returns returns sucess message and newly assigned userId **/
 		print_r(json_encode(array('status' => "sucessfull",'userId' => $userId)));
 	}
@@ -63,7 +65,7 @@ switch ($type) {
 	$userModel = new userModel();	
 	$userModel->addUserValues($request->userId, $request->email, $request->age_group, $request->gender,
 		$request->use_of_location, $request->category_preference);
-	$userId = $db->updateUserInfo($userModel);
+	$userId = $dbUser->updateUserInfo($userModel);
 	if($userId){/** User sucessfully updated, returns sucess message and userId **/
 		print_r(json_encode(array('status' => "successfull",'userId' => $userId)));
 	}
@@ -74,7 +76,7 @@ switch ($type) {
 
 /** Invoked when frontend is trying to retrive a user instance using email as identifier **/
 	case "getUserFromEmail":
-	$userFromDB = $db->getUserFromEmail($request->email);
+	$userFromDB = $dbUser->getUserFromEmail($request->email);
 	if($userFromDB[0]) { /** user exists returning status successfull and user instance **/
 		$userModel = new userModel();
 		$userModel->addFromDB($userFromDB);
@@ -87,7 +89,7 @@ switch ($type) {
 
 /** Invoked when frontend is trying to retrive a user instance using a userId as identifier **/
 	case "getUserFromId":
-	$userFromDB = $db->getUserFromId($request->userId);
+	$userFromDB = $dbUser->getUserFromId($request->userId);
 	if($userFromDB[0]) { /** user exists returning status successfull and user instance **/
 		$userModel = new userModel();
 		$userModel->addFromDB($userFromDB);
@@ -102,27 +104,27 @@ switch ($type) {
 	if user does not rate the story will be recommended later*/
 	case "rating":
 	if($request->rating > 0){
-		$db->updateOneValue('stored_story', 'rating', $request->rating, array($request->userId, $request->storyId));
-		$db->insertUpdateAll('story_state', array($request->storyId, $request->userId, 5));	
+		$dbStory->updateOneValue('stored_story', 'rating', $request->rating, array($request->userId, $request->storyId));
+		$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 5));	
 	}else {
-		$db->insertUpdateAll('story_state', array($request->storyId, $request->userId, 6));
+		$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 6));
 	}
 	break;
 
 	/*Add a new tag and connect it to the user, and the story*/
 	case "addNewTag":
-	$db->insertUpdateAll('user_tag', array($request->userId, $request->tagName));
-	$db->insertUpdateAll('user_storytag', array($request->userId, $request->storyId, $request->tagName));
+	$dbUser->insertUpdateAll('user_tag', array($request->userId, $request->tagName));
+	$dbUser->insertUpdateAll('user_storytag', array($request->userId, $request->storyId, $request->tagName));
 	break;
 
 	/*Tag a story*/
 	case "tagStory":
-	$db->insertUpdateAll('user_storytag', array($request->userId, $request->storyId, $request->tagName));
+	$dbUser->insertUpdateAll('user_storytag', array($request->userId, $request->storyId, $request->tagName));
 	break;
 
 	/*Get all stories connected to a user and the tagName*/
 	case "getList":
-	$data = $db->getStoryList($request->userId, $request->tagName);
+	$data = $dbStory->getStoryList($request->userId, $request->tagName);
 	$returnArray = array();
 	foreach($data as $story){
 		$list = array(
@@ -144,7 +146,7 @@ switch ($type) {
 
 	/*Get all tags connected to a user*/
 	case "getAllLists":
-	$data = $db->getAllSelected('user_tag', 'tagName', array('userId'), array($request->userId));
+	$data = $dbUser->getSelected('user_tag', 'tagName', array('userId'), array($request->userId));
 	$returnArray = array();
 	foreach($data as $tag){
 		$list = array(
@@ -158,7 +160,7 @@ switch ($type) {
 
 	/*Get all tags connected to a story for a user*/
 	case "getStoryTags":
-	$data = $db->getAllSelected('user_storytag', 'tagName', array('userId', 'storyId'), array($request->userId, $request->storyId));
+	$data = $dbUser->getSelected('user_storytag', 'tagName', array('userId', 'storyId'), array($request->userId, $request->storyId));
 	$returnArray = array();
 	foreach($data as $tag){
 		$list = array(
@@ -172,13 +174,13 @@ switch ($type) {
 
 	/*Remove a tag connected to a story (remove from list)*/
 	case "removeTagStory":
-	$db->deleteFromTable('user_storytag', array('userId', 'storyId', 'tagName'), array($request->userId, $request->storyId, $request->tagName));
+	$dbUser->deleteFromTable('user_storytag', array('userId', 'storyId', 'tagName'), array($request->userId, $request->storyId, $request->tagName));
 	break;
 
 	/*Remove a tag (list) altogether for a user, both the connection to the user and for all stories connected to the tag*/
 	case "removeTag":
-	$db->deleteFromTable('user_storytag', array('userId', 'tagName'), array($request->userId, $request->tagName));
-	$db->deleteFromTable('user_tag', array('userId', 'tagName'), array($request->userId, $request->tagName));
+	$dbUser->deleteFromTable('user_storytag', array('userId', 'tagName'), array($request->userId, $request->tagName));
+	$dbUser->deleteFromTable('user_tag', array('userId', 'tagName'), array($request->userId, $request->tagName));
 	break;
 
 	default: 
@@ -186,5 +188,6 @@ switch ($type) {
 	break;
 
 }
-$db->close();
+$dbUser->close();
+$dbStory->close();
 ?>
