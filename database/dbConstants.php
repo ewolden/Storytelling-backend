@@ -1,7 +1,7 @@
 <?php
 
 /**
-This class define the tables in our database, and the mapping between categories and subcategories.
+* This class define the tables in our database, and the mapping between categories and subcategories.
 */
 
 class dbConstants {
@@ -11,7 +11,7 @@ class dbConstants {
 	* It is assumed that the primary key columns are placed first in the table
 	*/
 	protected $tableColumns = array(
-			'story' => array(1,false,'storyId','title','author','date','institution','introduction', 'lastChangedTime'),
+			'story' => array(1,false,'storyId','numericalId','title','author','date','institution','introduction', 'lastChangedTime'),
 			'user' => array(1,true,'userId','mail','age_group','gender','use_of_location'),
 			'subcategory' => array(1,false,'subcategoryId','subcategoryName'),
 			'story_subcategory' => array(2,false,'storyId', 'subcategoryId'),

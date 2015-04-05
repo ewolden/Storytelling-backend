@@ -9,6 +9,8 @@
 
 CREATE TABLE story
 	(storyId			VARCHAR(15)	NOT NULL ,
+	#Mahout needs numerical ids
+	 numericalId		INT	NOT NULL,
 	 title				VARCHAR(255),
 	 author				VARCHAR(255),
 	 date				VARCHAR(255),

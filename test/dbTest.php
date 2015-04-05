@@ -1,6 +1,6 @@
 <?php
 require_once '../models/storyModel.php';
-require_once '../database/dbHelper.php';
+require_once '../database/dbUser.php';
 require_once '../models/userModel.php';
 class dbconnectionTest extends PHPUnit_Framework_TestCase{
 
@@ -9,7 +9,7 @@ class dbconnectionTest extends PHPUnit_Framework_TestCase{
 	//tilkobling ok?
 
 	public function setup(){
-		$this->db = New dbHelper();
+		$this->db = New dbUser();
 
 		//create user
 		$this->firstUser = New userModel(55,"hi@ha.ho", 1,1,1," ",1 );
@@ -55,6 +55,6 @@ class dbconnectionTest extends PHPUnit_Framework_TestCase{
 		$this->assertFalse($secondUser.getCategoryPrefs() = "litterature");
 
 	}
-
+}
 
 ?>

@@ -3,7 +3,7 @@ require_once 'dbHelper.php';
 require_once '../models/userModel.php';
 
 /**
-This class handles database communication related to users
+* This class handles database communication related to users
 */
 
 class dbUser extends dbHelper {

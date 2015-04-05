@@ -4,8 +4,8 @@ require_once 'dbConstants.php';
 header('Content-type: text/plain; charset=utf-8');//Just to make it look nice in the browser
 
 /** 
-This class controls the connection to the database and provide some general methods
-for updating, deleting and selecting from the database.
+* This class controls the connection to the database and provide some general methods
+* for updating, deleting and selecting from the database.
 */
 
 class DbHelper extends dbConstants {
@@ -36,9 +36,9 @@ class DbHelper extends dbConstants {
 	}
 	
 	/**
-	Updates $insertColumn in $tableName with $updateValue
-	$keyValues define which row to update
-	$keyValues might be a string or an array, depending on the number of primary keys.
+	* Updates $insertColumn in $tableName with $updateValue
+	* $keyValues define which row to update
+	* $keyValues might be a string or an array, depending on the number of primary keys.
 	*/
 	public function updateOneValue($tableName, $insertColumn, $updateValue, $keyValues){
 		/*Get the columns in the table we are updating*/
@@ -73,9 +73,9 @@ class DbHelper extends dbConstants {
 	}
 	
 	/**  
-	Inserts all values in $valuesArray in table $tableName. 
-	The number of values in $valuesArray needs to match the number of columns in the table.
-	If the primary key already exists, it updates all other values.
+	* Inserts all values in $valuesArray in table $tableName. 
+	* The number of values in $valuesArray needs to match the number of columns in the table.
+	* If the primary key already exists, it updates all other values.
 	*/
     public function insertUpdateAll($tableName,$valuesArray) {
         $columnsArray = array_slice($this->getTableColumns($tableName),1);//Slice off the primary key number

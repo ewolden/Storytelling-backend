@@ -3,7 +3,7 @@ require_once 'dbHelper.php';
 require_once '../models/storyModel.php';
 
 /**
-This class handles database communication related to stories
+* This class handles database communication related to stories
 */
 class dbStory extends dbHelper{
 		
@@ -72,9 +72,12 @@ class dbStory extends dbHelper{
 	public function insertStory($story, $harvestTime){
 		
 		/*Inserting story in story table*/
-		$values = array($story->getstoryId(),$story->gettitle(),$story->getCreatorList()[0],$story->getDate(),$story->getInstitution(),$story->getIntroduction(), $harvestTime);
+		$values = array($story->getstoryId(),$story->getnumericalId(),$story->gettitle(),$story->getCreatorList()[0],$story->getDate(),$story->getInstitution(),$story->getIntroduction(), $harvestTime);
 		$this->insertUpdateAll('story',$values);
 		
+		/*Delete the current subcategories connected to this story to make sure it's up to date*/
+		$this->deleteFromTable('story_subcategory', 'storyId', $story->getstoryId());
+	
 		/*Inserting subcategories, connects them to the story and maps them to our categories*/
 		if(!empty($story->getsubCategoryList())){
 			for($x=0; $x<sizeof($story->getsubCategoryList()); $x++){
@@ -99,6 +102,7 @@ class dbStory extends dbHelper{
 			}
 		}
 		
+		$this->deleteFromTable('story_media', 'storyId', $story->getstoryId());
 		/*Inserting the stories media format
 		  Assumes that a media_format table with 1=picture, 2=audio, 3=video exists
 		  array_filter removes empty values*/
