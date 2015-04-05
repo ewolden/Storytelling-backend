@@ -191,5 +191,17 @@ group by story.storyId");
 		return($rows);
 	}
 
+	/*Get the subcategory-IDs connected to each story. Using LEFT JOIN to also get stories not connected to any subcategory*/
+	public function getSubcategoriesPerStory(){
+		$query = "SELECT s.numericalId, group_concat(ss.subcategoryId) as subcategories
+				 FROM story as s
+				 LEFT JOIN story_subcategory as ss ON s.storyId = ss.storyId
+				 GROUP BY s.numericalId";
+		$stmt = $this->db->prepare($query);
+		$stmt->execute();
+		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		return($rows);
+	}
+	
 }
 ?>
