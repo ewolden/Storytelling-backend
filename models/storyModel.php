@@ -23,6 +23,7 @@ class storyModel{
     private $falseRecommend;
     private $typeOfRecommendation;
 	private $createdDate;
+	private $numericalId;
 
     //Constructor
     public function getFromDF($id)
@@ -32,6 +33,7 @@ class storyModel{
         $xml = simplexml_load_string($xml_from_API);
         
         $this->storyId = $id;
+		$this->numericalId = explode('.', $id)[1];
         $this->title = (string) $xml->children('dc', TRUE)->title;
         $this->introduction = (string) $xml->children('abm', TRUE)->introduction;
         $this->theStory = (string) $xml->children('dc', TRUE)->description;
@@ -183,6 +185,11 @@ class storyModel{
         return $this->storyId;
     }
     
+	public function getnumericalId()
+	{
+		return $this->numericalId;
+	}
+	
     public function gettitle()
     {
         return $this->title;
