@@ -1,3 +1,5 @@
+
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,12 +17,19 @@
  * limitations under the License.
  */
 
-package recommender;
-
+import org.apache.mahout.cf.taste.common.Refreshable;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.common.FastIDSet;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.model.PreferenceArray;
+import org.apache.mahout.cf.taste.recommender.CandidateItemsStrategy;
+import org.apache.mahout.cf.taste.recommender.MostSimilarItemsCandidateItemsStrategy;
+
+import java.util.Collection;
+
+/**
+ * Abstract base implementation for retrieving candidate items to recommend
+ */
 
 /* 
  * This is more or less copy-paste taken from this commit: https://github.com/apache/mahout/commit/d141c8e887904122a2b3cb4bf94851e7401d807d 
@@ -28,34 +37,25 @@ import org.apache.mahout.cf.taste.model.PreferenceArray;
  * Seems like it's going to be supported in the next version though.
  */
 
-public final class CustomPreferredItemsNeighborhoodCandidateItemsStrategy extends CustomAbstractCandidateItemsStrategy implements CustomCandidateItemsStrategy {
+public abstract class CustomAbstractCandidateItemsStrategy implements CandidateItemsStrategy,
+    MostSimilarItemsCandidateItemsStrategy {
 
-  /**
-   * returns all items that have not been rated by the user and that were preferred by another user
-   * that has preferred at least one item that the current user has preferred too
-   */
-  @Override
-  protected FastIDSet doGetCandidateItems(long[] preferredItemIDs, DataModel dataModel, boolean includeKnownItems)
-    throws TasteException {
-    FastIDSet possibleItemsIDs = new FastIDSet();
-    for (long itemID : preferredItemIDs) {
-      PreferenceArray itemPreferences = dataModel.getPreferencesForItem(itemID);
-      int numUsersPreferringItem = itemPreferences.length();
-      for (int index = 0; index < numUsersPreferringItem; index++) {
-        possibleItemsIDs.addAll(dataModel.getItemIDsFromUser(itemPreferences.getUserID(index)));
-      }
-    }
-    if (!includeKnownItems) {
-      possibleItemsIDs.removeAll(preferredItemIDs);
-    }
-    return possibleItemsIDs;
+  protected FastIDSet doGetCandidateItems(long[] preferredItemIDs, DataModel dataModel) throws TasteException{
+      return doGetCandidateItems(preferredItemIDs, dataModel, false);
   }
-
-public FastIDSet getCandidateItems(long userID,
-		PreferenceArray preferencesFromUser, DataModel dataModel)
-		throws TasteException {
-	// TODO Auto-generated method stub
-	return null;
-}
-
+  
+  public FastIDSet getCandidateItems(long userID, PreferenceArray preferencesFromUser, DataModel dataModel,
+      boolean includeKnownItems) throws TasteException {
+    return doGetCandidateItems(preferencesFromUser.getIDs(), dataModel, includeKnownItems);
+  }
+  
+  public FastIDSet getCandidateItems(long[] itemIDs, DataModel dataModel)
+    throws TasteException {
+    return doGetCandidateItems(itemIDs, dataModel, false);
+  }
+     
+  protected abstract FastIDSet doGetCandidateItems(long[] preferredItemIDs, DataModel dataModel,
+      boolean includeKnownItems) throws TasteException;
+  
+  public void refresh(Collection<Refreshable> alreadyRefreshed) {}
 }

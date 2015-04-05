@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package recommender;
+
 
 import java.util.Collection;
 import java.util.Collections;

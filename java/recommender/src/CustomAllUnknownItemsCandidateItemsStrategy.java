@@ -15,17 +15,13 @@
  * limitations under the License.
  */
 
-package recommender;
 
-import org.apache.mahout.cf.taste.common.Refreshable;
+
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.common.FastIDSet;
+import org.apache.mahout.cf.taste.impl.common.LongPrimitiveIterator;
+import org.apache.mahout.cf.taste.impl.recommender.AbstractCandidateItemsStrategy;
 import org.apache.mahout.cf.taste.model.DataModel;
-import org.apache.mahout.cf.taste.model.PreferenceArray;
-
-/**
- * Used to retrieve all items that could possibly be recommended to the user
- */
 
 /* 
  * This is more or less copy-paste taken from this commit: https://github.com/apache/mahout/commit/d141c8e887904122a2b3cb4bf94851e7401d807d 
@@ -33,12 +29,26 @@ import org.apache.mahout.cf.taste.model.PreferenceArray;
  * Seems like it's going to be supported in the next version though.
  */
 
-public interface CustomCandidateItemsStrategy extends Refreshable {
+public final class CustomAllUnknownItemsCandidateItemsStrategy extends AbstractCandidateItemsStrategy {
 
-  /**
-   * @return IDs of all items that could be recommended to the user
-   */
-  FastIDSet getCandidateItems(long userID, PreferenceArray preferencesFromUser, DataModel dataModel,
-     boolean includeKnownItems) throws TasteException;
-  
+  /** return all items the user has not yet seen */
+  protected FastIDSet doGetCandidateItems(long[] preferredItemIDs, DataModel dataModel, boolean includeKnownItems)
+    throws TasteException {
+    FastIDSet possibleItemIDs = new FastIDSet(dataModel.getNumItems());
+    LongPrimitiveIterator allItemIDs = dataModel.getItemIDs();
+    while (allItemIDs.hasNext()) {
+      possibleItemIDs.add(allItemIDs.nextLong());
+    }
+    if (!includeKnownItems) {
+      possibleItemIDs.removeAll(preferredItemIDs);
+    }
+    return possibleItemIDs;
+  }
+
+@Override
+protected FastIDSet doGetCandidateItems(long[] preferredItemIDs,
+		DataModel dataModel) throws TasteException {
+	// TODO Auto-generated method stub
+	return null;
+}
 }
