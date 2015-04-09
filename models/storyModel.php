@@ -178,7 +178,17 @@ class storyModel{
     {
         $this->subjectList = $subjectList;
     }
+	
+	public function setCategoryList($categoryList)
+	{
+		$this->categoryList = $categoryList;
+	}
 
+	public function setRating($rating)
+	{
+		$this->rating = $rating;
+	}
+	
     //GETTERS
     public function getstoryId()
     {
@@ -265,7 +275,7 @@ class storyModel{
     {
         return $this->subCategoryNames;
     }
-    public function getCategories(){
+    public function getCategoryList(){
         return $this->categoryList;
     }
     public function getRating(){
@@ -290,7 +300,7 @@ class storyModel{
             'subCategoryNames' => $this->getsubCategoryNames(),
             'url' => $this->getUrl(),
             'rating' => $this->getRating(),
-            'categoryList' => $this->getCategories(),
+            'categoryList' => $this->getCategoryList(),
             'typeOfRecommendation' => $this->typeOfRecommendation,
             'explanation' => $this->explanation,
             'falseRecommend' => $this->falseRecommend,

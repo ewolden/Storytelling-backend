@@ -205,5 +205,31 @@ group by story.storyId");
 		return($rows);
 	}
 	
+	/*Get categories for each story, included those without categories*/
+	public function getStories(){
+		$query = "SELECT s.storyId,group_concat(distinct nested.categoryId) as categories
+				 FROM story as s
+				LEFT JOIN (SELECT ss.storyId as storyId, cm.categoryId as categoryId FROM category_mapping as cm, story_subcategory as ss, subcategory as sub
+							WHERE sub.subcategoryId = cm.subcategoryId 
+							AND ss.subcategoryId = sub.subcategoryId) as nested
+				ON s.storyId = nested.storyId
+				GROUP BY s.storyId";
+		$stmt = $this->db->prepare($query);
+		$stmt->execute();
+		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		return($rows);
+	}
+	/*Retrieve the number of times a story has had a state for a given user and a given story*/
+	public function getStatesPerStory($userId, $storyId){
+		$query = "SELECT stateId, count(storyId) as numTimesRecorded, max(point_in_time) as latestStateTime
+				  FROM story_state
+				  WHERE userId = ? AND storyId = ?
+				  GROUP BY stateId";
+		$stmt = $this->db->prepare($query);
+		$stmt->execute(array($userId, $storyId));
+		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		return($rows);
+	}
+	
 }
 ?>
