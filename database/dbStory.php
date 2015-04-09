@@ -129,9 +129,9 @@ class dbStory extends dbHelper{
     	}
     }
 
-    /**Returns story information stored in database, should take userId as parameter*/
-    public function fetchStory($storyId){
-    	$category = $this->db->prepare(
+    /**Returns story information stored in database*/
+    public function fetchStory($storyId, $userId){
+    	$categories = $this->db->prepare(
     		"SELECT group_concat(distinct categoryName) as categories
     		FROM story as s, category_mapping as cm, story_subcategory as ss, subcategory as sc, category as c, story_media as sm
     		WHERE sc.subcategoryId = cm.subcategoryId 
@@ -139,14 +139,16 @@ class dbStory extends dbHelper{
     		AND ss.subcategoryId = sc.subcategoryId
     		AND s.storyId = ss.storyId
     		AND s.storyId = ?");
-    	//$storedStory = $this->db->prepare(
-    	//	"SELECT * FROM stored_story WHERE storyId = ? AND userId = ?");
-		$category->execute(array($storyId));
-		//$storedStory->execute(array($storyId, $userId));
-		$rows = $category->fetchAll(PDO::FETCH_ASSOC);
-		//$rows2 = $storedStory->fetchAll(PDO::FETCH_ASSOC);
-		//if(count($rows2) > 0) return array_merge($rows[0], $rows2[0]);
-		return $rows[0];
+		$categories->execute(array($storyId));
+		$data = $categories->fetchAll(PDO::FETCH_ASSOC)[0];
+
+		$storedStory = $this->simpleSelect('stored_story', array('storyId' => $storyId,
+			'userId' => $userId));
+		$storyTags = $this->simpleSelect('user_storytag', array('userId' => $userId,
+			'storyId' => $storyId));
+		if(count($storedStory) > 0) $data = array_merge($data, $storedStory[0]);
+		if(count($storyTags) > 0) $data = array_merge($data, array('tags' => $storyTags));
+		return $data;
     }
 
 	

@@ -21,7 +21,8 @@ switch ($type) {
 	case "getStory":
 	$storyModel = new storyModel();
 	$storyModel->getFromDF($request->storyId);
-	$storyModel->getFromDB();	//Should use $request->userId
+    $data = $dbStory->fetchStory($request->storyId, $request->userId);
+	$storyModel->fromDB($data);
 	$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 4));
 	print_r (json_encode($storyModel->getAll()));
 	break;
@@ -56,7 +57,7 @@ switch ($type) {
 	if($userId){ /** User sucessfully added, returns returns sucess message and newly assigned userId **/
 		print_r(json_encode(array('status' => "sucessfull",'userId' => $userId)));
 	}
-	else { /** User entered an email that is already in the DB, returns status failed **/
+	else { /* User entered an email that is already in the DB, returns status failed */
 		print_r(json_encode(array('status' => "failed")));
 	}
 	break;
@@ -104,7 +105,9 @@ switch ($type) {
 	if user does not rate the story will be recommended later*/
 	case "rating":
 	if($request->rating > 0){
-		$dbStory->updateOneValue('stored_story', 'rating', $request->rating, array($request->userId, $request->storyId));
+		$updated = $dbStory->updateOneValue('stored_story', 'rating', $request->rating, array($request->userId, $request->storyId));
+		if(!$updated)
+			$dbStory->insertUpdateAll('stored_story', array($request->userId, $request->storyId, null, $request->rating, 0, 0));
 		$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 5));	
 	}else {
 		$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 6));

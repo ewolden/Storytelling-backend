@@ -1,5 +1,4 @@
 <?php
-require_once(__DIR__."/../database/dbHelper.php");
 class storyModel{
     private $storyId;
     private $title;
@@ -24,6 +23,7 @@ class storyModel{
     private $typeOfRecommendation;
 	private $createdDate;
 	private $numericalId;
+    private $userTags = array();
 
     //Constructor
     public function getFromDF($id)
@@ -85,17 +85,17 @@ class storyModel{
     }
 
     /**Gets story information stored in database, should take userId as parameter*/
-    public function getFromDB(){
-        $db = new DbHelper;
-        $data = $db->fetchStory($this->storyId);
+    public function fromDB($data){
         $this->categoryList = explode(",", $data['categories']);
         if(array_key_exists('rating', $data)){
             $this->rating = $data['rating'];
             $this->explanation = $data['explanation'];
             $this->falseRecommend = $data['false_recommend'];
             $this->typeOfRecommendation = $data['type_of_recommendation'];
+            foreach ($data['tags'] as $tag) {
+                array_push($this->userTags, $tag['tagName']);
+            }
         }
-        $db->close();
     }
 
     //SETTERS
@@ -293,7 +293,8 @@ class storyModel{
             'categoryList' => $this->getCategories(),
             'typeOfRecommendation' => $this->typeOfRecommendation,
             'explanation' => $this->explanation,
-            'falseRecommend' => $this->falseRecommend);
+            'falseRecommend' => $this->falseRecommend,
+            'userTags' => $this->userTags);
     }
 
     public function sendStory(){
