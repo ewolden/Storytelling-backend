@@ -51,8 +51,7 @@ switch ($type) {
 /** Recieves request from frotned, adds a new user to the database with autoincremented userId **/
 	case "addUser":
 	$userModel = new userModel();
-	$userModel->addUserValues(-1, $request->email, $request->age_group, $request->gender,
-		$request->use_of_location, $request->category_preference);
+	$userModel->addUser(-1, $request->email);
 	$userId = $dbUser->updateUserInfo($userModel);
 	if($userId){ /** User sucessfully added, returns returns sucess message and newly assigned userId **/
 		print_r(json_encode(array('status' => "sucessfull",'userId' => $userId)));

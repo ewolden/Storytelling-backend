@@ -104,7 +104,10 @@ class dbUser extends dbHelper {
     }
     public function getUserCategories($userId)
     {
-   		$sql = "SELECT group_concat(distinct categoryName) as categories from category,category_preference where userId = (:userid) AND category.categoryId = category_preference.categoryId";
+   		$sql = "SELECT group_concat(distinct categoryName) as categories
+   		from category,category_preference 
+   		where userId = (:userid) AND category.categoryId = category_preference.categoryId
+   		group by userId";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindParam(':userid',$userId);
 		$stmt->execute();
