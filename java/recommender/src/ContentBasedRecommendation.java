@@ -2,7 +2,6 @@
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,7 +29,6 @@ public class ContentBasedRecommendation
 		
     public static void main(String[] args ) throws IOException, TasteException
     {
-    	
     	/*Using FileDataModel only for testing, might use the MYSQLJBDCModel when fetching data from database*/
     	DataModel model = new FileDataModel(new File("data/testdata.csv")); 
     	
@@ -49,7 +47,7 @@ public class ContentBasedRecommendation
     	 * and true tells the recommender that we want to include already known items*/
     	List<RecommendedItem> recommendations = recommender.recommend(userId, 9, null, true);
     	for (RecommendedItem recommendation : recommendations) {
-    	  System.out.println(recommendation);
+    	  System.out.println(recommendation); 
     	}
     }
 
@@ -58,13 +56,15 @@ public class ContentBasedRecommendation
 		Collection<ItemItemSimilarity> res = new ArrayList<ItemItemSimilarity>();
 		BufferedReader br = null;
 		try {
-			br = new BufferedReader(new FileReader("../../personalization/similarities.csv"));
-			while(br.readLine() != null){
-				String[] values = br.readLine().split(",");
+			br = new BufferedReader(new FileReader(new File("../../personalization/similarities.csv")));
+			String line = br.readLine();
+			while(line != null){
+				String[] values = line.split(",");
 				long item1 = Long.parseLong(values[0]);
 				long item2 = Long.parseLong(values[1]);
 				double value = Double.parseDouble(values[2]);
 				res.add(new ItemItemSimilarity(item1, item2, value));
+				line = br.readLine();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
