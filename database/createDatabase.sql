@@ -20,6 +20,16 @@ CREATE TABLE story
 
 	PRIMARY KEY (storyId));
 
+CREATE TABLE preference_value
+	(userId				INT			NOT NULL,
+	storyId				VARCHAR(15) NOT NULL,
+	preferenceValue		DECIMAL(8,5)   NOT NULL,
+	
+	PRIMARY KEY (userId, storyId),
+	FOREIGN KEY (userId) REFERENCES user(userId),
+	FOREIGN KEY (storyId) REFERENCES story(storyId));
+	
+	
 CREATE TABLE category
 	(categoryId			INT			NOT NULL  AUTO_INCREMENT,
 	 categoryName		VARCHAR(255)	NOT NULL,

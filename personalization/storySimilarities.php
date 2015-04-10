@@ -5,6 +5,7 @@ $db = new dbStory();
 
 /*Retrieves subcategories connected to every story*/
 $subcategoryArray = $db->getSubcategoriesPerStory();
+$db->close();
 
 /*Put the computed similarities in this file. Will be overwritten every time this script is run*/
 $simFile = fopen('../personalization/similarities.csv', 'w');

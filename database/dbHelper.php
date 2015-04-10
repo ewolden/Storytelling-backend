@@ -70,6 +70,9 @@ class DbHelper extends dbConstants {
 		$query = 'UPDATE '.$tableName.' SET '.$insertColumn.'=? WHERE '.$whereString.'';
 		$stmt = $this->db->prepare($query);
 		$stmt->execute($values);
+
+		if($stmt->rowCount()<=0) return false;
+		else return true;
 	}
 	
 	/**  
@@ -197,6 +200,20 @@ class DbHelper extends dbConstants {
 		$stmt = $this->db->prepare($query);
 		$stmt->execute($values);
 	}
+
+	/**Returns all fields from a single table*/
+	public function simpleSelect($table, $where){
+		$a = array();
+		$w = "";
+		foreach ($where as $key => $value) {
+			$w .= " and " .$key. " like :".$key;
+			$a[":".$key] = $value;
+		}
+		$stmt = $this->db->prepare("select * from ".$table." where 1=1 ". $w);
+		$stmt->execute($a);
+		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $rows;
+    }
 
 }
 //$db->getUserCategories(1);
