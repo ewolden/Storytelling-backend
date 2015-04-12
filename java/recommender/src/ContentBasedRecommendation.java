@@ -40,7 +40,6 @@ public class ContentBasedRecommendation
     	
     	/*Create a new Recommender-instance with our datamodel and storycorrelations*/
     	CustomGenericItemBasedRecommender recommender = new CustomGenericItemBasedRecommender(model, similarity);
-    	    	
     	long userId = 1;
     	
     	/* Compute the recommendations. 9 is the number of recommendations we want, don't worry about the null, 
