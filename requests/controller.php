@@ -150,12 +150,14 @@ switch ($type) {
 	case "getAllLists":
 	$data = $dbUser->getSelected('user_tag', 'tagName', array('userId'), array($request->userId));
 	$returnArray = array();
-	foreach($data as $tag){
-		$list = array(
-			'text' => $tag['tagName'],
-			'checked' => ''
-			);
-		array_push($returnArray, $list);
+	if(!is_null($data)){
+		foreach($data as $tag){
+			$list = array(
+				'text' => $tag['tagName'],
+				'checked' => ''
+				);
+			array_push($returnArray, $list);
+		}
 	}
 	print_r(json_encode($returnArray));
 	break;
