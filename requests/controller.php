@@ -64,7 +64,7 @@ switch ($type) {
 	case "updateUser":
 	$userModel = new userModel();	
 	$userModel->addUserValues($request->userId, $request->email, $request->age_group, $request->gender,
-		$request->use_of_location, $request->category_preference);
+		$request->use_of_location, json_decode($request->category_preference));
 	$userId = $dbUser->updateUserInfo($userModel);
 	if($userId){/** User sucessfully updated, returns sucess message and userId **/
 		print_r(json_encode(array('status' => "successfull",'userId' => $userId)));
