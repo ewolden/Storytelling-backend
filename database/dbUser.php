@@ -59,12 +59,14 @@ class dbUser extends dbHelper {
 		}
         $this->insertUpdateAll('user',$values);
         $userId = $this->db->lastInsertId();
-		/*If we are updating a user lastInsertId will return 0. 
+        /*If we are updating a user lastInsertId will return 0. 
 		This userId doesn't exist and will cause problems further down.
 		So if we are updating, we get the userId from the input user-model*/
-		if($userId == 0){
-			$userId = $user->getUserId();
-		}
+        if($userId == 0){
+        	if($user->getUserId() != -1)
+        		$userId = $user->getUserId();
+        	else return false;
+        }
 
         /*Deleting all existing category preferences*/
         $this->deleteFromTable('category_preference', array('userId'), array($userId));
