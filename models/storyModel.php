@@ -87,11 +87,13 @@ class storyModel{
     /**Gets story information stored in database, should take userId as parameter*/
     public function fromDB($data){
         $this->categoryList = explode(",", $data['categories']);
-        if(array_key_exists('rating', $data)){
-            $this->rating = $data['rating'];
-            $this->explanation = $data['explanation'];
-            $this->falseRecommend = $data['false_recommend'];
-            $this->typeOfRecommendation = $data['type_of_recommendation'];
+        if(array_key_exists('storedStory', $data)){
+            $this->rating = $data['storedStory']['rating'];
+            $this->explanation = $data['storedStory']['explanation'];
+            $this->falseRecommend = $data['storedStory']['false_recommend'];
+            $this->typeOfRecommendation = $data['storedStory']['type_of_recommendation'];
+        }
+        if(array_key_exists('tags', $data)){
             foreach ($data['tags'] as $tag) {
                 array_push($this->userTags, $tag['tagName']);
             }
