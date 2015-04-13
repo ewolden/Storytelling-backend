@@ -51,8 +51,7 @@ switch ($type) {
 /** Recieves request from frotned, adds a new user to the database with autoincremented userId **/
 	case "addUser":
 	$userModel = new userModel();
-	$userModel->addUserValues(-1, $request->email, $request->age_group, $request->gender,
-		$request->use_of_location, $request->category_preference);
+	$userModel->addUser(-1, $request->email);
 	$userId = $dbUser->updateUserInfo($userModel);
 	if($userId){ /** User sucessfully added, returns returns sucess message and newly assigned userId **/
 		print_r(json_encode(array('status' => "sucessfull",'userId' => $userId)));
@@ -65,7 +64,7 @@ switch ($type) {
 	case "updateUser":
 	$userModel = new userModel();	
 	$userModel->addUserValues($request->userId, $request->email, $request->age_group, $request->gender,
-		$request->use_of_location, $request->category_preference);
+		$request->use_of_location, json_decode($request->category_preference));
 	$userId = $dbUser->updateUserInfo($userModel);
 	if($userId){/** User sucessfully updated, returns sucess message and userId **/
 		print_r(json_encode(array('status' => "successfull",'userId' => $userId)));
@@ -151,12 +150,14 @@ switch ($type) {
 	case "getAllLists":
 	$data = $dbUser->getSelected('user_tag', 'tagName', array('userId'), array($request->userId));
 	$returnArray = array();
-	foreach($data as $tag){
-		$list = array(
-			'text' => $tag['tagName'],
-			'checked' => ''
-			);
-		array_push($returnArray, $list);
+	if(!is_null($data)){
+		foreach($data as $tag){
+			$list = array(
+				'text' => $tag['tagName'],
+				'checked' => ''
+				);
+			array_push($returnArray, $list);
+		}
 	}
 	print_r(json_encode($returnArray));
 	break;

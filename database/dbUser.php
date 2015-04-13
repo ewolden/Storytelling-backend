@@ -59,9 +59,15 @@ class dbUser extends dbHelper {
 		}
         $this->insertUpdateAll('user',$values);
         $userId = $this->db->lastInsertId();
+		/*If we are updating a user lastInsertId will return 0. 
+		This userId doesn't exist and will cause problems further down.
+		So if we are updating, we get the userId from the input user-model*/
+		if($userId == 0){
+			$userId = $user->getUserId();
+		}
 
         /*Deleting all existing category preferences*/
-        $this->deleteFromTable('category_preference', array('userId'), array($user->getUserId()));
+        $this->deleteFromTable('category_preference', array('userId'), array($userId));
 
          /*Inserting category preferences*/
 		if(!is_null($user->getCategoryPrefs())){
@@ -104,7 +110,10 @@ class dbUser extends dbHelper {
     }
     public function getUserCategories($userId)
     {
-   		$sql = "SELECT group_concat(distinct categoryName) as categories from category,category_preference where userId = (:userid) AND category.categoryId = category_preference.categoryId";
+   		$sql = "SELECT group_concat(distinct categoryName) as categories
+   		from category,category_preference 
+   		where userId = (:userid) AND category.categoryId = category_preference.categoryId
+   		group by userId";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindParam(':userid',$userId);
 		$stmt->execute();

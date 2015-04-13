@@ -8,6 +8,11 @@ class userModel{
     private $category_preference; //list of categories preffered
 	
     //CONSTRUCTOR
+    function addUser($userId, $email){
+        $this->userId = $userId;
+        $this->email = $email;
+    }
+    
     function addUserValues($userId,$email,$age_group,$gender,$user_of_location,$category_preference){
         $this->userId = $userId;
         $this->email = $email;
@@ -23,7 +28,7 @@ class userModel{
         $this->setAgeGroup($userFromDB[1]['age_group']);
         $this->setGender($userFromDB[1]['gender']);
         $this->setLocation($userFromDB[1]['use_of_location']);
-        if(array_key_exists('categories', $userFromDB[2]))
+        if(is_array($userFromDB[2]))
             $this->setCategoryPrefs(explode(",",$userFromDB[2]['categories']));
     }
 
