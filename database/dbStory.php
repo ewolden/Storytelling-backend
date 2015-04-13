@@ -146,9 +146,8 @@ class dbStory extends dbHelper{
 
 		$storedStory = $this->simpleSelect('stored_story', array('storyId' => $storyId,
 			'userId' => $userId));
-		$storyTags = $this->simpleSelect('user_storytag', array('userId' => $userId,
-			'storyId' => $storyId));
-		if(count($storedStory) > 0) $data = array_merge($data, $storedStory[0]);
+		$storyTags = $this->getSelected('user_storytag', 'tagName', array('userId', 'storyId'), array($userId, $storyId));
+		if(count($storedStory) > 0) $data = array_merge($data, array('storedStory' => $storedStory[0]));
 		if(count($storyTags) > 0) $data = array_merge($data, array('tags' => $storyTags));
 		return $data;
     }
