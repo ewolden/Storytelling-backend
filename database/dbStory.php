@@ -63,6 +63,8 @@ class dbStory extends dbHelper{
 						}					
 					}
 				}
+				$this->deleteFromTable('preference_value', 'storyId', $story['storyId']);
+				
 				$this->deleteFromTable('story', 'storyId', $story['storyId']);
 			}
 		}
