@@ -1,5 +1,3 @@
-
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -20,7 +18,6 @@ import org.apache.mahout.cf.taste.similarity.ItemSimilarity;
 /*
 
 TODO: Fetch data about user's preferences from database.
-TODO: Compute preferenceValues for all stories for a user by using weighting and other stuff.
 TODO: Insert the recommendations in the database. Need to make sure stories already accepted by the user isn't inserted.  
  
  */
@@ -28,9 +25,8 @@ TODO: Insert the recommendations in the database. Need to make sure stories alre
 public class ContentBasedRecommendation 
 {
 		
-    public static void main(String[] args ) throws IOException, TasteException
+    public ContentBasedRecommendation(long userId) throws TasteException, IOException
     {
-    	//System.out.println("The argument: "+args[0]);
     	/*Using FileDataModel only for testing, might use the MYSQLJBDCModel when fetching data from database*/
     	DataModel model = new FileDataModel(new File("data/testdata.csv")); 
     	
@@ -42,11 +38,10 @@ public class ContentBasedRecommendation
     	
     	/*Create a new Recommender-instance with our datamodel and storycorrelations*/
     	GenericItemBasedRecommender recommender = new GenericItemBasedRecommender(model, similarity);
-    	long userId = 1;
     	
     	/* Compute the recommendations. 9 is the number of recommendations we want, don't worry about the null, 
     	 * and true tells the recommender that we want to include already known items*/
-    	List<RecommendedItem> recommendations = recommender.recommend(userId, 9, null, true);
+    	List<RecommendedItem> recommendations = recommender.recommend(userId, 10, null, true);
     	for (RecommendedItem recommendation : recommendations) {
     	  System.out.println(recommendation); 
     	}
@@ -57,6 +52,8 @@ public class ContentBasedRecommendation
 		Collection<ItemItemSimilarity> res = new ArrayList<ItemItemSimilarity>();
 		BufferedReader br = null;
 		try {
+			/*When running in Eclipse the path must be: ../../personalization/similarities.csv
+			  When creating the JAR-file the path must be: similarities.csv */
 			br = new BufferedReader(new FileReader(new File("../../personalization/similarities.csv")));
 			String line = br.readLine();
 			while(line != null){
