@@ -201,20 +201,6 @@ class DbHelper extends dbConstants {
 		$stmt->execute($values);
 	}
 
-	/**Returns all fields from a single table*/
-	public function simpleSelect($table, $where){
-		$a = array();
-		$w = "";
-		foreach ($where as $key => $value) {
-			$w .= " and " .$key. " like :".$key;
-			$a[":".$key] = $value;
-		}
-		$stmt = $this->db->prepare("select * from ".$table." where 1=1 ". $w);
-		$stmt->execute($a);
-		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return $rows;
-    }
-
 }
 //$db->getUserCategories(1);
 //print_r('Running');

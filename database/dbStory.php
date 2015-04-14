@@ -144,8 +144,7 @@ class dbStory extends dbHelper{
 		$categories->execute(array($storyId));
 		$data = $categories->fetchAll(PDO::FETCH_ASSOC)[0];
 
-		$storedStory = $this->simpleSelect('stored_story', array('storyId' => $storyId,
-			'userId' => $userId));
+		$storedStory = $this->getSelected('stored_story', '*', array('userId', 'storyId'), array($userId, $storyId));
 		$storyTags = $this->getSelected('user_storytag', 'tagName', array('userId', 'storyId'), array($userId, $storyId));
 		if(count($storedStory) > 0) $data = array_merge($data, array('storedStory' => $storedStory[0]));
 		if(count($storyTags) > 0) $data = array_merge($data, array('tags' => $storyTags));
