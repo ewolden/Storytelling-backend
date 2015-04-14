@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
+import org.apache.mahout.cf.taste.impl.recommender.GenericItemBasedRecommender;
 import org.apache.mahout.cf.taste.impl.similarity.GenericItemSimilarity;
 import org.apache.mahout.cf.taste.impl.similarity.GenericItemSimilarity.ItemItemSimilarity;
 import org.apache.mahout.cf.taste.model.DataModel;
@@ -29,6 +30,7 @@ public class ContentBasedRecommendation
 		
     public static void main(String[] args ) throws IOException, TasteException
     {
+    	//System.out.println("The argument: "+args[0]);
     	/*Using FileDataModel only for testing, might use the MYSQLJBDCModel when fetching data from database*/
     	DataModel model = new FileDataModel(new File("data/testdata.csv")); 
     	
@@ -39,7 +41,7 @@ public class ContentBasedRecommendation
     	ItemSimilarity similarity = new GenericItemSimilarity(sim);
     	
     	/*Create a new Recommender-instance with our datamodel and storycorrelations*/
-    	CustomGenericItemBasedRecommender recommender = new CustomGenericItemBasedRecommender(model, similarity);
+    	GenericItemBasedRecommender recommender = new GenericItemBasedRecommender(model, similarity);
     	long userId = 1;
     	
     	/* Compute the recommendations. 9 is the number of recommendations we want, don't worry about the null, 
