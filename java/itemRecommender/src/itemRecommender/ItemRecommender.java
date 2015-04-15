@@ -15,15 +15,16 @@ import org.apache.mahout.cf.taste.similarity.ItemSimilarity;
 
 public class ItemRecommender {
 
-	public static void main(String[] args) {
+	public static void main(DataModel datamodel) {
 		try {
 			/*This fileDataModel is just for testing. This should be replaced by real data*/
 			DataModel dm = new FileDataModel(new File("data/dataset.csv"));
 			
-			/* Returns the degree of similarity, of two items, based on the preferences that users have expressed for the items. */
+			/* Returns the degree of similarity, of two items, based on the preferences that users have expressed for the items.
+			Should take in "datamodel" as an argument, not det test dataset "dm" */
 			ItemSimilarity sim = new LogLikelihoodSimilarity(dm);
 			
-			/* Given a datamodel and a similarity to produce the recommendations */
+			/* Given a datamodel and a similarity to produce the recommendations. Should take datamodel as an argument, not dm */
 			GenericItemBasedRecommender recommender = new GenericItemBasedRecommender(dm, sim);
 			
 			/*Looping through all the itemIds and will put 5 recommendations for every item in the rcommendations list.  */
