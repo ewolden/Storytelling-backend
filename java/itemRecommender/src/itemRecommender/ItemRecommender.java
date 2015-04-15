@@ -15,7 +15,7 @@ import org.apache.mahout.cf.taste.similarity.ItemSimilarity;
 
 public class ItemRecommender {
 
-	public static void main(DataModel datamodel) {
+	public static void main(String[] args) {
 		try {
 			/*This fileDataModel is just for testing. This should be replaced by real data*/
 			DataModel dm = new FileDataModel(new File("data/dataset.csv"));
