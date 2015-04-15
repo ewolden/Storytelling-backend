@@ -140,8 +140,4 @@ class computePreferenceValues {
 		}
 	}
 }
-//$user = new userModel();
-//$user->addUserValues(1, 'test', null, null, null, array(5,4,9));
-//$c = new computePreferenceValues($user);
-//$c->computeAllValues();
 ?>

@@ -1,16 +1,15 @@
 <?php
-//Including these just for testing
-require_once '../models/userModel.php';
-require_once 'computePreferenceValues.php';
-
+require_once('computePreferenceValues.php');
 class runRecommender {
 
-	private $userId;
+	private $user;
 	private $method;
 
-	public function __construct($userId){
-		$this->userId = $userId;
+	public function __construct($user){
+		$this->user = $user;
 		$this->findMethod();
+		$cpv = new computePreferenceValues($user);
+		$cpv->computeAllValues();
 	}
 
 	public function findMethod(){
@@ -18,8 +17,8 @@ class runRecommender {
 		$this->method = 'content';
 	}
 	
-	public function getUserId(){
-		return $this->userId;
+	public function getUser(){
+		return $this->user;
 	}
 	
 	public function getMethod(){
@@ -27,18 +26,7 @@ class runRecommender {
 	}
 	
 	public function runRecommender(){		
-		echo shell_exec("java -jar ../java/recommender/recommender.jar ".$this->getUserId()." ".$this->getMethod());
+		shell_exec("java -jar ../java/recommender/recommender.jar ".$this->getUser()->getUserId()." ".$this->getMethod()."");
 	}
 }
-//For testing
-$start = microtime(true);
-$user = new userModel();
-$user->addUserValues(1, null, null, null, null, array(5,4,8));
-$c = new computePreferenceValues($user);
-$c->computeAllValues();
-$recommend = new runRecommender($user->getUserId());
-$recommend->runRecommender();
-$elapsed = microtime(true)-$start;
-print_r("Time that has passed: ");
-print_r($elapsed);
 ?>
