@@ -67,6 +67,7 @@ public class DatabaseConnection {
 	}
 	
 	/**Add recommendations to database*/
+	public void insertUpdateRecommendValues(RecommendedItem item, int userId, String explanation){
 		try {
 			PreparedStatement stmt = connection.prepareStatement("UPDATE stored_story "
 					+ "SET explanation = " + explanation // + " AND " ETTELLERANNET ANNET SKAL HER
