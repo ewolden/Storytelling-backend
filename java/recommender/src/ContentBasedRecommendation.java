@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -24,11 +25,18 @@ TODO: Insert the recommendations in the database. Need to make sure stories alre
 
 public class ContentBasedRecommendation 
 {
-		
-    public ContentBasedRecommendation(long userId) throws TasteException, IOException
+	File fileLocation = null;
+	
+    public ContentBasedRecommendation(long userId) throws TasteException, IOException, ClassNotFoundException
     {
+		try {
+			fileLocation = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+    	String url = fileLocation.getParentFile().toString();
     	/*Using FileDataModel only for testing, might use the MYSQLJBDCModel when fetching data from database*/
-    	DataModel model = new FileDataModel(new File("data/testdata.csv")); 
+    	DataModel model = new FileDataModel(new File(url+"/data/testdata.csv")); 
     	
     	Collection<ItemItemSimilarity> sim = getStorySimilarities();
     	
@@ -41,20 +49,21 @@ public class ContentBasedRecommendation
     	
     	/* Compute the recommendations. 9 is the number of recommendations we want, don't worry about the null, 
     	 * and true tells the recommender that we want to include already known items*/
-    	List<RecommendedItem> recommendations = recommender.recommend(userId, 10, null, true);
+    	List<RecommendedItem> recommendations = recommender.recommend(1, 10, null, true);
     	for (RecommendedItem recommendation : recommendations) {
     	  System.out.println(recommendation); 
     	}
+    	
     }
 
     /*Reading the story similarities from file and adding them to a collection of ItemItemSimilarity-objects*/
-	private static Collection<ItemItemSimilarity> getStorySimilarities() {
+	private Collection<ItemItemSimilarity> getStorySimilarities() {
 		Collection<ItemItemSimilarity> res = new ArrayList<ItemItemSimilarity>();
 		BufferedReader br = null;
 		try {
-			/*When running in Eclipse the path must be: ../../personalization/similarities.csv
-			  When creating the JAR-file the path must be: similarities.csv */
-			br = new BufferedReader(new FileReader(new File("../../personalization/similarities.csv")));
+			/*This gets the path to the storytelling-backend folder*/
+			String url = fileLocation.getParentFile().getParentFile().getParentFile().toString();
+			br = new BufferedReader(new FileReader(new File(url+"/personalization/similarities.csv")));
 			String line = br.readLine();
 			while(line != null){
 				String[] values = line.split(",");
