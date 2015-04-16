@@ -1,3 +1,6 @@
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Collection;
 
 import javax.sql.PooledConnection;
@@ -8,12 +11,13 @@ import org.apache.mahout.cf.taste.impl.model.jdbc.MySQLJDBCDataModel;
 import org.apache.mahout.cf.taste.impl.model.jdbc.ReloadFromJDBCDataModel;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.model.JDBCDataModel;
+import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
 
 
 public class DatabaseConnection {
-	PooledConnection connection;
+	Connection connection;
 	DataModel model;
 	ReloadFromJDBCDataModel reloadModel;
 
@@ -32,7 +36,7 @@ public class DatabaseConnection {
 			dataSource.setCacheResultSetMetadata(true);
 			dataSource.setAlwaysSendSetIsolation(false);
 			dataSource.setElideSetAutoCommits(true);
-			connection = dataSource.getPooledConnection();
+			connection = dataSource.getConnection();
 
 			JDBCDataModel dataModel = new MySQLJDBCDataModel(
 					dataSource, "preference_value", "userId",
@@ -44,9 +48,7 @@ public class DatabaseConnection {
 				model = reloadModel.getDelegateInMemory();
 
 			} else model = dataModel;
-			System.out.println(model.getMinPreference());
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -64,5 +66,32 @@ public class DatabaseConnection {
 		reloadModel.refresh(alreadyRefreshed);
 	}
 	
+	/**Add recommendations to database*/
+		try {
+			PreparedStatement stmt = connection.prepareStatement("UPDATE stored_story "
+					+ "SET explanation = " + explanation // + " AND " ETTELLERANNET ANNET SKAL HER
+					+ "WHERE userId = " + userId + " AND storyId = 'DF." + item.getItemID() +"'");
+			int result = stmt.executeUpdate();
+			System.out.println(result);
+			if(result == 0){
+				stmt = connection.prepareStatement("INSERT INTO stored_story (userId, storyId, explanation) " //OG ETT ELLER ANNET ANNET
+						+ "VALUES (" + userId + ", 'DF." + item.getItemID() + "', " + explanation + ")");
+				result = stmt.executeUpdate();
+				System.out.println(result);
+				
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**Close connection to database*/
+	public void closeConnection(){
+		try {
+			connection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 	
 }
