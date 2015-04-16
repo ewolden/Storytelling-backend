@@ -190,6 +190,9 @@ class storyModel{
 	{
 		$this->rating = $rating;
 	}
+    public function setNumericalId($numericalId){
+        $this->numericalId = $numericalId;
+    }
 	
     //GETTERS
     public function getstoryId()

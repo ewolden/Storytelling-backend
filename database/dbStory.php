@@ -154,7 +154,7 @@ class dbStory extends dbHelper{
 	
     public function getAllStories(){
 		$stmt = $this->db->prepare(
-			"SELECT story.storyId, title, author, introduction, group_concat(distinct categoryName) as categories, mediaId
+			"SELECT story.storyId, numericalId, title, author, introduction, group_concat(distinct categoryName) as categories, mediaId
 			FROM story, category_mapping, story_subcategory, subcategory, category, story_media
 			WHERE subcategory.subcategoryId = category_mapping.subcategoryId 
 			AND category.categoryId = category_mapping.categoryId

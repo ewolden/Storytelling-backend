@@ -23,6 +23,7 @@ class computePreferenceValues {
 			$storyModel = new storyModel();
 			$storyModel->setstoryId($story['storyId']);
 			$storyModel->setCategoryList($story['categories']);
+			$storyModel->setNumericalId($story['numericalId']);
 			$this->computeOneValue($storyModel);
 		}
 	}
@@ -39,7 +40,7 @@ class computePreferenceValues {
 		
 		$value = $this->computePreferenceValue($preferenceValue);
 		
-		$this->dbStory->insertUpdateAll('preference_value', array($this->user->getUserId(), $storyModel->getstoryId(), $value));
+		$this->dbStory->insertUpdateAll('preference_value', array($this->user->getUserId(), $storyModel->getstoryId(), $storyModel->getNumericalId(), $value));
 	}
 	
 	/*Not sure if the weights are used correctly here */

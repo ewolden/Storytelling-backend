@@ -23,6 +23,7 @@ CREATE TABLE story
 CREATE TABLE preference_value
 	(userId				INT			NOT NULL,
 	storyId				VARCHAR(15) NOT NULL,
+	numericalId			INT,
 	preferenceValue		DECIMAL(8,5)   NOT NULL,
 	
 	PRIMARY KEY (userId, storyId),

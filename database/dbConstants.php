@@ -25,7 +25,7 @@ class dbConstants {
 			'stored_story' => array(2,false, 'userId', 'storyId', 'explanation', 'rating', 'false_recommend', 'type_of_recommendation'),
 			'story_state' => array(1,true, 'recordedStateId', 'storyId', 'userId', 'stateId'),
 			'user_usage' => array(1, true, 'usageId', 'userId'),
-			'preference_value' => array(2,false,'userId', 'storyId', 'preferenceValue')
+			'preference_value' => array(2,false,'userId', 'storyId', 'numericalId', 'preferenceValue')
 			);
 			
 	/*The numbers 1-9 are the primary keys in the category table*/
