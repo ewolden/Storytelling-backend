@@ -26,6 +26,7 @@ TODO: Insert the recommendations in the database. Need to make sure stories alre
 public class ContentBasedRecommendation 
 {
 	File fileLocation = null;
+	DatabaseConnection conn = null;
 	
     public ContentBasedRecommendation(long userId) throws TasteException, IOException, ClassNotFoundException
     {
@@ -34,9 +35,9 @@ public class ContentBasedRecommendation
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
-    	String url = fileLocation.getParentFile().toString();
+    	conn = new DatabaseConnection();
     	/*Using FileDataModel only for testing, might use the MYSQLJBDCModel when fetching data from database*/
-    	DataModel model = new FileDataModel(new File(url+"/data/testdata.csv")); 
+    	DataModel model = conn.getDataModel();
     	
     	Collection<ItemItemSimilarity> sim = getStorySimilarities();
     	
@@ -49,7 +50,7 @@ public class ContentBasedRecommendation
     	
     	/* Compute the recommendations. 9 is the number of recommendations we want, don't worry about the null, 
     	 * and true tells the recommender that we want to include already known items*/
-    	List<RecommendedItem> recommendations = recommender.recommend(1, 10, null, true);
+    	List<RecommendedItem> recommendations = recommender.recommend(userId, 10, null, true);
     	for (RecommendedItem recommendation : recommendations) {
     	  System.out.println(recommendation); 
     	}

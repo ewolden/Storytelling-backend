@@ -6,7 +6,7 @@ require_once(__DIR__."/../models/storyModel.php");
 require_once(__DIR__."/../models/userModel.php");
 require_once(__DIR__."/../database/dbUser.php");
 require_once(__DIR__."/../database/dbStory.php");
-require_once("../personalization/runRecommender.php");
+require_once(__DIR__."/../personalization/runRecommender.php");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
 header("Content-Type: application/json; charset=UTF-8");
@@ -70,12 +70,13 @@ switch ($type) {
 	if($userId){/** User sucessfully updated, returns sucess message and userId **/
 		/* Running the recommender only if the update include categories to avoid running it 
 		when the user sets gender and age.*/
+		$output = $userId;
 		if(!is_null($request->category_preference)){
 			$userModel->setUserId($userId);
 			$recommend = new runRecommender($userModel);
-			$recommend->runRecommender();
+			$output = $recommend->runRecommender();
 		}
-		print_r(json_encode(array('status' => "successfull",'userId' => $userId)));
+		print_r(json_encode(array('status' => "successfull",'userId' => $output)));
 	}
 	else { /** User entered an email that is already in the DB, returns status failed **/
 		print_r(json_encode(array('status' => "failed")));

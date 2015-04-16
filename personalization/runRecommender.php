@@ -25,8 +25,9 @@ class runRecommender {
 		return $this->method;
 	}
 	
-	public function runRecommender(){		
-		shell_exec("java -jar ../java/recommender/recommender.jar ".$this->getUser()->getUserId()." ".$this->getMethod()."");
+	public function runRecommender(){	
+		$output = shell_exec("java -jar ../java/recommender/recommender.jar ".$this->getUser()->getUserId()." ".$this->getMethod()." 2>&1");
+		return $output;
 	}
 }
 ?>

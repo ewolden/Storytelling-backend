@@ -207,7 +207,7 @@ group by story.storyId");
 	
 	/*Get categories for each story, included those without categories*/
 	public function getStories(){
-		$query = "SELECT s.storyId,group_concat(distinct nested.categoryId) as categories
+		$query = "SELECT s.storyId,numericalId,group_concat(distinct nested.categoryId) as categories
 				 FROM story as s
 				LEFT JOIN (SELECT ss.storyId as storyId, cm.categoryId as categoryId FROM category_mapping as cm, story_subcategory as ss, subcategory as sub
 							WHERE sub.subcategoryId = cm.subcategoryId 
