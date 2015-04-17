@@ -36,6 +36,7 @@ switch ($type) {
 			'id' => $story['storyId'],
 			'title' => $story['title'],
 			'description' => $story['introduction'],
+			'picture' => "",
 			'thumbnail' => "",
 			'categories' => "",
 			'author' => $story['author'],
@@ -43,6 +44,7 @@ switch ($type) {
 		if(array_key_exists('categories', $story))
 			$list['categories'] = explode(",",$story['categories']);
 		if($story['mediaId'] == 1)
+			$list['picture'] = "http://media31.dimu.no/media/image/H-DF/".$story['storyId']."/0?byIndex=true&height=400&width=400";
 			$list['thumbnail'] = "http://api.digitaltmuseum.no/media?owner=H-DF&identifier=".$story['storyId']."&type=thumbnail&api.key=demo";
 		array_push($returnArray, $list);
 	}
