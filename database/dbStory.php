@@ -167,11 +167,34 @@ class dbStory extends dbHelper{
 			"SELECT story.storyId, title, author, introduction, mediaId
 			FROM story, story_media
 			WHERE story.storyId = story_media.storyId AND story.storyId NOT IN (SELECT storyId FROM story_subcategory)
-group by story.storyId");
+			group by story.storyId");
 		$stmt2->execute();
 		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		$rows2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 		return array_merge($rows, $rows2);
+	}
+	
+	public function getRecommendedStories($userId){
+		$stmt = $this->db->prepare(
+			"select ss.userId, ss.storyId, ss.recommend_ranking, nes.title, nes.introduction,nes.author,group_concat(distinct nes.categories) as categories, nes.mediaId
+			from stored_story as ss
+			left join (SELECT s.storyId as storyId ,s.title as title, s.introduction as introduction, s.author as author,sm.mediaId as mediaId, group_concat(distinct nested.categoryName) as categories
+						FROM story as s
+						LEFT JOIN (SELECT ss.storyId as storyId, cm.categoryId as categoryId, c.categoryName as categoryName
+						FROM category_mapping as cm, story_subcategory as ss, subcategory as sub,category as c
+						WHERE sub.subcategoryId = cm.subcategoryId
+						AND cm.categoryId = c.categoryId
+						AND ss.subcategoryId = sub.subcategoryId) as nested ON s.storyId = nested.storyId
+			left join story_media as sm ON s.storyId=sm.storyId
+			group by s.storyId) as nes
+			on ss.storyId=nes.storyId
+			where userId=? and recommend_ranking IS NOT NULL
+			GROUP BY ss.storyId
+			order by recommend_ranking asc");
+		$stmt->execute(array($userId));
+		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		return $rows;
+		
 	}
 	
 	/*Get all stories a user has tagged with $tagName*/
@@ -229,7 +252,6 @@ group by story.storyId");
 		$stmt->execute(array($userId, $storyId));
 		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		return($rows);
-	}
-	
+	}	
 }
 ?>

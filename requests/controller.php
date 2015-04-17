@@ -29,7 +29,7 @@ switch ($type) {
 	break;
 
 	case "getStories":
-	$data = $dbStory->getAllStories();
+	$data = $dbStory->getRecommendedStories($request->userId);
 	$returnArray = array();
 	foreach ($data as $story) {
 		$list = array(
