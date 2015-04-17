@@ -202,6 +202,10 @@ switch ($type) {
 	$dbUser->deleteFromTable('user_tag', array('userId', 'tagName'), array($request->userId, $request->tagName));
 	break;
 
+	case "rejectStory":
+	$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 2));
+	break;
+
 	default: 
 	echo "Unknown type";
 	break;
