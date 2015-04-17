@@ -196,3 +196,8 @@ CREATE TABLE user_usage
 
 	PRIMARY KEY (usageId),
 	FOREIGN KEY (userId) REFERENCES user(userId));
+
+CREATE VIEW collaborative_view 
+	AS SELECT p.userId,p.numericalId,p.preferenceValue,s.rating 
+	FROM preference_value AS p, stored_story as s 
+	WHERE p.userId = s.userId AND p.storyId = s.storyId; 
