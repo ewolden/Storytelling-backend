@@ -51,10 +51,16 @@ public class ContentBasedRecommendation
     	/* Compute the recommendations. 9 is the number of recommendations we want, don't worry about the null, 
     	 * and true tells the recommender that we want to include already known items*/
     	List<RecommendedItem> recommendations = recommender.recommend(userId, 10, null, true);
+    	
+    	conn.deleteRecommendations((int)userId);
+    	int ranking = 1;
     	for (RecommendedItem recommendation : recommendations) {
-    	  System.out.println(recommendation); 
+    		conn.insertUpdateRecommendValues(recommendation, (int) userId, "Mahout",ranking);
+    		System.out.println(recommendation); 
+    		ranking++;
     	}
     	
+    	conn.closeConnection();
     }
 
     /*Reading the story similarities from file and adding them to a collection of ItemItemSimilarity-objects*/
