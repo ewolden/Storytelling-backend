@@ -66,8 +66,10 @@ switch ($type) {
 	break;
 
 	case "updateUser":
-	$userModel = new userModel();	
-	$userModel->addUserValues($request->userId, $request->email, $request->age_group, $request->gender,
+	$userModel = new userModel();
+	$userInfo = $dbUser->getUserFromId($request->userId);
+	$userModel->addFromDB($userInfo);
+	$userModel->addUserValues($request->email, $request->age_group, $request->gender, 
 		$request->use_of_location, $request->category_preference);
 	$userId = $dbUser->updateUserInfo($userModel);
 	if($userId){/** User sucessfully updated, returns sucess message and userId **/
@@ -186,12 +188,14 @@ switch ($type) {
 	case "getStoryTags":
 	$data = $dbUser->getSelected('user_storytag', 'tagName', array('userId', 'storyId'), array($request->userId, $request->storyId));
 	$returnArray = array();
-	foreach($data as $tag){
-		$list = array(
-			'text' => $tag['tagName'],
-			'checked' => true
-			);
-		array_push($returnArray, $list);
+	if(count($data) > 0){
+		foreach($data as $tag){
+			$list = array(
+				'text' => $tag['tagName'],
+				'checked' => true
+				);
+			array_push($returnArray, $list);
+		}
 	}
 	print_r(json_encode($returnArray));
 	break;

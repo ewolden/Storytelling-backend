@@ -1,25 +1,29 @@
 <?php
 class userModel{
-	private $userId;
-	private $email;
-	private $age_group;
-	private $gender;
-	private $user_of_location;
+    private $userId;
+    private $email;
+    private $age_group;
+    private $gender;
+    private $use_of_location;
     private $category_preference; //list of categories preffered
-	
+    
     //CONSTRUCTOR
     function addUser($userId, $email){
         $this->userId = $userId;
         $this->email = $email;
     }
     
-    function addUserValues($userId,$email,$age_group,$gender,$user_of_location,$category_preference){
-        $this->userId = $userId;
-        $this->email = $email;
-        $this->age_group = $age_group;
-        $this->gender = $gender;
-        $this->user_of_location = $user_of_location;
-        $this->category_preference = $category_preference;
+    function addUserValues($email, $age_group,$gender,$use_of_location,$category_preference){
+        if($email != null && $email != -1)
+            $this->email = $email;
+        if($age_group != null)
+            $this->age_group = $age_group;
+        if($gender != null)
+            $this->gender = $gender;
+        if($use_of_location != null && isset($use_of_location))
+            $this->use_of_location = $use_of_location;
+        if($category_preference != null)
+            $this->category_preference = $category_preference;
     }
 
     function addFromDB($userFromDB){
@@ -39,13 +43,13 @@ class userModel{
             'email' => $this->getMail(),
             'age_group' => $this->getAgeGroup(),
             'gender' => $this->getGender(),
-            'user_of_location' => $this->getLocation(),
+            'use_of_location' => $this->getLocation(),
             'category_preference' => $this->getCategoryPrefs()
             );
     }
 
-	//SETTERS
-	public function setUserId($userId)
+    //SETTERS
+    public function setUserId($userId)
     {
         $this->userId = $userId;
     }
@@ -65,9 +69,9 @@ class userModel{
         $this->gender = $gender;
     }
     
-    public function setLocation($user_of_location)
+    public function setLocation($use_of_location)
     {
-        $this->user_of_location = $user_of_location;
+        $this->use_of_location = $use_of_location;
     }
 
     public function setCategoryPrefs($category_preference)
@@ -75,18 +79,18 @@ class userModel{
         $this->category_preference = $category_preference;
     }    
 
-	//GETTERS
-	public function getUserId()
+    //GETTERS
+    public function getUserId()
     {
         return $this->userId;
     }
     
-	public function getMail()
+    public function getMail()
     {
         return $this->email;
     }
     
-	public function getAgeGroup()
+    public function getAgeGroup()
     {
         return $this->age_group;
     }
@@ -96,9 +100,9 @@ class userModel{
         return $this->gender;
     }
     
-	public function getLocation()
+    public function getLocation()
     {
-        return $this->user_of_location;
+        return $this->use_of_location;
     }
 
     public function getCategoryPrefs()

@@ -86,7 +86,7 @@ class dbUser extends dbHelper {
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindParam(':usermail',$email);
         $stmt->execute();
-        $userrow = $stmt->fetchAll();
+        $userrow = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if(count($userrow) > 0){ /** User with the inputed email exists **/
 			return array(true,$userrow[0], $this->getUserCategories($userrow[0]['userId']));
     	}
@@ -102,7 +102,7 @@ class dbUser extends dbHelper {
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindParam(':userid',$userId);
 		$stmt->execute();
-        $userrow = $stmt->fetchAll();
+        $userrow = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if(count($userrow) > 0){ /** User with the inputed email exists **/
 			return array(true,$userrow[0], $this->getUserCategories($userrow[0]['userId']));
     	}
