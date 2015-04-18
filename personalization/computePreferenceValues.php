@@ -4,6 +4,12 @@ require_once '../models/preferenceValue.php';
 require_once '../database/dbStory.php';
 require_once 'weights.php';
 
+/*$user = new userModel();
+$user->addUser(2,null);
+$user->addUserValues(null,null,null,null,array(2,4,5));
+$cpv = new computePreferenceValues($user);
+$cpv->computeAllValues();*/
+
 class computePreferenceValues {
 	
 	private $user;
@@ -19,13 +25,20 @@ class computePreferenceValues {
 	/*Compute preferences for all stories for this user*/
 	public function computeAllValues(){
 		$stories = $this->dbStory->getStories();
+		$sql = array();
+		$placeHolderString = array();
 		foreach($stories as $story){
 			$storyModel = new storyModel();
 			$storyModel->setstoryId($story['storyId']);
 			$storyModel->setCategoryList($story['categories']);
 			$storyModel->setNumericalId($story['numericalId']);
-			$this->computeOneValue($storyModel);
+			$sql[] = $this->computeOneValue($storyModel);
+			$placeHolderArray[] = '(?,?,?,?)';
 		}
+		$columnsString = 'userId,storyId,numericalId,preferenceValue';
+		
+		/*batchInsert is supposedly faster*/
+		$this->dbStory->batchInsert('preference_value',$columnsString,implode(',',$placeHolderArray),(implode(',',$sql)));
 	}
 
 	/**Compute the user's preference for the input $storyModel
@@ -40,7 +53,8 @@ class computePreferenceValues {
 		
 		$value = $this->computePreferenceValue($preferenceValue);
 		
-		$this->dbStory->insertUpdateAll('preference_value', array($this->user->getUserId(), $storyModel->getstoryId(), $storyModel->getNumericalId(), $value));
+		return ''.$this->user->getUserId().','.$storyModel->getstoryId().','.$storyModel->getNumericalId().','.$value.'';
+		//$this->dbStory->insertUpdateAll('preference_value', array($this->user->getUserId(), $storyModel->getstoryId(), $storyModel->getNumericalId(), $value));
 	}
 	
 	/*Not sure if the weights are used correctly here */

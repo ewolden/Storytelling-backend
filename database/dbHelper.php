@@ -201,6 +201,12 @@ class DbHelper extends dbConstants {
 		$stmt->execute($values);
 	}
 
+	public function batchInsert($tableName, $columns, $placeholderString, $valuesString){
+		$query = "INSERT INTO ".$tableName." (".$columns.") VALUES ".$placeholderString."";
+		$stmt = $this->db->prepare($query);
+		$stmt->execute(explode(',',$valuesString));
+	}
+	
 }
 //$db->getUserCategories(1);
 //print_r('Running');
