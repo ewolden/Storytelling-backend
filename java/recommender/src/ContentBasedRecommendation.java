@@ -29,12 +29,15 @@ public class ContentBasedRecommendation
 	
     public ContentBasedRecommendation(long userId) throws TasteException, IOException, ClassNotFoundException
     {
+    	long startTime = System.nanoTime();
 		try {
 			fileLocation = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
-    	conn = new DatabaseConnection();
+    	conn = new DatabaseConnection((int) userId);
+    	conn.createView((int)userId);
+    	conn.setDataModel();
     	/*Using FileDataModel only for testing, might use the MYSQLJBDCModel when fetching data from database*/
     	DataModel model = conn.getDataModel();
     	
@@ -58,8 +61,11 @@ public class ContentBasedRecommendation
     		System.out.println(recommendation); 
     		ranking++;
     	}
-    	
+    	long elapsedTime = System.nanoTime()-startTime;
+    	System.out.println("Mahout time: "+(float)elapsedTime/1000000000);
+    	conn.dropView();
     	conn.closeConnection();
+    	
     }
 
     /*Reading the story similarities from file and adding them to a collection of ItemItemSimilarity-objects*/

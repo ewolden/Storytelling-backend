@@ -1,3 +1,4 @@
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -13,15 +14,18 @@ import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
 
-
 public class DatabaseConnection {
 	Connection connection;
 	DataModel model;
 	ReloadFromJDBCDataModel reloadModel;
+	MysqlConnectionPoolDataSource dataSource;
+	private String viewName;
 
 	/**Creates a connection to the database*/
-	public DatabaseConnection() throws TasteException{
-		MysqlConnectionPoolDataSource dataSource = new MysqlConnectionPoolDataSource();
+	public DatabaseConnection(int userId) throws TasteException{
+		viewName = "content"+userId;
+		
+		dataSource = new MysqlConnectionPoolDataSource();
 
 		dataSource.setServerName(Globals.DB_HOST);
 		dataSource.setUser(Globals.DB_USERNAME);
@@ -35,20 +39,27 @@ public class DatabaseConnection {
 			dataSource.setAlwaysSendSetIsolation(false);
 			dataSource.setElideSetAutoCommits(true);
 			connection = dataSource.getConnection();
-
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void setDataModel(){	
 			JDBCDataModel dataModel = new MySQLJDBCDataModel(
-					dataSource, "preference_value", "userId",
+					dataSource, viewName, "userId",
 					"numericalId", "preferenceValue", "time_stamp");
 
 
-			reloadModel = new ReloadFromJDBCDataModel(dataModel);
+			try {
+				reloadModel = new ReloadFromJDBCDataModel(dataModel);
+			} catch (TasteException e) {
+				e.printStackTrace();
+			}
 			if(reloadModel != null){
 				model = reloadModel.getDelegateInMemory();
 
 			} else model = dataModel;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		
 	}
 
 	/**
@@ -96,6 +107,28 @@ public class DatabaseConnection {
 			PreparedStatement stmt = connection.prepareStatement("DELETE FROM stored_story where userId=? and recommend_ranking IS NOT NULL");
 			stmt.setInt(1, userId);
 			stmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void createView(int userId){
+		try {
+			PreparedStatement stmt = connection.prepareStatement(
+					"CREATE VIEW "+viewName+" as SELECT * FROM preference_value WHERE userId=?");
+			stmt.setInt(1, userId);
+			stmt.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public void dropView(){
+		try {
+			PreparedStatement stmt = connection.prepareStatement(
+					"DROP VIEW "+viewName);
+			stmt.execute();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

@@ -75,9 +75,14 @@ switch ($type) {
 		when the user sets gender and age.*/
 		$output = $userId;
 		if(!is_null($request->category_preference)){
+			$startTime = microtime(true);
 			$userModel->setUserId($userId);
 			$recommend = new runRecommender($userModel);
+			$prefTime = microtime(true)-$startTime;
 			$output = $recommend->runRecommender();
+			$endTime = microtime(true)-$startTime;
+			$output .= "Preference value computation time: ".$prefTime;
+			$output .= "\nTotal recommendation time: ".$endTime;
 		}
 		print_r(json_encode(array('status' => "successfull",'userId' => $output)));
 	}
