@@ -66,6 +66,10 @@ class dbUser extends dbHelper {
         	if($user->getUserId() != -1)
         		$userId = $user->getUserId();
         	else return false;
+        } else {
+        	$this->insertUpdateAll('user_tag', array($userId, "Lest"));
+        	$this->insertUpdateAll('user_tag', array($userId, "Les senere"));
+        	$this->insertUpdateAll('user_tag', array($userId, "Avvist"));
         }
 
         /*Deleting all existing category preferences*/

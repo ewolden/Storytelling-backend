@@ -140,6 +140,9 @@ switch ($type) {
 
 	/*Tag a story*/
 	case "tagStory":
+	if($request->tagName == "Les senere"){
+		$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 3));
+	}
 	$dbUser->insertUpdateAll('user_storytag', array($request->userId, $request->storyId, $request->tagName));
 	break;
 

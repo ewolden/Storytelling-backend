@@ -21,8 +21,8 @@ class storyModel{
     private $explanation;
     private $falseRecommend;
     private $typeOfRecommendation;
-	private $createdDate;
-	private $numericalId;
+    private $createdDate;
+    private $numericalId;
     private $userTags = array();
 
     //Constructor
@@ -33,7 +33,7 @@ class storyModel{
         $xml = simplexml_load_string($xml_from_API);
         
         $this->storyId = $id;
-		$this->numericalId = explode('.', $id)[1];
+        $this->numericalId = explode('.', $id)[1];
         $this->title = (string) $xml->children('dc', TRUE)->title;
         $this->introduction = (string) $xml->children('abm', TRUE)->introduction;
         $this->theStory = (string) $xml->children('dc', TRUE)->description;
@@ -42,7 +42,7 @@ class storyModel{
         $this->rights = (string) $xml->children('dc', TRUE)->rights;
         $this->institution = (string) $xml->children('europeana', TRUE)->dataProvider;
         $this->url = "http://digitaltfortalt.no/things/thing/H-DF/".$this->storyId;
-		$this->createdDate = (string) $xml->children('dcterms', TRUE)->created; 
+        $this->createdDate = (string) $xml->children('dcterms', TRUE)->created; 
 
         //Create a list of all creators for the story
         foreach ($xml->children('dc', TRUE)->creator as $element)
@@ -59,10 +59,17 @@ class storyModel{
         foreach ($xml->children('abm', TRUE)->media as $element)
         {
             $url = (string) $element->children('abm', TRUE)->videoUri;
-            parse_str(parse_url($url, PHP_URL_QUERY), $urlquery);
-            $this->videoList[] = array(
-                'videourl' => $url, 
-                'posterurl' => "http://mm01.dimu.no/image/".$urlquery['mmid']);
+            if(!empty($url)){
+                parse_str(parse_url($url, PHP_URL_QUERY), $urlquery);
+                if(!isset($urlquery['mmid'])){
+                    $this->videoList[] = array('videourl' => $url);
+                }else{
+                    $this->videoList[] = array(
+                        'videourl' => $url, 
+                        'posterurl' => "http://mm01.dimu.no/image/".$urlquery['mmid']);
+                }
+
+            }
         }
         //Create a list of all audio URLs for the story
         foreach ($xml->children('abm', TRUE)->media as $element)
@@ -180,31 +187,31 @@ class storyModel{
     {
         $this->subjectList = $subjectList;
     }
-	
-	public function setCategoryList($categoryList)
-	{
-		$this->categoryList = $categoryList;
-	}
+    
+    public function setCategoryList($categoryList)
+    {
+        $this->categoryList = $categoryList;
+    }
 
-	public function setRating($rating)
-	{
-		$this->rating = $rating;
-	}
+    public function setRating($rating)
+    {
+        $this->rating = $rating;
+    }
     public function setNumericalId($numericalId){
         $this->numericalId = $numericalId;
     }
-	
+    
     //GETTERS
     public function getstoryId()
     {
         return $this->storyId;
     }
     
-	public function getnumericalId()
-	{
-		return $this->numericalId;
-	}
-	
+    public function getnumericalId()
+    {
+        return $this->numericalId;
+    }
+    
     public function gettitle()
     {
         return $this->title;
@@ -235,10 +242,10 @@ class storyModel{
         return $this->county;
     }
     
-	public function getDate(){
-		return $this->createdDate;
-	}
-	
+    public function getDate(){
+        return $this->createdDate;
+    }
+    
     public function getRights()
     {
         return $this->rights;
