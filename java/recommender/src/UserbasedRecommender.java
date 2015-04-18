@@ -1,4 +1,4 @@
-package itemRecommender;
+
 
 import java.io.File;
 import java.util.ArrayList;
@@ -24,7 +24,8 @@ public class UserbasedRecommender
     	ArrayList<CollaborativeRecommendation> recommendedItemsList = new ArrayList<CollaborativeRecommendation>();
     	
     	
-    	DatabaseConnection conn = new DatabaseConnection();
+    	DatabaseConnection conn = new DatabaseConnection("collaborative_view");
+    	conn.setDataModel();
     	DataModel model = conn.getDataModel();
 		/*Testing*
     	//DataModel model = new FileDataModel(new File("data/dataset.csv"));
@@ -41,11 +42,14 @@ public class UserbasedRecommender
     	/*Get 10 recommendations for this userId*/
     	List<RecommendedItem> recommendations = recommender.recommend(userId,10, null, true);
     	if(!recommendations.isEmpty()){
+    		int ranking = 0;
+    		ArrayList<DatabaseInsertObject> itemsToBeInserted = new ArrayList<>();
     		for (RecommendedItem recommendation : recommendations) {
-				conn.insertUpdateRecommendValues(recommendation, (int)userId, "test");
+    			itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+recommendation.getItemID(), "test", 0, 0, ranking));
 				recommendedItemsList.add(new CollaborativeRecommendation(recommendation, (int)userId, "explanationTestUSER"));
-    	    	  	    	  
-    	    	}
+    	    	ranking++;    	  
+    	    }
+    		conn.insertUpdateRecommendValues(itemsToBeInserted);
     	 }else{
     		/*There are no recommendations for this user*/
     		System.out.println("No recommendations for this user");

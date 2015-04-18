@@ -1,5 +1,3 @@
-package itemRecommender;
-
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 
 public class CollaborativeRecommendation {

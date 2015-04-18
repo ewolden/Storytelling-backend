@@ -201,4 +201,4 @@ CREATE TABLE user_usage
 CREATE VIEW collaborative_view 
 	AS SELECT p.userId,p.numericalId,p.preferenceValue,s.rating 
 	FROM preference_value AS p, stored_story as s 
-	WHERE p.userId = s.userId AND p.storyId = s.storyId; 
+	WHERE p.userId = s.userId AND p.storyId = s.storyId AND s.rating > 0; 

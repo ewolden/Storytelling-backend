@@ -2,6 +2,7 @@
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.apache.mahout.cf.taste.common.Refreshable;
@@ -10,7 +11,6 @@ import org.apache.mahout.cf.taste.impl.model.jdbc.MySQLJDBCDataModel;
 import org.apache.mahout.cf.taste.impl.model.jdbc.ReloadFromJDBCDataModel;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.model.JDBCDataModel;
-import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
 
@@ -19,11 +19,13 @@ public class DatabaseConnection {
 	DataModel model;
 	ReloadFromJDBCDataModel reloadModel;
 	MysqlConnectionPoolDataSource dataSource;
+	
+	/*Will be content+userId when doing content-based filtering and collaborative_view when doing collaborative filtering*/
 	private String viewName;
 
 	/**Creates a connection to the database*/
-	public DatabaseConnection(int userId) throws TasteException{
-		viewName = "content"+userId;
+	public DatabaseConnection(String viewName) throws TasteException{
+		this.viewName = viewName;
 		
 		dataSource = new MysqlConnectionPoolDataSource();
 
@@ -76,27 +78,28 @@ public class DatabaseConnection {
 	}
 	
 	/**Add recommendations to database*/
-	public void insertUpdateRecommendValues(RecommendedItem item, int userId, String explanation, int ranking){
+	public void insertUpdateRecommendValues(ArrayList<DatabaseInsertObject> listOfRecommendations){
 		try {
-			PreparedStatement stmt = connection.prepareStatement("UPDATE stored_story "
-					+ "SET explanation = ?, recommend_ranking = ? " // + " AND " ETTELLERANNET ANNET SKAL HER
-					+ "WHERE userId = ? AND storyId = ?");
-			stmt.setString(1, explanation);
-			stmt.setInt(2, ranking);
-			stmt.setInt(3, userId);
-			stmt.setString(4, "DF."+item.getItemID());
-			int result = stmt.executeUpdate();
-			if(result == 0){
-				stmt = connection.prepareStatement("INSERT INTO stored_story (userId, storyId, explanation, false_recommend,type_of_recommendation,recommend_ranking) " //OG ETT ELLER ANNET ANNET
-						+ "VALUES (?,?,?,?,?,?)");
-				stmt.setInt(1, userId);
-				stmt.setString(2, "DF."+item.getItemID());
-				stmt.setString(3, explanation);
-				stmt.setInt(4, 0);
-				stmt.setInt(5, 0);
-				stmt.setInt(6,ranking);
-				result = stmt.executeUpdate();
+			String insertUpdateSql = "INSERT INTO stored_story (userId, storyId, explanation, false_recommend,type_of_recommendation,recommend_ranking)"
+					+ "VALUES (?,?,?,?,?,?) ON DUPLICATE KEY UPDATE "
+					+ "explanation = ?, false_recommend = ?, type_of_recommendation=?, recommend_ranking = ?";
+			PreparedStatement stmt = connection.prepareStatement(insertUpdateSql);
+			
+			for (DatabaseInsertObject item: listOfRecommendations){
+				stmt.setInt(1, item.getUserId());
+				stmt.setString(2, item.getStoryId());
+				stmt.setString(3, item.getExplanation());
+				stmt.setInt(4, item.getFalse_recommend());
+				stmt.setInt(5, item.getType_of_recommendation());
+				stmt.setInt(6, item.getRanking());
+				stmt.setString(7, item.getExplanation());
+				stmt.setInt(8, item.getFalse_recommend());
+				stmt.setInt(9, item.getType_of_recommendation());
+				stmt.setInt(10, item.getRanking());
+				stmt.addBatch();		
 			}
+			stmt.executeBatch();
+			stmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

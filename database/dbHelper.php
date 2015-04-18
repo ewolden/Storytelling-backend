@@ -200,7 +200,10 @@ class DbHelper extends dbConstants {
 		$stmt = $this->db->prepare($query);
 		$stmt->execute($values);
 	}
-
+	
+	/*Insert multiple sets of values in $tableName.
+	$placeholderString should look like (?,?,?,?),(?,?,?,?),(?,?,?,?), etc
+	$valuesString should be a string with all the values separated by commas*/
 	public function batchInsert($tableName, $columns, $placeholderString, $valuesString){
 		$query = "INSERT INTO ".$tableName." (".$columns.") VALUES ".$placeholderString."";
 		$stmt = $this->db->prepare($query);

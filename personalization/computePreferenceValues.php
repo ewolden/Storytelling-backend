@@ -25,26 +25,27 @@ class computePreferenceValues {
 	/*Compute preferences for all stories for this user*/
 	public function computeAllValues(){
 		$stories = $this->dbStory->getStories();
-		$sql = array();
-		$placeHolderString = array();
+		$values = array();
+		$placeHolderArray = array();
 		foreach($stories as $story){
 			$storyModel = new storyModel();
 			$storyModel->setstoryId($story['storyId']);
 			$storyModel->setCategoryList($story['categories']);
 			$storyModel->setNumericalId($story['numericalId']);
-			$sql[] = $this->computeOneValue($storyModel);
+			$values[] = $this->computeOneValue($storyModel, true);
 			$placeHolderArray[] = '(?,?,?,?)';
 		}
 		$columnsString = 'userId,storyId,numericalId,preferenceValue';
 		
-		/*batchInsert is supposedly faster*/
-		$this->dbStory->batchInsert('preference_value',$columnsString,implode(',',$placeHolderArray),(implode(',',$sql)));
+		/*Inserting all computed preference values.
+		Much faster than inserted one and one value*/
+		$this->dbStory->batchInsert('preference_value',$columnsString,implode(',',$placeHolderArray),implode(',',$values));
 	}
 
 	/**Compute the user's preference for the input $storyModel
 	 *If calling this method directly, the storyModel need to have set the categoryList (and storyId) beforehand
 	 */
-	public function computeOneValue($storyModel){
+	public function computeOneValue($storyModel, $calledFromComputeAllValues){
 		$rating = $this->dbStory->getSelected('stored_story', 'rating', array('storyId', 'userId'),array($storyModel->getstoryId(), $this->user->getUserId()));
 		$storyModel->setRating($rating[0]['rating']);
 		
@@ -53,8 +54,14 @@ class computePreferenceValues {
 		
 		$value = $this->computePreferenceValue($preferenceValue);
 		
-		return ''.$this->user->getUserId().','.$storyModel->getstoryId().','.$storyModel->getNumericalId().','.$value.'';
-		//$this->dbStory->insertUpdateAll('preference_value', array($this->user->getUserId(), $storyModel->getstoryId(), $storyModel->getNumericalId(), $value));
+		/*If this method is called from computeAllValues we should return the result*/
+		if($calledFromComputeAllValues){
+			return ''.$this->user->getUserId().','.$storyModel->getstoryId().','.$storyModel->getNumericalId().','.$value.'';
+		}
+		/*If this method is called directly, we're only computed one preferenceValue*/
+		else{
+		    $this->dbStory->insertUpdateAll('preference_value', array($this->user->getUserId(), $storyModel->getstoryId(), $storyModel->getNumericalId(), $value));
+		}
 	}
 	
 	/*Not sure if the weights are used correctly here */

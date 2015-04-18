@@ -1,4 +1,4 @@
-package itemRecommender;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +23,8 @@ public class ItemRecommender {
 		try {
 			/*This fileDataModel is just for testing. This should be replaced by real data*/
 			//DataModel dm = new FileDataModel(new File("data/dataset.csv"));
-	    	DatabaseConnection conn = new DatabaseConnection();
+	    	DatabaseConnection conn = new DatabaseConnection("collaborative_view");
+	    	conn.setDataModel();
 	    	DataModel dm = conn.getDataModel();
 	    	
 			/* Returns the degree of similarity, of two items, based on the preferences that users have expressed for the items. */

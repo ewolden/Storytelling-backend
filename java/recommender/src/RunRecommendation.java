@@ -1,12 +1,11 @@
-package itemRecommender;
+
 
 import java.util.ArrayList;
-
-import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 
 public class RunRecommendation {
 	
 	public static void main(String[] args) {
+		long startTime = System.nanoTime();
 		long userId = Long.parseLong(args[0]);
 		System.out.println("UserId: "+userId);
 		String method = args[1];
@@ -14,7 +13,8 @@ public class RunRecommendation {
 		
 		if(method.equals("content")){
 			try {
-				new ContentBasedRecommendation(userId);
+				ContentBasedRecommender cbr = new ContentBasedRecommender(userId);
+				cbr.runContentBasedRecommender();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -40,12 +40,14 @@ public class RunRecommendation {
 				for(CollaborativeRecommendation recommendation : userbased){
 					collaborativeRecommendations.add(recommendation);
 				}
+				ArrayList<DatabaseInsertObject> itemsToBeInserted = new ArrayList<>();
 				for(CollaborativeRecommendation colRec : collaborativeRecommendations){
-					System.out.println(colRec.getItem() +","+ userId + "," +colRec.getExplanation());
-					DatabaseConnection db = new DatabaseConnection();
+					System.out.println(colRec.getItem() +","+ userId + "," +colRec.getExplanation());		
+					itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+colRec.getItem().getItemID(), colRec.getExplanation(), 0, 1, 0));
 					
-					db.insertUpdateRecommendValues(colRec.getItem(), (int)userId, colRec.getExplanation());
 				}
+				DatabaseConnection db = new DatabaseConnection("collaborative_view");
+				db.insertUpdateRecommendValues(itemsToBeInserted);
 				//System.out.println(collaborativeRecommendations.toString());
 				
 
@@ -62,6 +64,8 @@ public class RunRecommendation {
 			System.out.println("Wrong method");
 		}
 
+		long elapsedTime = System.nanoTime()-startTime;
+    	System.out.println("Mahout time: "+(float)elapsedTime/1000000000);
 	}
 
 }
