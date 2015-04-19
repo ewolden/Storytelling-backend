@@ -138,5 +138,35 @@ class dbUser extends dbHelper {
     	$row = $stmt->fetch(PDO::FETCH_ASSOC);
     	return $row;
     }
+     public function getNumberOfUsers(){
+    	$sql = "SELECT COUNT(*) from user";
+    	$stmt = $this->db->prepare($sql);
+    	$stmt->execute();
+    	$result = $stmt->fetch();
+    	if($result){
+    		//print_r($result[0]);
+    		return $result[0];
+    	}else{
+    		return null;
+    	}
+    }
+
+    public function getNumberOfRatedStories($userId){
+    	/*Returns the number of rated stories, EXCEPT this user*/
+    	$sql = "SELECT COUNT(*) from story_state WHERE userId != (:userId) AND stateId = 5";
+    	$stmt = $this->db->prepare($sql);
+    	$stmt->bindParam(':userId', $userId);
+    	$stmt->execute();
+    	$result = $stmt->fetch();
+    	//print_r($result[0])
+    	if($result){
+    		return $result[0];
+    	}else{
+    		return null;
+    	}
+
+    }
+
+
 }
 ?>
