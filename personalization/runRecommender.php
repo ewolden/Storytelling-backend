@@ -25,6 +25,7 @@ class runRecommender {
 		if($numberOfUsers > 5 AND $numberOfRates > 15){
 			$this->method = 'collaborative';
 			//print_r("Run collaborative");
+		}
 		$this->method = 'content';
 	}
 	
