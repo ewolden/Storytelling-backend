@@ -17,12 +17,12 @@ class userModel{
         if($email != null && $email != -1)
             $this->email = $email;
         if($age_group != null)
-            $this->age_group = $age_group;
+            $this->age_group = (string)$age_group;
         if($gender != null)
-            $this->gender = $gender;
-        if($use_of_location != null && isset($use_of_location))
+            $this->gender = (string)$gender;
+        if($use_of_location != null)
             $this->use_of_location = $use_of_location;
-        if($category_preference != null)
+        if(!empty($category_preference))
             $this->category_preference = $category_preference;
     }
 
