@@ -40,7 +40,9 @@ public class DatabaseConnection {
 			dataSource.setCacheResultSetMetadata(true);
 			dataSource.setAlwaysSendSetIsolation(false);
 			dataSource.setElideSetAutoCommits(true);
+			dataSource.setRewriteBatchedStatements(true);
 			connection = dataSource.getConnection();
+			connection.setAutoCommit(false);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -99,6 +101,7 @@ public class DatabaseConnection {
 				stmt.addBatch();		
 			}
 			stmt.executeBatch();
+			connection.commit();
 			stmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
