@@ -26,9 +26,7 @@ class runRecommender {
 			$this->method = 'collaborative';
 			//print_r("Run collaborative");
 		}
-		else {
-			$this->method = 'content';
-		}
+		$this->method = 'content';
 	}
 	
 	public function getUser(){
