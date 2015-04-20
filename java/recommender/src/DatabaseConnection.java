@@ -1,6 +1,7 @@
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -116,6 +117,26 @@ public class DatabaseConnection {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/*Find the list of read or rejected stories for this user*/
+	public ArrayList<Integer> getReadOrRejected(int userId){
+		ArrayList<Integer> readOrRejected = new ArrayList<>();
+		
+		try {
+			PreparedStatement stmt = connection.prepareStatement(
+					"SELECT distinct storyId FROM story_state WHERE userId=? AND (stateId=2 OR stateId=4)");
+			stmt.setInt(1,userId);
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()){
+				String id = rs.getString("storyId");
+				int numId = Integer.parseInt(id.substring(3));
+				readOrRejected.add(numId);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}		
+		return readOrRejected;
 	}
 	
 	public void createView(int userId){

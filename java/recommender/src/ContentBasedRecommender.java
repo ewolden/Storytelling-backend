@@ -33,40 +33,51 @@ public class ContentBasedRecommender
 			e.printStackTrace();
 		}
 		/*"content"+userId is the name of the view shall create*/
-    	conn = new DatabaseConnection("content"+userId);
-    	
+
+		conn = new DatabaseConnection("content"+userId);
     	/*Create a view the includes all preferences values for this user*/
     	conn.createView((int)userId);
-    	
+
     	conn.setDataModel();
 
     	DataModel model = conn.getDataModel();
     	
     	Collection<ItemItemSimilarity> sim = getStorySimilarities();
-    	
     	/* CustomGenericItemBasedRecommender need an ItemSimilarity-object as input, so create an instance of this class.*/
     	ItemSimilarity similarity = new GenericItemSimilarity(sim);
     	
     	/*Create a new Recommender-instance with our datamodel and story similarities*/
     	GenericItemBasedRecommender recommender = new GenericItemBasedRecommender(model, similarity);
     	
-    	/* Compute the recommendations. 10 is the number of recommendations we want, don't worry about the null, 
+    	/* Compute the recommendations. 167 is the number of recommendations we want, don't worry about the null, 
     	 * and true tells the recommender that we want to include already known items*/
-    	List<RecommendedItem> recommendations = recommender.recommend(userId, 10, null, true);
-    	
+    	List<RecommendedItem> recommendations = recommender.recommend(userId, 167, null, true);
+    	    	
     	/*Delete the current recommendations stored in stored_story*/
     	conn.deleteRecommendations((int)userId); 
+    	
+    	/*Find the stories that the user have read or rejected*/
+    	ArrayList<Integer> readOrRejected = conn.getReadOrRejected((int)userId);
+
     	ArrayList<DatabaseInsertObject> itemsToBeInserted = new ArrayList<>();
     	int ranking = 1;
     	for (RecommendedItem recommendation : recommendations) {
-    		itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+recommendation.getItemID(), "mahout", 0, 0, ranking));
-    		System.out.println(recommendation); 
-    		ranking++;
+    		/*If the item has not been read or rejected we insert it*/
+    		if (!readOrRejected.contains((int)recommendation.getItemID())){
+    			itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+recommendation.getItemID(), "mahout", 0, 0, ranking));
+        		System.out.println(recommendation); 
+        		ranking++;
+    		}
+    		/*When we got 10 new recommendations, we're happy*/
+    		if (ranking > 10){
+    			break;
+    		}
     	}
     	conn.insertUpdateRecommendValues(itemsToBeInserted);
 
     	conn.dropView();
     	conn.closeConnection();
+
     	
     }
 
