@@ -19,14 +19,16 @@ class runRecommender {
 		//TODO: find out what type of recommendation to run
 		$this->db = new dbUser();
 		$numberOfUsers = $this->db->getNumberOfUsers();
-		$numberOfRates = $this->db->getNumberOfRatedStories($this->user.getUserId());
+		$numberOfRates = $this->db->getNumberOfRatedStories($this->user->getUserId());
 	
 		/*If the number of users are above 5 and the number of rates done by other users is above 15 (These values can be changed)*/
 		if($numberOfUsers > 5 AND $numberOfRates > 15){
 			$this->method = 'collaborative';
 			//print_r("Run collaborative");
 		}
-		$this->method = 'content';
+		else {
+			$this->method = 'content';
+		}
 	}
 	
 	public function getUser(){
