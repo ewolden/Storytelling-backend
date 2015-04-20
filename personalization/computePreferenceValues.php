@@ -37,6 +37,7 @@ class computePreferenceValues {
 		}
 		$columnsString = 'userId,storyId,numericalId,preferenceValue';
 		
+		$this->dbStory->deleteFromTable('preference_value','userId',$this->user->getUserId());
 		/*Inserting all computed preference values.
 		Much faster than inserted one and one value*/
 		$this->dbStory->batchInsert('preference_value',$columnsString,implode(',',$placeHolderArray),implode(',',$values));
