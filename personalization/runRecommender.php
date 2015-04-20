@@ -20,9 +20,10 @@ class runRecommender {
 		$this->db = new dbUser();
 		$numberOfUsers = $this->db->getNumberOfUsers();
 		$numberOfRates = $this->db->getNumberOfRatedStories($this->user->getUserId());
-	
-		/*If the number of users are above 5 and the number of rates done by other users is above 15 (These values can be changed)*/
-		if($numberOfUsers > 5 AND $numberOfRates > 15){
+		$numberOfRatesByThisUser = $this->db->getNumberOfRatedStoriesByThisUser($this->user->getUserId());
+		print_r($numberOfRatesByThisUser);
+		/*If the number of users are above 5, the number of rated done by this user is above 10 and the number of rates rates done by other users is above 15 (These values can be changed)*/
+		if($numberOfUsers > 5 AND $numberOfRates > 15 AND $numberOfRatesByThisUser > 10){
 			$this->method = 'collaborative';
 			//print_r("Run collaborative");
 		}
@@ -42,4 +43,5 @@ class runRecommender {
 		return $output;
 	}
 }
+
 ?>

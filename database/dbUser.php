@@ -166,7 +166,20 @@ class dbUser extends dbHelper {
     	}
 
     }
+    public function getNumberOfRatedStoriesByThisUser($userId){
+        /*Returns the number of rated stories done by this user */
+        $sql = "SELECT COUNT(*) from story_state WHERE userId = (:userId) AND stateId = 5";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':userId', $userId);
+        $stmt->execute();
+        $result = $stmt->fetch();
+        //print_r($result[0])
+        if($result){
+            return $result[0];
+        }else{
+            return null;
+        }
 
-
+    }
 }
 ?>
