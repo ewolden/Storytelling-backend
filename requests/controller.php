@@ -36,17 +36,29 @@ switch ($type) {
 			'id' => $story['storyId'],
 			'title' => $story['title'],
 			'description' => $story['introduction'],
+			'false_recommend' => $story['false_recommend'],
+			'explanation' => $story['explanation'],
 			'picture' => "",
 			'thumbnail' => "",
 			'categories' => "",
+			'mediaType' => array(),
 			'author' => $story['author'],
 			'date' => "");
 		if(array_key_exists('categories', $story))
 			$list['categories'] = explode(",",$story['categories']);
-		if($story['mediaId'] == 1){
-			$list['picture'] = "http://media31.dimu.no/media/image/H-DF/".$story['storyId']."/0?byIndex=true&height=400&width=400";
-			$list['thumbnail'] = "http://api.digitaltmuseum.no/media?owner=H-DF&identifier=".$story['storyId']."&type=thumbnail&api.key=demo";
-		}
+		if(array_key_exists('mediaId', $story)){
+			$medialist = explode(",", $story['mediaId']);
+			if(in_array(1, $medialist)){
+				array_push($list['mediaType'], "picture");
+				$list['picture'] = "http://media31.dimu.no/media/image/H-DF/".$story['storyId']."/0?byIndex=true&height=400&width=400";
+				$list['thumbnail'] = "http://api.digitaltmuseum.no/media?owner=H-DF&identifier=".$story['storyId']."&type=thumbnail&api.key=demo";
+			}
+			if(in_array(2, $medialist))
+				array_push($list['mediaType'], "audio");
+			if(in_array(3, $medialist))
+				array_push($list['mediaType'], "video");
+
+		}			
 		array_push($returnArray, $list);
 	}
 	print_r(json_encode($returnArray));
@@ -155,17 +167,28 @@ switch ($type) {
 			'id' => $story['storyId'],
 			'title' => $story['title'],
 			'description' => $story['introduction'],
+			'false_recommend' => $story['false_recommend'],
+			'explanation' => $story['explanation'],
 			'picture' => "",
 			'thumbnail' => "",
 			'categories' => "",
+			'mediaType' => array(),
 			'author' => $story['author'],
 			'date' => "");
 		if(array_key_exists('categories', $story))
 			$list['categories'] = explode(",",$story['categories']);
-		if($story['mediaId'] == 1){
-			$list['picture'] = "http://media31.dimu.no/media/image/H-DF/".$story['storyId']."/0?byIndex=true&height=400&width=400";
-			$list['thumbnail'] = "http://api.digitaltmuseum.no/media?owner=H-DF&identifier=".$story['storyId']."&type=thumbnail&api.key=demo";
-		}
+		if(array_key_exists('mediaId', $story)){
+			$medialist = explode(",", $story['mediaId']);
+			if(in_array(1, $medialist)){
+				array_push($list['mediaType'], "picture");
+				$list['picture'] = "http://media31.dimu.no/media/image/H-DF/".$story['storyId']."/0?byIndex=true&height=400&width=400";
+				$list['thumbnail'] = "http://api.digitaltmuseum.no/media?owner=H-DF&identifier=".$story['storyId']."&type=thumbnail&api.key=demo";
+			}
+			if(in_array(2, $medialist))
+				array_push($list['mediaType'], "audio");
+			if(in_array(3, $medialist))
+				array_push($list['mediaType'], "video");
+		}		
 		array_push($returnArray, $list);
 	}
 	print_r(json_encode($returnArray));

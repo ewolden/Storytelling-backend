@@ -14,13 +14,13 @@ class userModel{
     }
     
     function addUserValues($email, $age_group,$gender,$use_of_location,$category_preference){
-        if($email != null && $email != -1)
+        if(!is_null($email) && $email != -1)
             $this->email = $email;
-        if($age_group != null)
-            $this->age_group = (string)$age_group;
-        if($gender != null)
-            $this->gender = (string)$gender;
-        if($use_of_location != null)
+        if(!is_null($age_group))
+            $this->age_group = $age_group;
+        if(!is_null($gender))
+            $this->gender = $gender;
+        if(!is_null($use_of_location))
             $this->use_of_location = $use_of_location;
         if(!empty($category_preference))
             $this->category_preference = $category_preference;

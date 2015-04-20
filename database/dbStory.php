@@ -176,9 +176,9 @@ class dbStory extends dbHelper{
 	
 	public function getRecommendedStories($userId){
 		$stmt = $this->db->prepare(
-			"select ss.userId, ss.storyId, ss.recommend_ranking, nes.title, nes.introduction,nes.author,group_concat(distinct nes.categories) as categories, nes.mediaId
+			"select ss.userId, ss.storyId, ss.recommend_ranking, ss.explanation, ss.false_recommend, nes.title, nes.introduction,nes.author,group_concat(distinct nes.categories) as categories, group_concat(distinct nes.mediaId) as mediaId
 			from stored_story as ss
-			left join (SELECT s.storyId as storyId ,s.title as title, s.introduction as introduction, s.author as author,sm.mediaId as mediaId, group_concat(distinct nested.categoryName) as categories
+			left join (SELECT s.storyId as storyId ,s.title as title, s.introduction as introduction, s.author as author,group_concat(distinct sm.mediaId) as mediaId, group_concat(distinct nested.categoryName) as categories
 						FROM story as s
 						LEFT JOIN (SELECT ss.storyId as storyId, cm.categoryId as categoryId, c.categoryName as categoryName
 						FROM category_mapping as cm, story_subcategory as ss, subcategory as sub,category as c
