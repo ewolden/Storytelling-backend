@@ -124,20 +124,13 @@ class dbStory extends dbHelper{
 			}
 		}
 	}
-	
-	 public function fetchStories($id_array){
-    	foreach($id_array as $id){
-    		$this->fetchStory($id);
-    	}
-    }
 
     /**Returns story information stored in database*/
     public function fetchStory($storyId, $userId){
     	$categories = $this->db->prepare(
-    		"SELECT group_concat(distinct categoryName) as categories
-    		FROM story as s, category_mapping as cm, story_subcategory as ss, subcategory as sc, category as c, story_media as sm
-    		WHERE sc.subcategoryId = cm.subcategoryId 
-    		AND c.categoryId = cm.categoryId
+    		"SELECT group_concat(distinct categoryId) as categories
+    		FROM story as s, category_mapping as cm, story_subcategory as ss, subcategory as sc, story_media as sm
+    		WHERE sc.subcategoryId = cm.subcategoryId
     		AND ss.subcategoryId = sc.subcategoryId
     		AND s.storyId = ss.storyId
     		AND s.storyId = ?");
@@ -150,37 +143,14 @@ class dbStory extends dbHelper{
 		if(count($storyTags) > 0) $data = array_merge($data, array('tags' => $storyTags));
 		return $data;
     }
-
-	
-    public function getAllStories(){
-		$stmt = $this->db->prepare(
-			"SELECT story.storyId, numericalId, title, author, introduction, group_concat(distinct categoryName) as categories, mediaId
-			FROM story, category_mapping, story_subcategory, subcategory, category, story_media
-			WHERE subcategory.subcategoryId = category_mapping.subcategoryId 
-			AND category.categoryId = category_mapping.categoryId
-			AND story_subcategory.subcategoryId = subcategory.subcategoryId
-			AND story.storyId = story_subcategory.storyId
-			AND story.storyId = story_media.storyId
-			GROUP BY story.storyId LIMIT 20");
-		$stmt->execute();
-		$stmt2 = $this->db->prepare(
-			"SELECT story.storyId, title, author, introduction, mediaId
-			FROM story, story_media
-			WHERE story.storyId = story_media.storyId AND story.storyId NOT IN (SELECT storyId FROM story_subcategory)
-			group by story.storyId");
-		$stmt2->execute();
-		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-		$rows2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);
-		return array_merge($rows, $rows2);
-	}
 	
 	public function getRecommendedStories($userId){
 		$stmt = $this->db->prepare(
 			"select ss.userId, ss.storyId, ss.recommend_ranking, ss.explanation, ss.false_recommend, nes.title, nes.introduction,nes.author,group_concat(distinct nes.categories) as categories, group_concat(distinct nes.mediaId) as mediaId
 			from stored_story as ss
-			left join (SELECT s.storyId as storyId ,s.title as title, s.introduction as introduction, s.author as author,group_concat(distinct sm.mediaId) as mediaId, group_concat(distinct nested.categoryName) as categories
+			left join (SELECT s.storyId as storyId ,s.title as title, s.introduction as introduction, s.author as author,group_concat(distinct sm.mediaId) as mediaId, group_concat(distinct nested.categoryId) as categories
 						FROM story as s
-						LEFT JOIN (SELECT ss.storyId as storyId, cm.categoryId as categoryId, c.categoryName as categoryName
+						LEFT JOIN (SELECT ss.storyId as storyId, cm.categoryId as categoryId
 						FROM category_mapping as cm, story_subcategory as ss, subcategory as sub,category as c
 						WHERE sub.subcategoryId = cm.subcategoryId
 						AND cm.categoryId = c.categoryId

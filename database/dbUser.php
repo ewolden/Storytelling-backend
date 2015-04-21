@@ -69,7 +69,6 @@ class dbUser extends dbHelper {
         } else {
         	$this->insertUpdateAll('user_tag', array($userId, "Lest"));
         	$this->insertUpdateAll('user_tag', array($userId, "Les senere"));
-        	$this->insertUpdateAll('user_tag', array($userId, "Avvist"));
         }
 
         /*Deleting all existing category preferences*/
@@ -119,9 +118,9 @@ class dbUser extends dbHelper {
     }
     public function getUserCategories($userId)
     {
-   		$sql = "SELECT group_concat(distinct categoryName) as categories
-   		from category,category_preference 
-   		where userId = (:userid) AND category.categoryId = category_preference.categoryId
+   		$sql = "SELECT group_concat(distinct categoryId) as categories
+   		from category_preference 
+   		where userId = (:userid)
    		group by userId";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bindParam(':userid',$userId);
