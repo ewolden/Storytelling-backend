@@ -57,7 +57,7 @@ public class ContentBasedRecommender
     	conn.deleteRecommendations((int)userId); 
     	
     	/*Find the stories that the user have read or rejected*/
-    	ArrayList<Integer> readOrRejected = conn.getReadOrRejected((int)userId);
+    	ArrayList<Integer> readOrRejected = conn.getRated((int)userId);
 
     	ArrayList<DatabaseInsertObject> itemsToBeInserted = new ArrayList<>();
     	int ranking = 1;

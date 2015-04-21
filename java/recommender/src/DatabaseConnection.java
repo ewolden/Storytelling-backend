@@ -119,13 +119,13 @@ public class DatabaseConnection {
 		}
 	}
 	
-	/*Find the list of read or rejected stories for this user*/
-	public ArrayList<Integer> getReadOrRejected(int userId){
+	/*Find the list of rated stories for this user*/
+	public ArrayList<Integer> getRated(int userId){
 		ArrayList<Integer> readOrRejected = new ArrayList<>();
 		
 		try {
 			PreparedStatement stmt = connection.prepareStatement(
-					"SELECT distinct storyId FROM story_state WHERE userId=? AND (stateId=2 OR stateId=4)");
+					"SELECT distinct storyId FROM story_state WHERE userId=? AND stateId=5");
 			stmt.setInt(1,userId);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()){
