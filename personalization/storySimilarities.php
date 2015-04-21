@@ -1,22 +1,22 @@
 <?php
-require_once('../database/dbStory.php');
+require_once(__DIR__.'/../database/dbStory.php');
 
 $db = new dbStory();
 
 /*Retrieves subcategories connected to every story*/
-$subcategoryArray = $db->getSubcategoriesPerStory();
+$storyArray = $db->getSubcategoriesPerStory();
 $db->close();
 
 /*Put the computed similarities in this file. Will be overwritten every time this script is run*/
-$simFile = fopen('../personalization/similarities.csv', 'w');
+$simFile = fopen(__DIR__.'/../personalization/similarities.csv', 'w');
 
 /*Looping through to get all possible pairs of stories*/
-for($x=0; $x<sizeof($subcategoryArray); $x++){
-	$firstArray = explode(',',$subcategoryArray[$x]['subcategories']);
-	$firstId = $subcategoryArray[$x]['numericalId'];
-	for($y=$x+1; $y<sizeof($subcategoryArray); $y++){
-		$secondArray = explode(',', $subcategoryArray[$y]['subcategories']);
-		$secondId = $subcategoryArray[$y]['numericalId'];
+for($x=0; $x<sizeof($storyArray); $x++){
+	$firstArray = explode(',',$storyArray[$x]['subcategories']);
+	$firstId = $storyArray[$x]['numericalId'];
+	for($y=$x+1; $y<sizeof($storyArray); $y++){
+		$secondArray = explode(',', $storyArray[$y]['subcategories']);
+		$secondId = $storyArray[$y]['numericalId'];
 		$sim = computeSimilarity($firstArray, $secondArray);
 		$txt = $firstId.",".$secondId.",".$sim."\n";
 		fwrite($simFile,$txt);

@@ -1,6 +1,6 @@
 <?php
-require_once 'dbHelper.php';
-require_once '../models/storyModel.php';
+require_once (__DIR__.'/dbHelper.php');
+require_once (__DIR__.'/../models/storyModel.php');
 
 /**
 * This class handles database communication related to stories

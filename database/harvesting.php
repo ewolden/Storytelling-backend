@@ -4,8 +4,8 @@
 Harvests stories from Digitalt fortalt.
 Remember to set constants in the config.php - file
 */
-require_once 'dbStory.php';
-require_once '../personalization/storySimilarities.php';
+require_once (__DIR__.'/dbStory.php');
+require_once (__DIR__.'/../personalization/storySimilarities.php');
 
 $dbStory = new dbStory();
 
@@ -16,6 +16,6 @@ $dbStory->addStoriesToDatabase($harvestTime);
 $dbStory->close();
 
 /*Compute similarities between the harvested stories*/
-shell_exec('php ../personalization/storySimilarities.php');
+shell_exec('php '.__DIR__.'/../personalization/storySimilarities.php');
 
 ?>

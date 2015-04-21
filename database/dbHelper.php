@@ -1,6 +1,6 @@
 <?php
-require_once 'config.php'; // Database setting constants [DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD]
-require_once 'dbConstants.php';
+require_once (__DIR__.'/config.php'); // Database setting constants [DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD]
+require_once (__DIR__.'/dbConstants.php');
 header('Content-type: text/plain; charset=utf-8');//Just to make it look nice in the browser
 
 /** 

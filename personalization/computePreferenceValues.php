@@ -1,8 +1,8 @@
 <?php
-require_once '../models/userModel.php';
-require_once '../models/preferenceValue.php';
-require_once '../database/dbStory.php';
-require_once 'weights.php';
+require_once (__DIR__.'/../models/userModel.php');
+require_once (__DIR__.'/../models/preferenceValue.php');
+require_once (__DIR__.'/../database/dbStory.php');
+require_once (__DIR__.'/weights.php');
 
 /*$user = new userModel();
 $user->addUser(2,null);

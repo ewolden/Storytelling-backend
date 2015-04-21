@@ -148,7 +148,7 @@ public class DatabaseConnection {
 	public void createView(int userId){
 		try {
 			PreparedStatement stmt = connection.prepareStatement(
-					"CREATE VIEW "+viewName+" as SELECT * FROM preference_value WHERE userId=?");
+					"CREATE or REPLACE VIEW "+viewName+" as SELECT * FROM preference_value WHERE userId=?");
 			stmt.setInt(1, userId);
 			stmt.execute();
 		} catch (SQLException e) {

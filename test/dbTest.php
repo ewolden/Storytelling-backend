@@ -1,7 +1,7 @@
 <?php
-require_once '../models/storyModel.php';
-require_once '../database/dbUser.php';
-require_once '../models/userModel.php';
+require_once (__DIR__.'/../models/storyModel.php');
+require_once (__DIR__.'/../database/dbUser.php');
+require_once (__DIR__.'/../models/userModel.php');
 class dbconnectionTest extends PHPUnit_Framework_TestCase{
 
 	public $test;
