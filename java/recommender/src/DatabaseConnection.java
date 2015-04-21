@@ -21,7 +21,7 @@ public class DatabaseConnection {
 	ReloadFromJDBCDataModel reloadModel;
 	MysqlConnectionPoolDataSource dataSource;
 	
-	/*Will be content+userId when doing content-based filtering and collaborative_view when doing collaborative filtering*/
+	/**Will be "content"+userId when doing content-based filtering and "collaborative_view" when doing collaborative filtering*/
 	private String viewName;
 
 	/**Creates a connection to the database*/
@@ -53,7 +53,6 @@ public class DatabaseConnection {
 			JDBCDataModel dataModel = new MySQLJDBCDataModel(
 					dataSource, viewName, "userId",
 					"numericalId", "preferenceValue", "time_stamp");
-
 
 			try {
 				reloadModel = new ReloadFromJDBCDataModel(dataModel);
@@ -88,6 +87,7 @@ public class DatabaseConnection {
 					+ "explanation = ?, false_recommend = ?, type_of_recommendation=?, recommend_ranking = ?";
 			PreparedStatement stmt = connection.prepareStatement(insertUpdateSql);
 			
+			/**Looping through all the recommendations and make them ready for insert*/
 			for (DatabaseInsertObject item: listOfRecommendations){
 				stmt.setInt(1, item.getUserId());
 				stmt.setString(2, item.getStoryId());
@@ -101,7 +101,9 @@ public class DatabaseConnection {
 				stmt.setInt(10, item.getRanking());
 				stmt.addBatch();		
 			}
+			/**Insert the recommendations*/
 			stmt.executeBatch();
+			/**Not sure what this does, but its supposed to make it faster (combined with connection.setAutoCommit(false) above)*/
 			connection.commit();
 			stmt.close();
 		} catch (SQLException e) {
@@ -109,9 +111,11 @@ public class DatabaseConnection {
 		}
 	}
 	
+	/**Delete the recommendations in the stored_story that the user have not seen*/
 	public void deleteRecommendations(int userId){
 		try {
-			PreparedStatement stmt = connection.prepareStatement("DELETE FROM stored_story where userId=? and recommend_ranking IS NOT NULL");
+			PreparedStatement stmt = connection.prepareStatement(
+					"DELETE FROM stored_story where userId=? and recommend_ranking IS NOT NULL");
 			stmt.setInt(1, userId);
 			stmt.executeUpdate();
 		} catch (SQLException e) {
@@ -119,11 +123,12 @@ public class DatabaseConnection {
 		}
 	}
 	
-	/*Find the list of rated stories for this user*/
+	/**Find the list of rated stories for this user*/
 	public ArrayList<Integer> getRated(int userId){
-		ArrayList<Integer> readOrRejected = new ArrayList<>();
+		ArrayList<Integer> ratedStories = new ArrayList<>();
 		
 		try {
+			/*stateId=5 means rated*/
 			PreparedStatement stmt = connection.prepareStatement(
 					"SELECT distinct storyId FROM story_state WHERE userId=? AND stateId=5");
 			stmt.setInt(1,userId);
@@ -131,14 +136,15 @@ public class DatabaseConnection {
 			while (rs.next()){
 				String id = rs.getString("storyId");
 				int numId = Integer.parseInt(id.substring(3));
-				readOrRejected.add(numId);
+				ratedStories.add(numId);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}		
-		return readOrRejected;
+		return ratedStories;
 	}
 	
+	/**Create a view in the database with the preference values for the input user*/
 	public void createView(int userId){
 		try {
 			PreparedStatement stmt = connection.prepareStatement(
@@ -151,6 +157,7 @@ public class DatabaseConnection {
 		
 	}
 	
+	/**Drop the view created above*/
 	public void dropView(){
 		try {
 			PreparedStatement stmt = connection.prepareStatement(

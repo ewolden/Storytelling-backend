@@ -32,38 +32,39 @@ public class ContentBasedRecommender
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
-		/*"content"+userId is the name of the view shall create*/
-
+		/*"content"+userId is the name of the view we shall create*/
 		conn = new DatabaseConnection("content"+userId);
-    	/*Create a view the includes all preferences values for this user*/
+		
+    	/*Create a temporary view the includes all preferences values for this user*/
     	conn.createView((int)userId);
 
+    	/*Sets the dataModel based on the data in the created view*/
     	conn.setDataModel();
 
     	DataModel model = conn.getDataModel();
     	
+    	/*Gets all the info from the similarites.csv file into a list of objects accepted by Mahout*/
     	Collection<ItemItemSimilarity> sim = getStorySimilarities();
-    	/* CustomGenericItemBasedRecommender need an ItemSimilarity-object as input, so create an instance of this class.*/
+    	
+    	/*GenericItemBasedRecommender need an ItemSimilarity-object as input, so create an instance of this class.*/
     	ItemSimilarity similarity = new GenericItemSimilarity(sim);
     	
     	/*Create a new Recommender-instance with our datamodel and story similarities*/
     	GenericItemBasedRecommender recommender = new GenericItemBasedRecommender(model, similarity);
     	
-    	/* Compute the recommendations. 167 is the number of recommendations we want, don't worry about the null, 
+    	/* Compute the recommendations. model.getNumItems() is the number of recommendations we want (we don't really want that many, 
+    	 * but we don't know how many of the top items the user already have rated), don't worry about the null, 
     	 * and true tells the recommender that we want to include already known items*/
-    	List<RecommendedItem> recommendations = recommender.recommend(userId, 167, null, true);
-    	    	
-    	/*Delete the current recommendations stored in stored_story*/
-    	conn.deleteRecommendations((int)userId); 
-    	
-    	/*Find the stories that the user have read or rejected*/
-    	ArrayList<Integer> readOrRejected = conn.getRated((int)userId);
+    	List<RecommendedItem> recommendations = recommender.recommend(userId, model.getNumItems(), null, true);
+    	    	   	
+    	/*Find the stories that the user have rated*/
+    	ArrayList<Integer> ratedStories = conn.getRated((int)userId);
 
     	ArrayList<DatabaseInsertObject> itemsToBeInserted = new ArrayList<>();
     	int ranking = 1;
     	for (RecommendedItem recommendation : recommendations) {
-    		/*If the item has not been read or rejected we insert it*/
-    		if (!readOrRejected.contains((int)recommendation.getItemID())){
+    		/*If the item has not been rated we insert it*/
+    		if (!ratedStories.contains((int)recommendation.getItemID())){
     			itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+recommendation.getItemID(), "mahout", 0, 0, ranking));
         		System.out.println(recommendation); 
         		ranking++;
@@ -73,8 +74,13 @@ public class ContentBasedRecommender
     			break;
     		}
     	}
+    	/*Delete the current recommendations (=stories where recommend_ranking != null) stored in stored_story*/
+    	conn.deleteRecommendations((int)userId); 
+    	
+    	/*Insert the 10 items we found*/
     	conn.insertUpdateRecommendValues(itemsToBeInserted);
 
+    	/*Drop our temporary view*/
     	conn.dropView();
     	conn.closeConnection();
 
