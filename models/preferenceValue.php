@@ -13,7 +13,7 @@ class PreferenceValue {
 	private $numToBeRead;
 	private $numSwipedPast;
 	private $numRejected;
-	private $notInterested;
+	private $notInterested = false;
 	
 	private $numCommonCategories;
 

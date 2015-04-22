@@ -1,8 +1,8 @@
 ﻿CREATE TABLE user 
 	(userId				INT			NOT NULL  AUTO_INCREMENT,
 	 mail				VARCHAR(255),
-	 age_group			TINYINT,
-	 gender			TINYINT,
+	 age_group			TINYINT		DEFAULT NULL,
+	 gender				TINYINT		DEFAULT NULL,
 	 use_of_location		BOOLEAN		DEFAULT 0,
 
 	PRIMARY KEY (userId));
@@ -163,7 +163,7 @@ CREATE TABLE stored_story
 	(userId				INT			NOT NULL,
 	 storyId			VARCHAR(15)	NOT NULL,
 	 explanation			TEXT,
-	 rating				INT			DEFAULT 0,		
+	 rating				INT			DEFAULT NULL,		
 	 #To know if the recommendation is true or false (suprise me-stories).
 	 false_recommend		BOOLEAN		NOT NULL,
 	 #Content-based eller collaborative (hybrid) filtering.
@@ -182,7 +182,7 @@ CREATE TABLE story_state
 	 storyId			VARCHAR(15)	NOT NULL,
 	 userId				INT			NOT NULL,
 	 stateId			INT			NOT NULL,
-	 point_in_time			TIMESTAMP		NOT NULL,
+	 point_in_time			TIMESTAMP		DEFAULT CURRENT_TIMESTAMP,
 
 	PRIMARY KEY (recordedStateId),
 	FOREIGN KEY (storyId) REFERENCES story(storyId),

@@ -138,7 +138,14 @@ switch ($type) {
 		$updated = $dbStory->updateOneValue('stored_story', 'rating', $request->rating, array($request->userId, $request->storyId));
 		if(!$updated)
 			$dbStory->insertUpdateAll('stored_story', array($request->userId, $request->storyId, null, $request->rating, 0, 0,null));
-		$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 5));	
+		$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 5));
+		
+		/*Run the recommender*/
+		$userModel = new userModel();
+		$userInfo = $dbUser->getUserFromId($request->userId);
+		$userModel->addFromDB($userInfo);
+		$recommend = new runRecommender($userModel);
+		$recommend->runRecommender();
 	}else {
 		$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 6));
 	}
