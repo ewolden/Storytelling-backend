@@ -60,13 +60,18 @@ class storyModel{
         {
             $url = (string) $element->children('abm', TRUE)->videoUri;
             if(!empty($url)){
-                parse_str(parse_url($url, PHP_URL_QUERY), $urlquery);
+                parse_str(parse_url($url, PHP_URL_QUERY), $urlquery);            
+                $description = (string) $element->children('', TRUE)->description;
                 if(!isset($urlquery['mmid'])){
-                    $this->videoList[] = array('videourl' => $url);
+                    $this->videoList[] = array('videourl' => $url,
+                        'description' => $description);
+
                 }else{
                     $this->videoList[] = array(
                         'videourl' => $url, 
-                        'posterurl' => "http://mm01.dimu.no/image/".$urlquery['mmid']);
+                        'posterurl' => "http://mm01.dimu.no/image/".$urlquery['mmid'],
+                        'description' => $description
+                        );
                 }
 
             }
@@ -74,7 +79,12 @@ class storyModel{
         //Create a list of all audio URLs for the story
         foreach ($xml->children('abm', TRUE)->media as $element)
         {
-            $this->audioList[] = (string) $element->children('abm', TRUE)->soundUri;
+            $url = (string) $element->children('abm', TRUE)->soundUri;
+            if(!empty($url)){
+                $this->audioList[] = array( 
+                    'audiourl' => $url,
+                    'description' => (string) $element->children('', TRUE)->description);
+            }
         }
         //Create a list of all category IDs for the story
         foreach ($xml->children('abm', TRUE)->classification as $element)

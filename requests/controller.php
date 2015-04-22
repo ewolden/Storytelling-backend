@@ -136,6 +136,7 @@ switch ($type) {
 	case "rating":
 	if($request->rating > 0){
 		$updated = $dbStory->updateOneValue('stored_story', 'rating', $request->rating, array($request->userId, $request->storyId));
+		$dbUser->insertUpdateAll('user_storytag', array($request->userId, $request->storyId, "Lest"));
 		if(!$updated)
 			$dbStory->insertUpdateAll('stored_story', array($request->userId, $request->storyId, null, $request->rating, 0, 0,null));
 		$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 5));
