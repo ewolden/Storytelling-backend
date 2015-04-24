@@ -16,6 +16,6 @@ $dbStory->addStoriesToDatabase($harvestTime);
 $dbStory->close();
 
 /*Compute similarities between the harvested stories*/
-shell_exec('php '.__DIR__.'/../personalization/storySimilarities.php');
+shell_exec('php /../personalization/storySimilarities.php');
 
 ?>
