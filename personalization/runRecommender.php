@@ -18,16 +18,14 @@ class runRecommender {
 	public function findMethod(){
 		//TODO: find out what type of recommendation to run
 		$this->db = new dbUser();
-		$numberOfUsers = $this->db->getNumberOfUsers();
-		$numberOfRates = $this->db->getNumberOfRatedStories($this->user->getUserId());
-		$numberOfRatesByThisUser = $this->db->getNumberOfRatedStoriesByThisUser($this->user->getUserId());
 		//print_r($numberOfRatesByThisUser);
-		/*If the number of users are above 5, the number of rated done by this user is above 10 and the number of rates rates done by other users is above 15 (These values can be changed)*/
-		if($numberOfUsers > 5 AND $numberOfRates > 15 AND $numberOfRatesByThisUser > 10){
+		/*If there is more than ten stories rated by more than 10 people shared by this user their other recommendations are valid*/
+		if($this->db->getNumRatedStoriesShared($this->user->getUserId()) >= 10){
 			$this->method = 'collaborative';
-			//print_r("Run collaborative");
+		} else{
+			$this->method = 'content';
 		}
-		$this->method = 'content';
+		
 	}
 	
 	public function getUser(){

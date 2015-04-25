@@ -180,5 +180,23 @@ class dbUser extends dbHelper {
         }
 
     }
+    /* Returns the number of stories this user has rated that at least 10 other users also have rated */
+    public function getNumRatedStoriesShared($userId){
+        $sql = "SELECT COUNT(*) FROM collaborative_view AS userRatedStories
+        INNER JOIN 
+        (SELECT numericalId FROM collaborative_view GROUP BY numericalId HAVING count(userId) >= 10) 
+        AS sotriesWithTenUserRatings 
+        WHERE userId= (:userId) 
+        AND userRatedStories.numericalId = sotriesWithTenUserRatings.numericalId";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':userId', $userId);
+        $stmt->execute();
+        $result = $stmt->fetch();
+        if($result){
+            return $result[0];
+        }else{
+            return null;
+        }
+    }
 }
 ?>
