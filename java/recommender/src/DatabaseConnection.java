@@ -114,8 +114,13 @@ public class DatabaseConnection {
 	/**Delete the recommendations in the stored_story that the user have not seen (that is, stories that user has not seen at any point, not just for this recommendation list)*/
 	public void deleteRecommendations(int userId){
 		try {
-			/*Find the stories in stored_story where the recommended-state has not been recorded*/
+			/*Remove the current rankings in stored_story*/
 			PreparedStatement stmt = connection.prepareStatement(
+					"UPDATE stored_story SET recommend_ranking=null WHERE userId=? and recommend_ranking IS NOT NULL");
+			stmt.setInt(1, userId);
+			stmt.executeUpdate();
+			/*Find the stories in stored_story where the recommended-state has not been recorded*/
+			stmt = connection.prepareStatement(
 					"SELECT so.storyId FROM stored_story AS so "
 					+ "LEFT JOIN story_state AS sa ON so.storyId=sa.storyId AND so.userId=sa.userId "
 					+ "WHERE so.userId=? AND sa.stateId IS NULL");
