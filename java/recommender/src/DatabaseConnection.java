@@ -111,13 +111,27 @@ public class DatabaseConnection {
 		}
 	}
 	
-	/**Delete the recommendations in the stored_story that the user have not seen*/
+	/**Delete the recommendations in the stored_story that the user have not seen (that is, stories that user has not seen at any point, not just for this recommendation list)*/
 	public void deleteRecommendations(int userId){
 		try {
+			/*Find the stories in stored_story where the recommended-state has not been recorded*/
 			PreparedStatement stmt = connection.prepareStatement(
-					"DELETE FROM stored_story where userId=? and recommend_ranking IS NOT NULL");
+					"SELECT so.storyId FROM stored_story AS so "
+					+ "LEFT JOIN story_state AS sa ON so.storyId=sa.storyId AND so.userId=sa.userId "
+					+ "WHERE so.userId=? AND sa.stateId IS NULL");
 			stmt.setInt(1, userId);
-			stmt.executeUpdate();
+			ResultSet rs = stmt.executeQuery();
+			/*Delete the stories we found above*/
+			stmt = connection.prepareStatement(
+					"DELETE FROM stored_story WHERE userId=? AND storyId=?");
+			while (rs.next()){
+				stmt.setInt(1, userId);
+				stmt.setString(2, rs.getString("so.storyId"));
+				stmt.addBatch();
+			}
+			stmt.executeBatch();
+			connection.commit();
+			stmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

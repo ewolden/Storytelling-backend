@@ -85,9 +85,9 @@ public class ContentBasedRecommender
     			break;
     		}
     	}
-    	/*Delete the current recommendations (=stories where recommend_ranking != null) stored in stored_story*/
+    	/*Delete the current recommendations stored in stored_story that has not been seen by the user*/
     	conn.deleteRecommendations((int)userId); 
-    	
+    	    	
     	/*Insert the 10 items we found*/
     	conn.insertUpdateRecommendValues(itemsToBeInserted);
 

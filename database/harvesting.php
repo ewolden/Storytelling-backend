@@ -32,6 +32,7 @@ for($x=0; $x<sizeof($storyArray); $x++){
 	}
 }
 fclose($simFile);
+print_r(" ** Done writing the similarities file");
 
 /*Compute the similarities between stories. Using cosine similarity for now*/
 function computeSimilarity($storyOne, $storyTwo){
