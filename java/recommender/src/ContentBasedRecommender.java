@@ -21,6 +21,7 @@ public class ContentBasedRecommender
 	File fileLocation = null;
 	DatabaseConnection conn = null;
 	long userId;
+	List<RecommendedItem> recommendations;
 	
     public ContentBasedRecommender(long userId) {
     	this.userId = userId;
@@ -77,7 +78,7 @@ public class ContentBasedRecommender
     			/*Remove the last comma*/
     			explanation = explanation.replaceAll(",$", "");
     			itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+recommendation.getItemID(), explanation, 0, 0, ranking));
-        		System.out.println(recommendation); 
+    			System.out.println(recommendation); 
         		ranking++;
     		}
     		/*When we got 10 new recommendations, we're happy*/
@@ -85,6 +86,7 @@ public class ContentBasedRecommender
     			break;
     		}
     	}
+    	this.recommendations = recommendations;
     	/*Delete the current recommendations stored in stored_story that has not been seen by the user*/
     	conn.deleteRecommendations((int)userId); 
     	    	
@@ -125,5 +127,9 @@ public class ContentBasedRecommender
 			}
 		}
 		return res;
+	}
+	
+	public List<RecommendedItem> getRecommendations(){
+		return this.recommendations;
 	}
 }

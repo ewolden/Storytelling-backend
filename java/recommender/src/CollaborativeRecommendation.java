@@ -2,14 +2,15 @@ import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 
 public class CollaborativeRecommendation {
 	private RecommendedItem item;
-	private int userId;
+	private long userId;
 	private String explanation;
 	
-	public CollaborativeRecommendation(RecommendedItem item, int userId, String explanation){
+	public CollaborativeRecommendation(RecommendedItem item, long userId, String explanation){
 		this.item = item;
 		this.userId = userId;
 		this.explanation = explanation;
 	}
+	
 
 	public RecommendedItem getItem() {
 		return item;
@@ -19,7 +20,7 @@ public class CollaborativeRecommendation {
 		this.item = item;
 	}
 
-	public int getUserId() {
+	public long getUserId() {
 		return userId;
 	}
 
@@ -34,11 +35,4 @@ public class CollaborativeRecommendation {
 	public void setExplanation(String explanation) {
 		this.explanation = explanation;
 	}
-	
-	
-	
-	
-	
-	
-	
 }

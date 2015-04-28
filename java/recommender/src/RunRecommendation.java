@@ -1,7 +1,4 @@
 
-
-import java.util.ArrayList;
-
 public class RunRecommendation {
 	
 	public static void main(String[] args) {
@@ -20,43 +17,23 @@ public class RunRecommendation {
 			}
 		}
 		else if(method.equals("collaborative")){
-			try{
-				//new UserbasedRecommender(userId);
-				ItemRecommender IR = new ItemRecommender(userId);
+			int numberOfStoriesRecommended = 0;
+			try {
+				CollaborativeRecommender collaborativeRecommender = new CollaborativeRecommender(userId, add);
+				numberOfStoriesRecommended = collaborativeRecommender.runCollaborativeRecommender();
 				
-				/*itembased recommendations */
-				ArrayList<CollaborativeRecommendation> itembased = new ArrayList<CollaborativeRecommendation>();
-				ArrayList<CollaborativeRecommendation> userbased = new ArrayList<CollaborativeRecommendation>();
-				/*Both itembased and userbased will be collected to this arraylist*/
-				ArrayList<CollaborativeRecommendation> collaborativeRecommendations = new ArrayList<CollaborativeRecommendation>();
-
-				itembased = IR.RunItemRecommender();
-				for(CollaborativeRecommendation recommendation : itembased){
-					collaborativeRecommendations.add(recommendation);
-					//System.out.println("getitemid: "+ recommendation.getItem().getItemID());
+				if(numberOfStoriesRecommended < 10 && false){ //disabled
+					/* There are not enough collaborative recommendations, need content based in addition */
+					ContentBasedRecommender cbr = new ContentBasedRecommender(userId);
+					cbr.runContentBasedRecommender();
+					MixedFiltering mixed = new MixedFiltering(userId);
+					mixed.runMixedFiltering(cbr, collaborativeRecommender);
 				}
-				UserbasedRecommender UR = new UserbasedRecommender(userId);
-				userbased = UR.RunUserbasedRecommender();
-				for(CollaborativeRecommendation recommendation : userbased){
-					collaborativeRecommendations.add(recommendation);
-				}
-				ArrayList<DatabaseInsertObject> itemsToBeInserted = new ArrayList<>();
-				for(CollaborativeRecommendation colRec : collaborativeRecommendations){
-					System.out.println(colRec.getItem() +","+ userId + "," +colRec.getExplanation());		
-					itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+colRec.getItem().getItemID(), colRec.getExplanation(), 0, 1, 0));
-					
-				}
-				DatabaseConnection db = new DatabaseConnection("collaborative_view");
-				db.insertUpdateRecommendValues(itemsToBeInserted);
-				//System.out.println(collaborativeRecommendations.toString());
 				
-
-				//System.out.println("List of collaborative recommendations: " + collaborativeRecommendations[0].getItem());
-			} catch (Exception e){
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-
 		else if(method.equals("hybrid")){
 			System.out.println("Hybrid recommending not yet implementing");
 		}
