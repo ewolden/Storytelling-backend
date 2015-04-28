@@ -28,6 +28,9 @@ switch ($type) {
 	break;
 
 	case "getStories":
+	/*This method is called when front end wants new recommendations. In such cases, the front end array
+	should be counted as empty in the database. This methods empties the front end array for this user*/
+	$dbStory->emptyFrontendArray($request->userId);
 	$data = $dbStory->getRecommendedStories($request->userId);
 	$returnArray = array();
 	foreach ($data as $story) {
@@ -135,17 +138,23 @@ switch ($type) {
 	case "rating":
 	if($request->rating > 0){
 		$updated = $dbStory->updateOneValue('stored_story', 'rating', $request->rating, array($request->userId, $request->storyId));
-		$dbUser->insertUpdateAll('user_storytag', array($request->userId, $request->storyId, "Lest"));
 		if(!$updated)
-			$dbStory->insertUpdateAll('stored_story', array($request->userId, $request->storyId, null, $request->rating, 0, 0,null));
-		$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 5));
+			$updated = $dbStory->insertUpdateAll('stored_story', array($request->userId, $request->storyId, null, $request->rating, 0, 0,null,0));
+		
+		if($updated){
+			$dbUser->insertUpdateAll('user_storytag', array($request->userId, $request->storyId, "Lest"));
+			$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 5));
 		
 		/*Run the recommender*/
-		$userModel = new userModel();
-		$userInfo = $dbUser->getUserFromId($request->userId);
-		$userModel->addFromDB($userInfo);
-		$recommend = new runRecommender($userModel);
-		$recommend->runRecommender();
+			$userModel = new userModel();
+			$userInfo = $dbUser->getUserFromId($request->userId);
+			$userModel->addFromDB($userInfo);
+			$recommend = new runRecommender($userModel);
+			$recommend->runRecommender();
+			print_r(json_encode(array('status' => "successfull")));
+		} else {
+			print_r(json_encode(array('status' => "failed")));
+		}
 	}else {
 		$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 6));
 	}
@@ -250,6 +259,50 @@ switch ($type) {
 	
 	case "recommendedStory":
 	$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 1));
+	break;
+	
+	case "getMoreRecommendations":
+	$userModel = new userModel();
+	$userInfo = $dbUser->getUserFromId($request->userId);
+	$userModel->addFromDB($userInfo);
+	$recommend = new runRecommender($userModel);
+	/*True means that we're avoiding returning stories already in the story-array at frontend*/
+	$recommend->setAdd("true");
+	$output = $recommend->runRecommender();
+	
+	$data = $dbStory->getRecommendedStories($request->userId);
+	$returnArray = array();
+	foreach ($data as $story) {
+		$list = array(
+			'id' => $story['storyId'],
+			'title' => $story['title'],
+			'description' => $story['introduction'],
+			'false_recommend' => $story['false_recommend'],
+			'explanation' => explode(",",$story['explanation']),
+			'picture' => "",
+			'thumbnail' => "",
+			'categories' => "",
+			'mediaType' => array(),
+			'author' => $story['author'],
+			'date' => "");
+		if(array_key_exists('categories', $story))
+			$list['categories'] = explode(",",$story['categories']);
+		if(array_key_exists('mediaId', $story)){
+			$medialist = explode(",", $story['mediaId']);
+			if(in_array(1, $medialist)){
+				array_push($list['mediaType'], "picture");
+				$list['picture'] = "http://media31.dimu.no/media/image/H-DF/".$story['storyId']."/0?byIndex=true&height=400&width=400";
+				$list['thumbnail'] = "http://api.digitaltmuseum.no/media?owner=H-DF&identifier=".$story['storyId']."&type=thumbnail&api.key=demo";
+			}
+			if(in_array(2, $medialist))
+				array_push($list['mediaType'], "audio");
+			if(in_array(3, $medialist))
+				array_push($list['mediaType'], "video");
+
+		}			
+		array_push($returnArray, $list);
+	}
+	print_r(json_encode($returnArray));
 	break;
 
 	default: 

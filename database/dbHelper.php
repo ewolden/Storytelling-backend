@@ -137,6 +137,9 @@ class DbHelper extends dbConstants {
 		}
         $stmt = $this->db->prepare($query);
         $stmt->execute($values);
+        
+        if($stmt->rowCount()<=0) return false;
+		else return true;
     }
 
 	/* Get $selectColumns in $tableName based on $whereValues*/

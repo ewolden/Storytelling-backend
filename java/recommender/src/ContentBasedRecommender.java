@@ -22,9 +22,13 @@ public class ContentBasedRecommender
 	DatabaseConnection conn = null;
 	long userId;
 	List<RecommendedItem> recommendations;
+	/*Tells us whether we should make brand new recommendations (="false")
+	 * or if we should make recommendations of items that is not in the frontend array (="true")*/
+	String add;
 	
-    public ContentBasedRecommender(long userId) {
+    public ContentBasedRecommender(long userId, String add) {
     	this.userId = userId;
+    	this.add = add;
     }
     
     public void runContentBasedRecommender() throws TasteException{
@@ -61,11 +65,19 @@ public class ContentBasedRecommender
     	/*Find the stories that the user have rated*/
     	ArrayList<Integer> ratedStories = conn.getRated((int)userId);
 
-    	ArrayList<DatabaseInsertObject> itemsToBeInserted = new ArrayList<>();
+    	ArrayList<Integer> frontendStories = new ArrayList<>();
+
+    	/*Find the stories already present in the recommendations list at front end
+    	 * These stories should not be recommended again*/
+    	if(add.equals("true")){
+    		frontendStories = conn.getStoriesInFrontendArray((int) userId);
+    	}
     	int ranking = 1;
+    	System.out.println("FrontendStories: "+frontendStories);
+    	ArrayList<DatabaseInsertObject> itemsToBeInserted = new ArrayList<>();
     	for (RecommendedItem recommendation : recommendations) {
-    		/*If the item has not been rated we insert it*/
-    		if (!ratedStories.contains((int)recommendation.getItemID())){
+    		/*If the item has not been rated or is not already in the recommendation list at front end we insert it*/
+    		if (!ratedStories.contains((int)recommendation.getItemID()) && !frontendStories.contains((int)recommendation.getItemID())){
     			List<RecommendedItem> becauseItems = recommender.recommendedBecause(userId, recommendation.getItemID(), 3);
     			String explanation = "";
     			ArrayList<RecommendedItem> noDuplicates = new ArrayList<>();
@@ -86,8 +98,12 @@ public class ContentBasedRecommender
     			break;
     		}
     	}
+<<<<<<< HEAD
     	this.recommendations = recommendations;
     	/*Delete the current recommendations stored in stored_story that has not been seen by the user*/
+=======
+    	/*Removes the current ranking of recommendations and removes stories in stored_story never viewed by the user*/
+>>>>>>> refs/remotes/origin/master
     	conn.deleteRecommendations((int)userId); 
     	    	
     	/*Insert the 10 items we found*/

@@ -169,6 +169,7 @@ CREATE TABLE stored_story
 	 #Content-based eller collaborative (hybrid) filtering.
 	 type_of_recommendation	BOOLEAN		NOT NULL,
 	 recommend_ranking 		INT DEFAULT NULL,
+	 in_frontend_array		BOOLEAN		DEFAULT 0;
 
 	PRIMARY KEY (userId, storyId),
 	FOREIGN KEY (userId) REFERENCES user(userId),
