@@ -135,17 +135,23 @@ switch ($type) {
 	case "rating":
 	if($request->rating > 0){
 		$updated = $dbStory->updateOneValue('stored_story', 'rating', $request->rating, array($request->userId, $request->storyId));
-		$dbUser->insertUpdateAll('user_storytag', array($request->userId, $request->storyId, "Lest"));
 		if(!$updated)
-			$dbStory->insertUpdateAll('stored_story', array($request->userId, $request->storyId, null, $request->rating, 0, 0,null));
-		$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 5));
+			$updated = $dbStory->insertUpdateAll('stored_story', array($request->userId, $request->storyId, null, $request->rating, 0, 0,null));
+		
+		if($updated){
+			$dbUser->insertUpdateAll('user_storytag', array($request->userId, $request->storyId, "Lest"));
+			$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 5));
 		
 		/*Run the recommender*/
-		$userModel = new userModel();
-		$userInfo = $dbUser->getUserFromId($request->userId);
-		$userModel->addFromDB($userInfo);
-		$recommend = new runRecommender($userModel);
-		$recommend->runRecommender();
+			$userModel = new userModel();
+			$userInfo = $dbUser->getUserFromId($request->userId);
+			$userModel->addFromDB($userInfo);
+			$recommend = new runRecommender($userModel);
+			$recommend->runRecommender();
+			print_r(json_encode(array('status' => "successfull")));
+		} else {
+			print_r(json_encode(array('status' => "failed")));
+		}
 	}else {
 		$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 6));
 	}
