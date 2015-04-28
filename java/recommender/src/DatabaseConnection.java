@@ -114,16 +114,12 @@ public class DatabaseConnection {
 	/**Delete the recommendations in the stored_story that the user have not seen (that is, stories that user has not seen at any point, not just for this recommendation list)*/
 	public void deleteRecommendations(int userId){
 		try {
-			/*Remove the current rankings in stored_story*/
-			PreparedStatement stmt = connection.prepareStatement(
-					"UPDATE stored_story SET recommend_ranking=null WHERE userId=? and recommend_ranking IS NOT NULL");
-			stmt.setInt(1, userId);
-			stmt.executeUpdate();
+			emptyRecommendationsRankings(userId);
 			/*Find the stories in stored_story where the recommended-state has not been recorded*/
-			stmt = connection.prepareStatement(
+			PreparedStatement stmt = connection.prepareStatement(
 					"SELECT so.storyId FROM stored_story AS so "
 					+ "LEFT JOIN story_state AS sa ON so.storyId=sa.storyId AND so.userId=sa.userId "
-					+ "WHERE so.userId=? AND sa.stateId IS NULL");
+					+ "WHERE so.userId=? AND sa.stateId IS NULL AND so.in_frontend_array = 0");
 			stmt.setInt(1, userId);
 			ResultSet rs = stmt.executeQuery();
 			/*Delete the stories we found above*/
@@ -137,6 +133,19 @@ public class DatabaseConnection {
 			stmt.executeBatch();
 			connection.commit();
 			stmt.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/*Remove the current rankings in stored_story*/
+	public void emptyRecommendationsRankings(int userId){
+		PreparedStatement stmt;
+		try {
+			stmt = connection.prepareStatement(
+					"UPDATE stored_story SET recommend_ranking=null WHERE userId=? and recommend_ranking IS NOT NULL");
+			stmt.setInt(1, userId);
+			stmt.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -163,6 +172,28 @@ public class DatabaseConnection {
 		return ratedStories;
 	}
 	
+	/*Get the stories currently showed to the user in the recommendation view*/
+	public ArrayList<Integer> getStoriesInFrontendArray(int userId) {
+		ArrayList<Integer> frontendStories = new ArrayList<>();
+		
+		try {
+			PreparedStatement stmt = connection.prepareStatement(
+					"SELECT storyId FROM stored_story WHERE userId=? AND in_frontend_array=?");
+			stmt.setInt(1, userId);
+			stmt.setInt(2, 1);
+			ResultSet rs = stmt.executeQuery();
+			while(rs.next()){
+				String id = rs.getString("storyId");
+				int numId = Integer.parseInt(id.substring(3));
+				frontendStories.add(numId);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return frontendStories;		
+	}
+	
 	/**Create a view in the database with the preference values for the input user*/
 	public void createView(int userId){
 		try {
@@ -180,7 +211,7 @@ public class DatabaseConnection {
 	public void dropView(){
 		try {
 			PreparedStatement stmt = connection.prepareStatement(
-					"DROP VIEW "+viewName);
+					"DROP VIEW IF EXISTS "+viewName);
 			stmt.execute();
 		} catch (SQLException e) {
 			e.printStackTrace();

@@ -10,10 +10,12 @@ public class RunRecommendation {
 		System.out.println("UserId: "+userId);
 		String method = args[1];
 		System.out.println("Method: " + method);
+		String add = args[2];
+		System.out.println("Add?: " + add);
 		
 		if(method.equals("content")){
 			try {
-				ContentBasedRecommender cbr = new ContentBasedRecommender(userId);
+				ContentBasedRecommender cbr = new ContentBasedRecommender(userId, add);
 				cbr.runContentBasedRecommender();
 			} catch (Exception e) {
 				e.printStackTrace();

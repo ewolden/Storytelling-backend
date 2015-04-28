@@ -163,8 +163,24 @@ class dbStory extends dbHelper{
 			order by recommend_ranking asc");
 		$stmt->execute(array($userId));
 		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		/*When getRecommendedStories is called, the stories are put in the stories array at frontend.
+		This is recorded in the database with this method*/
+		$this->addToFrontendArray($rows, $userId);
 		return $rows;
-		
+	}
+	
+	/*Empties the frontend-array*/
+	public function emptyFrontendArray($userId){
+		$stmt = $this->db->prepare("UPDATE stored_story SET in_frontend_array=? WHERE userId=?");
+		$stmt->execute(array(0,$userId));
+	}
+	
+	/*Adds the stories in $rows to the frontend-array in the database*/
+	private function addToFrontendArray($rows, $userId){		
+		$stmt = $this->db->prepare("UPDATE stored_story SET in_frontend_array=? WHERE userId=? AND storyId=?");
+		foreach($rows as $story) {
+			$stmt->execute(array(1,$userId, $story['storyId']));
+		}		
 	}
 	
 	/*Get all stories a user has tagged with $tagName*/

@@ -7,9 +7,15 @@ class runRecommender {
 	private $user;
 	private $method;
 	private $db;
+	/*If we are adding recommendations to the existing ones, this will be "true", otherwise "false"
+	Both "true" and "false" are string-values, not boolean */
+	private $add;
 
 	public function __construct($user){
 		$this->user = $user;
+		/*By default, we are creating brand new recommendations. If we should recommend
+		stories not in the recommendation view at front end, the setAdd-method needs to be called*/
+		$this->add = "false";
 		$this->findMethod();
 		$cpv = new computePreferenceValues($user);
 		$cpv->computeAllValues();
@@ -28,6 +34,14 @@ class runRecommender {
 		
 	}
 	
+	public function setAdd($add){
+		$this->add = $add;
+	}
+	
+	public function getAdd(){
+		return $this->add;
+	}
+	
 	public function getUser(){
 		return $this->user;
 	}
@@ -37,7 +51,7 @@ class runRecommender {
 	}
 	
 	public function runRecommender(){	
-		$output = shell_exec("java -jar ../java/recommender/recommender.jar ".$this->getUser()->getUserId()." ".$this->getMethod()." 2>&1");
+		$output = shell_exec("java -jar ../java/recommender/recommender.jar ".$this->getUser()->getUserId()." ".$this->getMethod()." ".$this->getAdd()." 2>&1");
 		return $output;
 	}
 }
