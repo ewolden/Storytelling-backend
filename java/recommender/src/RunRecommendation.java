@@ -26,7 +26,7 @@ public class RunRecommendation {
 				
 				if(numberOfStoriesRecommended < 10 && false){ //disabled
 					/* There are not enough collaborative recommendations, need content based in addition */
-					ContentBasedRecommender cbr = new ContentBasedRecommender(userId);
+					ContentBasedRecommender cbr = new ContentBasedRecommender(userId, add);
 					cbr.runContentBasedRecommender();
 					MixedFiltering mixed = new MixedFiltering(userId);
 					mixed.runMixedFiltering(cbr, collaborativeRecommender);

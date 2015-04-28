@@ -98,12 +98,8 @@ public class ContentBasedRecommender
     			break;
     		}
     	}
-<<<<<<< HEAD
     	this.recommendations = recommendations;
     	/*Delete the current recommendations stored in stored_story that has not been seen by the user*/
-=======
-    	/*Removes the current ranking of recommendations and removes stories in stored_story never viewed by the user*/
->>>>>>> refs/remotes/origin/master
     	conn.deleteRecommendations((int)userId); 
     	    	
     	/*Insert the 10 items we found*/

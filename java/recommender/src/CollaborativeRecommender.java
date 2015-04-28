@@ -9,9 +9,11 @@ import org.apache.mahout.cf.taste.model.DataModel;
 public class CollaborativeRecommender {
 	public long userId;
 	public ArrayList<CollaborativeRecommendation> recommendations;
+	String add;
 	
 	public CollaborativeRecommender(long userId, String add) {
     	this.userId = userId;
+    	this.add = add;
     }
 	
 	public int runCollaborativeRecommender() throws TasteException{
@@ -34,7 +36,7 @@ public class CollaborativeRecommender {
 		itembased = IR.RunItemRecommender(model);
 		UserbasedRecommender UR = new UserbasedRecommender(userId);
 		userbased = UR.RunUserbasedRecommender(model);
-		
+
 		/* Loop through all recommendations average result from user and item based, remove duplicates */
 		for(CollaborativeRecommendation itemrecommendation : itembased){
 			float average_recommender_value = 0;
@@ -72,16 +74,29 @@ public class CollaborativeRecommender {
 		/* Sort the final results list */
 		Collections.sort(collaborativeRecommendations, new CompareCollaborative());
 		
+		/*Find the stories that the user have rated*/
+    	ArrayList<Integer> ratedStories = db.getRated((int)userId);
+    	ArrayList<Integer> frontendStories = new ArrayList<>();
+
+    	/*Find the stories already present in the recommendations list at front end
+    	 * These stories should not be recommended again*/
+    	if(add.equals("true")){
+    		frontendStories = db.getStoriesInFrontendArray((int) userId);
+    	}
+    	System.out.println("FrontendStories: "+frontendStories);
 		/* Take the top 10 recommendations and and prepare to insert them into database */
 		ArrayList<DatabaseInsertObject> itemsToBeInserted = new ArrayList<>();
 		int ranking = 1;
 		for(CollaborativeRecommendation recommendation : collaborativeRecommendations){	
-			itemsToBeInserted.add(new DatabaseInsertObject((int)this.userId, "DF."+recommendation.getItem().getItemID(), recommendation.getExplanation(), 0, 1, ranking));
-			System.out.println(recommendation.getItem());
-			ranking++;
-			if(ranking > 10){
-				break;
-			}
+			/*If the item has not been rated or is not already in the recommendation list at front end we insert it*/
+    		if (!ratedStories.contains((int)recommendation.getItem().getItemID()) && !frontendStories.contains((int)recommendation.getItem().getItemID())){
+    			itemsToBeInserted.add(new DatabaseInsertObject((int)this.userId, "DF."+recommendation.getItem().getItemID(), recommendation.getExplanation(), 0, 1, ranking));
+    			System.out.println(recommendation.getItem());
+    			ranking++;
+    			if(ranking > 10){
+    				break;
+    			}
+    		}
 		}
 		
 		/* Put the list of all possible recommendations in the model */
