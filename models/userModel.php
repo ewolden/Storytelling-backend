@@ -22,7 +22,7 @@ class userModel{
             $this->gender = $gender;
         if(!is_null($use_of_location))
             $this->use_of_location = $use_of_location;
-        if(!is_null($category_preference))
+        if(!empty($category_preference))
             $this->category_preference = $category_preference;
     }
 

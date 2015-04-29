@@ -90,7 +90,7 @@ switch ($type) {
 		/* Running the recommender only if the update include categories to avoid running it 
 		when the user sets gender and age.*/
 		$output = $userId;
-		if(!is_null($request->category_preference)){
+		if(!empty($request->category_preference)){
 			$startTime = microtime(true);
 			$userModel->setUserId($userId);
 			$recommend = new runRecommender($userModel);
