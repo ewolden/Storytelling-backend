@@ -71,15 +71,14 @@ class dbUser extends dbHelper {
         	$this->insertUpdateAll('user_tag', array($userId, "Les senere"));
         }
 
-        /*Deleting all existing category preferences*/
-        $this->deleteFromTable('category_preference', array('userId'), array($userId));
-
          /*Inserting category preferences*/
-		if(!empty($user->getCategoryPrefs())){
-			foreach($user->getCategoryPrefs() as $category){
-				$this->insertUpdateAll('category_preference', array($userId,$category));
-			}
-		}
+        if(!empty($user->getCategoryPrefs())){
+            /*Deleting all existing category preferences*/
+            $this->deleteFromTable('category_preference', array('userId'), array($userId));
+            foreach($user->getCategoryPrefs() as $category){
+                $this->insertUpdateAll('category_preference', array($userId,$category));
+            }
+        }
         return $userId;
     }
 
