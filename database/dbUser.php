@@ -75,8 +75,10 @@ class dbUser extends dbHelper {
         $this->deleteFromTable('category_preference', array('userId'), array($userId));
 
          /*Inserting category preferences*/
+        print_r($user->getCategoryPrefs());
 		if(!empty($user->getCategoryPrefs())){
 			foreach($user->getCategoryPrefs() as $category){
+                print_r($category);
 				$this->insertUpdateAll('category_preference', array($userId,$category));
 			}
 		}
