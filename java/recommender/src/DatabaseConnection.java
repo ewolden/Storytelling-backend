@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 
 import org.apache.mahout.cf.taste.common.Refreshable;
 import org.apache.mahout.cf.taste.common.TasteException;
@@ -12,6 +13,7 @@ import org.apache.mahout.cf.taste.impl.model.jdbc.MySQLJDBCDataModel;
 import org.apache.mahout.cf.taste.impl.model.jdbc.ReloadFromJDBCDataModel;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.model.JDBCDataModel;
+import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
 
@@ -152,19 +154,18 @@ public class DatabaseConnection {
 	}
 	
 	/**Find the list of rated stories for this user*/
-	public ArrayList<Integer> getRated(int userId){
-		ArrayList<Integer> ratedStories = new ArrayList<>();
+	public HashMap<Integer, Integer> getRated(int userId){
+		HashMap<Integer, Integer> ratedStories = new HashMap<>();
 		
 		try {
-			/*stateId=5 means rated*/
 			PreparedStatement stmt = connection.prepareStatement(
-					"SELECT distinct storyId FROM story_state WHERE userId=? AND stateId=5");
+					"SELECT storyId, rating FROM stored_story WHERE userId=? AND rating IS NOT NULL");
 			stmt.setInt(1,userId);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()){
 				String id = rs.getString("storyId");
 				int numId = Integer.parseInt(id.substring(3));
-				ratedStories.add(numId);
+				ratedStories.put(numId,rs.getInt("rating"));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -192,6 +193,28 @@ public class DatabaseConnection {
 		}
 		
 		return frontendStories;		
+	}
+	
+	/**Gets the title of the explanation stories and creates and explanation string*/
+	public String createExplanation(ArrayList<RecommendedItem> explanationItems) {
+		String explanation = "";
+		try {
+			PreparedStatement stmt = connection.prepareStatement(
+					"SELECT title FROM story WHERE storyId=?");
+			for(RecommendedItem item: explanationItems){
+				stmt.setString(1, "DF."+item.getItemID());
+				ResultSet rs = stmt.executeQuery();
+				while(rs.next()){
+					explanation += "DF."+item.getItemID()+":"+rs.getString("title")+",";					
+				}
+			}
+			stmt.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		/*Remove the last comma*/
+		explanation = explanation.replaceAll(",$", "");
+		return explanation;
 	}
 	
 	/**Create a view in the database with the preference values for the input user*/
@@ -226,5 +249,7 @@ public class DatabaseConnection {
 			e.printStackTrace();
 		}
 	}
+
+
 	
 }

@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.recommender.GenericRecommendedItem;
@@ -75,7 +76,7 @@ public class CollaborativeRecommender {
 		Collections.sort(collaborativeRecommendations, new CompareCollaborative());
 		
 		/*Find the stories that the user have rated*/
-    	ArrayList<Integer> ratedStories = db.getRated((int)userId);
+    	HashMap<Integer,Integer> ratedStories = db.getRated((int)userId);
     	ArrayList<Integer> frontendStories = new ArrayList<>();
 
     	/*Find the stories already present in the recommendations list at front end
@@ -89,7 +90,7 @@ public class CollaborativeRecommender {
 		int ranking = 1;
 		for(CollaborativeRecommendation recommendation : collaborativeRecommendations){	
 			/*If the item has not been rated or is not already in the recommendation list at front end we insert it*/
-    		if (!ratedStories.contains((int)recommendation.getItem().getItemID()) && !frontendStories.contains((int)recommendation.getItem().getItemID())){
+    		if ((ratedStories.get((int)recommendation.getItem().getItemID())==null) && !frontendStories.contains((int)recommendation.getItem().getItemID())){
     			itemsToBeInserted.add(new DatabaseInsertObject((int)this.userId, "DF."+recommendation.getItem().getItemID(), recommendation.getExplanation(), 0, 1, ranking));
     			System.out.println(recommendation.getItem());
     			ranking++;

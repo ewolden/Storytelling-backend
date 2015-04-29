@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.mahout.cf.taste.common.TasteException;
@@ -63,7 +64,7 @@ public class ContentBasedRecommender
     	List<RecommendedItem> recommendations = recommender.recommend(userId, model.getNumItems(), null, true);
     	    	   	
     	/*Find the stories that the user have rated*/
-    	ArrayList<Integer> ratedStories = conn.getRated((int)userId);
+    	HashMap<Integer,Integer> ratedStories = conn.getRated((int)userId);
 
     	ArrayList<Integer> frontendStories = new ArrayList<>();
 
@@ -73,22 +74,24 @@ public class ContentBasedRecommender
     		frontendStories = conn.getStoriesInFrontendArray((int) userId);
     	}
     	int ranking = 1;
-    	System.out.println("FrontendStories: "+frontendStories);
     	ArrayList<DatabaseInsertObject> itemsToBeInserted = new ArrayList<>();
     	for (RecommendedItem recommendation : recommendations) {
     		/*If the item has not been rated or is not already in the recommendation list at front end we insert it*/
-    		if (!ratedStories.contains((int)recommendation.getItemID()) && !frontendStories.contains((int)recommendation.getItemID())){
-    			List<RecommendedItem> becauseItems = recommender.recommendedBecause(userId, recommendation.getItemID(), 3);
-    			String explanation = "";
-    			ArrayList<RecommendedItem> noDuplicates = new ArrayList<>();
+    		if ((ratedStories.get((int)recommendation.getItemID())==null) && !frontendStories.contains((int)recommendation.getItemID())){
+    			List<RecommendedItem> becauseItems = recommender.recommendedBecause(userId, recommendation.getItemID(), model.getNumItems());
+    			int counter = 1;
+    			ArrayList<RecommendedItem> explanationItems = new ArrayList<>();
     			for (RecommendedItem because : becauseItems){ 
-    				if (!noDuplicates.contains(because)){
-    					noDuplicates.add(because);
-    					explanation += "DF."+because.getItemID()+",";
+    				/*Add story to explanation if this story has been rated and the rating is good*/
+    				if (!explanationItems.contains(because) && ratedStories.get((int)because.getItemID())!= null && ratedStories.get((int)because.getItemID())> 2){
+    					explanationItems.add(because);
+    					counter++;
+    				}
+    				if (counter>3){
+    					break;
     				}
     			}
-    			/*Remove the last comma*/
-    			explanation = explanation.replaceAll(",$", "");
+    			String explanation = conn.createExplanation(explanationItems);
     			itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+recommendation.getItemID(), explanation, 0, 0, ranking));
     			System.out.println(recommendation); 
         		ranking++;
