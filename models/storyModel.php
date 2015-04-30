@@ -52,8 +52,13 @@ class storyModel{
         //Create a list of all image IDs for the story
         foreach ($xml->children('abm', TRUE)->image as $element) 
         {
-            preg_match('/\/\d{1,5}/',(string) $element->children('abm', TRUE)->imageUri,$match); //selects image ID from the URL
-            $this->imageList[] = substr($match[0],1);
+            $url = (string) $element->children('abm', TRUE)->imageUri;
+            if(!empty($url)){
+                $this->audioList[] = array( 
+                    'imageurl' => $url,
+                    'description' => (string) $element->children('dc', TRUE)->description);
+            }
+            
         }
         //Create a nested list of all video URLs with posters for the story
         foreach ($xml->children('abm', TRUE)->media as $element)

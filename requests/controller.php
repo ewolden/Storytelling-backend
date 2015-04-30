@@ -85,12 +85,13 @@ switch ($type) {
 	$userModel->addFromDB($userInfo);
 	$userModel->addUserValues($request->email, $request->age_group, $request->gender, 
 		$request->use_of_location, $request->category_preference);
+
 	$userId = $dbUser->updateUserInfo($userModel);
 	if($userId){/** User sucessfully updated, returns sucess message and userId **/
 		/* Running the recommender only if the update include categories to avoid running it 
 		when the user sets gender and age.*/
 		$output = $userId;
-		if(!empty($request->category_preference)){
+		if(!is_null($request->category_preference)){
 			$startTime = microtime(true);
 			$userModel->setUserId($userId);
 			$recommend = new runRecommender($userModel);
