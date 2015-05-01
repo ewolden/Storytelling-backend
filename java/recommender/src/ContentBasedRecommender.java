@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.recommender.GenericItemBasedRecommender;
@@ -74,8 +75,20 @@ public class ContentBasedRecommender
     		frontendStories = conn.getStoriesInFrontendArray((int) userId);
     	}
     	int ranking = 1;
+    	Random rand = new Random();
+    	int randomDislikedRanking = rand.nextInt(6)+5;
+    	
     	ArrayList<DatabaseInsertObject> itemsToBeInserted = new ArrayList<>();
     	for (RecommendedItem recommendation : recommendations) {
+    		/* To get a story outside of the users preferences, finds the least recommended story */
+    		if(randomDislikedRanking == ranking){
+    			itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+recommendations.get(recommendations.size() - 1).getItemID(), "FalseRecommendation", 1, 0, ranking,recommendations.get(recommendations.size() - 1).getValue()));
+    			System.out.print("False recommend: ");
+    			System.out.println(recommendations.get(recommendations.size() - 1));
+    			ranking++;
+    			continue;
+    		}
+    		
     		/*If the item has not been rated or is not already in the recommendation list at front end we insert it*/
     		if ((ratedStories.get((int)recommendation.getItemID())==null) && !frontendStories.contains((int)recommendation.getItemID())){
     			List<RecommendedItem> becauseItems = recommender.recommendedBecause(userId, recommendation.getItemID(), model.getNumItems());
@@ -92,7 +105,7 @@ public class ContentBasedRecommender
     				}
     			}
     			String explanation = conn.createExplanation(explanationItems);
-    			itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+recommendation.getItemID(), explanation, 0, 0, ranking));
+    			itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+recommendation.getItemID(), explanation, 0, 0, ranking, recommendation.getValue()));
     			System.out.println(recommendation); 
         		ranking++;
     		}

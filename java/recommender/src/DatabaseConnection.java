@@ -84,9 +84,9 @@ public class DatabaseConnection {
 	/**Add recommendations to database*/
 	public void insertUpdateRecommendValues(ArrayList<DatabaseInsertObject> listOfRecommendations){
 		try {
-			String insertUpdateSql = "INSERT INTO stored_story (userId, storyId, explanation, false_recommend,type_of_recommendation,recommend_ranking)"
-					+ "VALUES (?,?,?,?,?,?) ON DUPLICATE KEY UPDATE "
-					+ "explanation = ?, false_recommend = ?, type_of_recommendation=?, recommend_ranking = ?";
+			String insertUpdateSql = "INSERT INTO stored_story (userId, storyId, explanation, false_recommend,type_of_recommendation,recommend_ranking,estimated_Rating)"
+					+ "VALUES (?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE "
+					+ "explanation = ?, false_recommend = ?, type_of_recommendation=?, recommend_ranking = ?, estimated_Rating = ?";
 			PreparedStatement stmt = connection.prepareStatement(insertUpdateSql);
 			
 			/**Looping through all the recommendations and make them ready for insert*/
@@ -97,10 +97,12 @@ public class DatabaseConnection {
 				stmt.setInt(4, item.getFalse_recommend());
 				stmt.setInt(5, item.getType_of_recommendation());
 				stmt.setInt(6, item.getRanking());
-				stmt.setString(7, item.getExplanation());
-				stmt.setInt(8, item.getFalse_recommend());
-				stmt.setInt(9, item.getType_of_recommendation());
-				stmt.setInt(10, item.getRanking());
+				stmt.setDouble(7, item.getEstimatedValue());
+				stmt.setString(8, item.getExplanation());
+				stmt.setInt(9, item.getFalse_recommend());
+				stmt.setInt(10, item.getType_of_recommendation());
+				stmt.setInt(11, item.getRanking());
+				stmt.setDouble(12, item.getEstimatedValue());
 				stmt.addBatch();		
 			}
 			/**Insert the recommendations*/

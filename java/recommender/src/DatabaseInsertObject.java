@@ -7,9 +7,10 @@ public class DatabaseInsertObject {
 	private int false_recommend;
 	private int type_of_recommendation;
 	private int ranking;
+	private double estimatedValue;
 	
 	public DatabaseInsertObject(int userId, String storyId, String explanation,
-			int false_recommend, int type_of_recommendation, int ranking) {
+			int false_recommend, int type_of_recommendation, int ranking, double estimatedValue) {
 		super();
 		this.userId = userId;
 		this.storyId = storyId;
@@ -17,6 +18,7 @@ public class DatabaseInsertObject {
 		this.false_recommend = false_recommend;
 		this.type_of_recommendation = type_of_recommendation;
 		this.ranking = ranking;
+		this.estimatedValue = estimatedValue;
 	}
 	
 	public int getUserId() {
@@ -37,6 +39,9 @@ public class DatabaseInsertObject {
 	}
 	public int getRanking() {
 		return ranking;
+	}
+	public double getEstimatedValue() {
+		return estimatedValue;
 	}
 	
 }

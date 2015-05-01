@@ -24,13 +24,13 @@ public class RunRecommendation {
 				CollaborativeRecommender collaborativeRecommender = new CollaborativeRecommender(userId, add);
 				numberOfStoriesRecommended = collaborativeRecommender.runCollaborativeRecommender();
 				
-				if(numberOfStoriesRecommended < 10 && false){ //disabled
-					/* There are not enough collaborative recommendations, need content based in addition */
-					ContentBasedRecommender cbr = new ContentBasedRecommender(userId, add);
-					cbr.runContentBasedRecommender();
-					MixedFiltering mixed = new MixedFiltering(userId);
-					mixed.runMixedFiltering(cbr, collaborativeRecommender);
-				}
+//				if(numberOfStoriesRecommended < 10 && false){ //disabled
+//					/* There are not enough collaborative recommendations, need content based in addition */
+//					ContentBasedRecommender cbr = new ContentBasedRecommender(userId, add);
+//					cbr.runContentBasedRecommender();
+//					MixedFiltering mixed = new MixedFiltering(userId);
+//					mixed.runMixedFiltering(cbr, collaborativeRecommender);
+//				}
 				
 			} catch (Exception e) {
 				e.printStackTrace();

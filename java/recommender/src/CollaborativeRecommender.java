@@ -1,10 +1,13 @@
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
 
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.recommender.GenericRecommendedItem;
 import org.apache.mahout.cf.taste.model.DataModel;
+import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 
 
 public class CollaborativeRecommender {
@@ -88,12 +91,45 @@ public class CollaborativeRecommender {
 		/* Take the top 10 recommendations and and prepare to insert them into database */
 		ArrayList<DatabaseInsertObject> itemsToBeInserted = new ArrayList<>();
 		int ranking = 1;
+		Random rand = new Random();
+    	int randomDislikedRanking = rand.nextInt(6)+5;
 		for(CollaborativeRecommendation recommendation : collaborativeRecommendations){	
+			/* To get a story outside of the users preferences, finds the least recommended story */
+    		if(randomDislikedRanking == ranking){
+    			itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+collaborativeRecommendations.get(collaborativeRecommendations.size() - 1).getItem().getItemID(), "FalseRecommendation", 1, 1, ranking,collaborativeRecommendations.get(collaborativeRecommendations.size() - 1).getItem().getValue()));
+    			System.out.print("False recommend: ");
+    			System.out.println(collaborativeRecommendations.get(collaborativeRecommendations.size() - 1).getItem());
+    			ranking++;
+    			continue;
+    		}
+    		
 			/*If the item has not been rated or is not already in the recommendation list at front end we insert it*/
     		if ((ratedStories.get((int)recommendation.getItem().getItemID())==null) && !frontendStories.contains((int)recommendation.getItem().getItemID())){
-    			itemsToBeInserted.add(new DatabaseInsertObject((int)this.userId, "DF."+recommendation.getItem().getItemID(), recommendation.getExplanation(), 0, 1, ranking));
-    			System.out.println(recommendation.getItem());
-    			ranking++;
+    			/* To get which stories influenced this recommendation */
+    			if(recommendation.getExplanation().equals("item")){
+    				List<RecommendedItem> becauseItems = IR.getRecommender().recommendedBecause(userId, recommendation.getItem().getItemID(), model.getNumItems());
+        			int counter = 1;
+        			ArrayList<RecommendedItem> explanationItems = new ArrayList<>();
+        			for (RecommendedItem because : becauseItems){ 
+        				/*Add story to explanation if this story has been rated and the rating is good*/
+        				if (!explanationItems.contains(because) && ratedStories.get((int)because.getItemID())!= null && ratedStories.get((int)because.getItemID())> 2){
+        					explanationItems.add(because);
+        					counter++;
+        				}
+        				if (counter>3){
+        					break;
+        				}
+        			}
+        			String explanation = db.createExplanation(explanationItems);
+        			itemsToBeInserted.add(new DatabaseInsertObject((int)this.userId, "DF."+recommendation.getItem().getItemID(), explanation, 0, 1, ranking,recommendation.getItem().getValue()));
+        			System.out.println(recommendation.getItem());
+        			ranking++;
+    			} else {
+    				itemsToBeInserted.add(new DatabaseInsertObject((int)this.userId, "DF."+recommendation.getItem().getItemID(), recommendation.getExplanation(), 0, 1, ranking,recommendation.getItem().getValue()));
+        			System.out.println(recommendation.getItem());
+        			ranking++;
+    			}
+    			
     			if(ranking > 10){
     				break;
     			}

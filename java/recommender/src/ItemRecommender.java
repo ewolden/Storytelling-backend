@@ -13,6 +13,7 @@ import org.apache.mahout.cf.taste.similarity.ItemSimilarity;
 
 public class ItemRecommender {
 	private long userId;
+	private GenericItemBasedRecommender recommender;
 	public ItemRecommender(long userId) {
 		this.userId = userId;
 	}
@@ -26,12 +27,13 @@ public class ItemRecommender {
 
 			/* Given a datamodel and a similarity to produce the recommendations */
 			GenericItemBasedRecommender recommender = new GenericItemBasedRecommender(model, sim);
+			this.recommender = recommender;
 			List<RecommendedItem>recommendations = recommender.recommend(this.userId,167);
 
 			/* Looping through all recommendations and putting up to 167 items in the collaborative recommender list*/
 			if(!recommendations.isEmpty()){
 				for (RecommendedItem recommendation : recommendations) {
-					recommendedItemsList.add(new CollaborativeRecommendation(recommendation, (int)this.userId, "item based"));  	  
+					recommendedItemsList.add(new CollaborativeRecommendation(recommendation, (int)this.userId, "item"));  	  
 				}
 			}else{
 				/*There are no recommendations for this user*/
@@ -42,5 +44,8 @@ public class ItemRecommender {
 			e.printStackTrace();
 		}
 		return recommendedItemsList;
+	}
+	public GenericItemBasedRecommender getRecommender(){
+		return this.recommender;
 	}
 }
