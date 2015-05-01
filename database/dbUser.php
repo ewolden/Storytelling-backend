@@ -30,14 +30,12 @@ class dbUser extends dbHelper {
 			}
 			else if($user->getUserId() == -1){ /** User is creating a new user with unique email address **/
 				$values = array($user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
-				$this->sendMail(false, $user->getMail());
 			}
 			else if($user->getUserId() != -1 && $user->getMail() == -1){ /**Update user who has not got an email registrated in db**/
 				$values = array($user->getUserId(),null,$user->getAgeGroup(),$user->getGender(),$user->getLocation());
 			}
 			else { /** We are updating a user who have inputed a new unique email address **/
 				$values = array($user->getUserId(),$user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
-				$this->sendMail(true, $user->getMail());
 			}
 		} else{ /** There exists a user with the same email in the DB **/
 			if($user->getUserId() == -1){ /** User is trying to create a new user and assign an existing email **/
@@ -195,34 +193,6 @@ class dbUser extends dbHelper {
         }else{
             return null;
         }
-    }
-    
-    /**
-     * 
-     * @param boolean $updated
-     * @param String $email
-     */
-    private function sendMail($updated, $email){
-    	$to      = $email;
-    	$subject = 'Velkommen som ny bruker';
-		$message = 'Hei,' . "\r\n\r\n" . 
-		'Takk for at du har registrert deg og velkommen som ny bruker av Javisst. ' . 
-		'Vi bekrefter at det er opprettet en brukerprofil med bruker ' . $email . 
-		' i vår database.' . "\r\n\r\n" . 'Logg inn med brukernavn <b>' . $email . 
-		'</b> for å lese historier om kulturarv anbefalt basert på dine preferanser.' . 
-		"\r\n\r\n" . 'Med vennlig hilsen' . "\r\n" . 'Javisst';
-		$headers = 'From: noreply@javisst.no' . "\r\n" . 'X-Mailer: PHP/' . phpversion ();
-		
-		if ($updated) {
-			$subject = 'Bruker oppdatert';
-			$message = 'Hei,' . "\r\n\r\n" . 'Vi bekrefter at brukerprofil med bruker ' . 
-			$email . ' har blitt oppdatert i vår database.' . "\r\n\r\n" . 
-			'Du kan nå logge inn med brukernavn <b>' . $email . 
-			'</b> for å lese historier om kulturarv anbefalt basert på dine preferanser.' . 
-			"\r\n\r\n" . 'Med vennlig hilsen' . "\r\n" . 'Javisst';
-    	}
-    	
-    	mail($to, $subject, $message, $headers);
     }
 }
 ?>
