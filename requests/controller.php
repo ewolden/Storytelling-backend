@@ -275,7 +275,7 @@ switch ($type) {
 	break;
 	
 	case "sendEmail":
-		$dbUser->sendMail(false, $request->email);
+		$dbUser->sendEmail(false, $request->email);
 	break;
 	
 	case "getMoreRecommendations":
