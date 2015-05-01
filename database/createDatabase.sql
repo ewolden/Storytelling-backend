@@ -170,7 +170,7 @@ CREATE TABLE stored_story
 	 type_of_recommendation	BOOLEAN		NOT NULL,
 	 recommend_ranking 		INT DEFAULT NULL,
 	 in_frontend_array		BOOLEAN		DEFAULT 0,
-	 estimated_preference_value DECIMAL(8,5) DEFAULT 0,
+	 estimated_Rating DECIMAL(8,5) DEFAULT 0,
 
 	PRIMARY KEY (userId, storyId),
 	FOREIGN KEY (userId) REFERENCES user(userId),
