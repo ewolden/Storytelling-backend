@@ -19,11 +19,13 @@ $request = json_decode($postdata);
 $type = $request->type;
 switch ($type) {
 
+	/**Returns all contents from a single story*/
 	case "getStory":
 	$storyModel = new storyModel();
 	$storyModel->getFromDF($request->storyId);
     $data = $dbStory->fetchStory($request->storyId, $request->userId);
 	$storyModel->fromDB($data);
+	$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 4));
 	print_r (json_encode($storyModel->getAll()));
 	break;
 
@@ -256,6 +258,16 @@ switch ($type) {
 
 	case "rejectStory":
 	$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 2));
+	break;
+	
+	case "appUsage":
+	$return = $dbStory->insertUpdateAll('user_usage', array($request->userId, $request->usageType));
+	if($return){
+		print_r(json_encode(array('status' => "successfull")));
+	}
+	else {
+		print_r(json_encode(array('status' => "failed")));
+	}
 	break;
 	
 	case "recommendedStory":
