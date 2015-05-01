@@ -194,7 +194,8 @@ CREATE TABLE story_state
 CREATE TABLE user_usage
 	(usageId 			INT			NOT NULL   AUTO_INCREMENT,
 	 userId				INT 			NOT NULL,
-	 opensApp			TIMESTAMP		NOT NULL,
+	 usageType			VARCHAR(10)		NOT NULL,
+	 point_in_time		TIMESTAMP		NOT NULL,
 
 	PRIMARY KEY (usageId),
 	FOREIGN KEY (userId) REFERENCES user(userId));

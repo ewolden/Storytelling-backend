@@ -54,7 +54,7 @@ class storyModel{
         {
             $url = (string) $element->children('abm', TRUE)->imageUri;
             if(!empty($url)){
-                $this->audioList[] = array( 
+                $this->imageList[] = array( 
                     'imageurl' => $url,
                     'description' => (string) $element->children('dc', TRUE)->description);
             }
