@@ -202,7 +202,7 @@ class dbUser extends dbHelper {
      * @param boolean $updated
      * @param String $email
      */
-    public function sendMail($updated, $email){
+    private function sendMail($updated, $email){
     	$to      = $email;
     	$subject = 'Velkommen som ny bruker';
 		$message = 'Hei,' . "\r\n\r\n" . 
