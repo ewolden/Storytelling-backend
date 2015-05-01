@@ -1,77 +1,76 @@
 <?php
 require_once (__DIR__.'/dbHelper.php');
 require_once (__DIR__.'/../models/userModel.php');
-        require_once '../phpmailer/PHPMailerAutoload.php';
 
 /**
 * This class handles database communication related to users
 */
 
 class dbUser extends dbHelper {
-    
-    /*Construct a new dbHelper-instance*/
-    function __construct() {
-        parent::__construct();
-    }
-    
-    /** Adds or updates a user and chosen preferences to the database, does not allow duplicate email adresses in the DB, returns userId if user is added/changed, false if email exists**/
+	
+	/*Construct a new dbHelper-instance*/
+	function __construct() {
+		parent::__construct();
+	}
+	
+	/** Adds or updates a user and chosen preferences to the database, does not allow duplicate email adresses in the DB, returns userId if user is added/changed, false if email exists**/
      public function updateUserInfo($user){
         $values = array();
         /** Find if the email address that the user tries to add/change is in the DB **/
         $sql = "SELECT COUNT(*) as count from user WHERE mail = (:mail)";
         $stmt = $this->db->prepare($sql);
-        $mail = $user->getMail();
+		$mail = $user->getMail();
         $stmt->bindParam(':mail', $mail);
         $stmt->execute();
-        
-        $numberOfEmailsFound = $stmt->fetch(PDO::FETCH_ASSOC);
-        if($numberOfEmailsFound['count'] == 0){ /** Checks if there are no users with that email address **/
-            if($user->getUserId() == -1 && $user->getMail() == -1){ /** Create user without email **/
-                $values = array(null,$user->getAgeGroup(),$user->getGender(),$user->getLocation());
-            }
-            else if($user->getUserId() == -1){ /** User is creating a new user with unique email address **/
-                $values = array($user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
-                $this->sendMail(false, $user->getMail());
-            }
-            else if($user->getUserId() != -1 && $user->getMail() == -1){ /**Update user who has not got an email registrated in db**/
-                $values = array($user->getUserId(),null,$user->getAgeGroup(),$user->getGender(),$user->getLocation());
-            }
-            else { /** We are updating a user who have inputed a new unique email address **/
-                $values = array($user->getUserId(),$user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
-                $this->sendMail(true, $user->getMail());
-            }
-        } else{ /** There exists a user with the same email in the DB **/
-            if($user->getUserId() == -1){ /** User is trying to create a new user and assign an existing email **/
-                return false;
-            }
-            else{ /** User is either updating other fields or is chaning his email to an already chosen address **/
-                $sql = "SELECT mail from user where userId = (:userid)";
-                $stmt = $this->db->prepare($sql);
-                //Setting the parameters
-                $userid=$user->getUserId();
-                //binding the parameters
-                $stmt->bindParam(':userid', $userid);
-                $stmt->execute();
-                if(strcmp($stmt->fetch(PDO::FETCH_ASSOC)['mail'],$user->getMail()) == 0){ /** Compares DB mail to user mail. The user is trying to change something other than his email **/
-                    $values = array($user->getUserId(),$user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
-                } 
-                else{ /** The user is trying to change from an email that is in the DB, to a new different email that already exists in the DB */
-                    return false;
-                }
-            }
-        }
+		
+		$numberOfEmailsFound = $stmt->fetch(PDO::FETCH_ASSOC);
+		if($numberOfEmailsFound['count'] == 0){ /** Checks if there are no users with that email address **/
+			if($user->getUserId() == -1 && $user->getMail() == -1){ /** Create user without email **/
+				$values = array(null,$user->getAgeGroup(),$user->getGender(),$user->getLocation());
+			}
+			else if($user->getUserId() == -1){ /** User is creating a new user with unique email address **/
+				$values = array($user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
+				$this->sendMail(false, $user->getMail());
+			}
+			else if($user->getUserId() != -1 && $user->getMail() == -1){ /**Update user who has not got an email registrated in db**/
+				$values = array($user->getUserId(),null,$user->getAgeGroup(),$user->getGender(),$user->getLocation());
+			}
+			else { /** We are updating a user who have inputed a new unique email address **/
+				$values = array($user->getUserId(),$user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
+				$this->sendMail(true, $user->getMail());
+			}
+		} else{ /** There exists a user with the same email in the DB **/
+			if($user->getUserId() == -1){ /** User is trying to create a new user and assign an existing email **/
+				return false;
+			}
+			else{ /** User is either updating other fields or is chaning his email to an already chosen address **/
+				$sql = "SELECT mail from user where userId = (:userid)";
+				$stmt = $this->db->prepare($sql);
+				//Setting the parameters
+				$userid=$user->getUserId();
+				//binding the parameters
+				$stmt->bindParam(':userid', $userid);
+				$stmt->execute();
+        		if(strcmp($stmt->fetch(PDO::FETCH_ASSOC)['mail'],$user->getMail()) == 0){ /** Compares DB mail to user mail. The user is trying to change something other than his email **/
+        			$values = array($user->getUserId(),$user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
+				} 
+				else{ /** The user is trying to change from an email that is in the DB, to a new different email that already exists in the DB */
+					return false;
+				}
+			}
+		}
         $this->insertUpdateAll('user',$values);
         $userId = $this->db->lastInsertId();
         /*If we are updating a user lastInsertId will return 0. 
-        This userId doesn't exist and will cause problems further down.
-        So if we are updating, we get the userId from the input user-model*/
+		This userId doesn't exist and will cause problems further down.
+		So if we are updating, we get the userId from the input user-model*/
         if($userId == 0){
-            if($user->getUserId() != -1)
-                $userId = $user->getUserId();
-            else return false;
+        	if($user->getUserId() != -1)
+        		$userId = $user->getUserId();
+        	else return false;
         } else {
-            $this->insertUpdateAll('user_tag', array($userId, "Lest"));
-            $this->insertUpdateAll('user_tag', array($userId, "Les senere"));
+        	$this->insertUpdateAll('user_tag', array($userId, "Lest"));
+        	$this->insertUpdateAll('user_tag', array($userId, "Les senere"));
         }
 
          /*Inserting category preferences*/
@@ -85,83 +84,83 @@ class dbUser extends dbHelper {
         return $userId;
     }
 
-    /** Returns a(1) userModel from the database based on email **/ 
+    /** Returns a(1) userModel from the database based on email **/	
     public function getUserFromEmail($email){
-        $sql = "SELECT * from user where mail = (:usermail)";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':usermail',$email);
+    	$sql = "SELECT * from user where mail = (:usermail)";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindParam(':usermail',$email);
         $stmt->execute();
         $userrow = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if(count($userrow) > 0){ /** User with the inputed email exists **/
-            return array(true,$userrow[0], $this->getUserCategories($userrow[0]['userId']));
-        }
-        else { /** User with the inputed email cannot be found **/
-            return array(false);
-        }
-    }
+			return array(true,$userrow[0], $this->getUserCategories($userrow[0]['userId']));
+    	}
+    	else { /** User with the inputed email cannot be found **/
+    		return array(false);
+    	}
+	}
 
 
-    /** Returns a(1) userModel from the database based on userId **/    
+    /** Returns a(1) userModel from the database based on userId **/	
     public function getUserFromId($userId){
-        $sql = "SELECT * from user where userId = (:userid)";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':userid',$userId);
-        $stmt->execute();
+    	$sql = "SELECT * from user where userId = (:userid)";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindParam(':userid',$userId);
+		$stmt->execute();
         $userrow = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if(count($userrow) > 0){ /** User with the inputed email exists **/
-            return array(true,$userrow[0], $this->getUserCategories($userrow[0]['userId']));
-        }
-        else { /** User with the inputed email cannot be found **/
-            return array(false);
-        }
+			return array(true,$userrow[0], $this->getUserCategories($userrow[0]['userId']));
+    	}
+    	else { /** User with the inputed email cannot be found **/
+    		return array(false);
+    	}
     }
     public function getUserCategories($userId)
     {
-        $sql = "SELECT group_concat(distinct categoryId) as categories
-        from category_preference 
-        where userId = (:userid)
-        group by userId";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':userid',$userId);
-        $stmt->execute();
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $row;
+   		$sql = "SELECT group_concat(distinct categoryId) as categories
+   		from category_preference 
+   		where userId = (:userid)
+   		group by userId";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindParam(':userid',$userId);
+		$stmt->execute();
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+		return $row;
     }
 
     public function getMailFromId($userId){
-        $sql = "SELECT mail from user where userId = :userid";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':userid', $userId);
-        $stmt->execute();
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $row;
+    	$sql = "SELECT mail from user where userId = :userid";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindParam(':userid', $userId);
+		$stmt->execute();
+    	$row = $stmt->fetch(PDO::FETCH_ASSOC);
+    	return $row;
     }
      public function getNumberOfUsers(){
-        $sql = "SELECT COUNT(*) from user";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute();
-        $result = $stmt->fetch();
-        if($result){
-            //print_r($result[0]);
-            return $result[0];
-        }else{
-            return null;
-        }
+    	$sql = "SELECT COUNT(*) from user";
+    	$stmt = $this->db->prepare($sql);
+    	$stmt->execute();
+    	$result = $stmt->fetch();
+    	if($result){
+    		//print_r($result[0]);
+    		return $result[0];
+    	}else{
+    		return null;
+    	}
     }
 
     public function getNumberOfRatedStories($userId){
-        /*Returns the number of rated stories, EXCEPT this user*/
-        $sql = "SELECT COUNT(*) from story_state WHERE userId != (:userId) AND stateId = 5";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':userId', $userId);
-        $stmt->execute();
-        $result = $stmt->fetch();
-        //print_r($result[0])
-        if($result){
-            return $result[0];
-        }else{
-            return null;
-        }
+    	/*Returns the number of rated stories, EXCEPT this user*/
+    	$sql = "SELECT COUNT(*) from story_state WHERE userId != (:userId) AND stateId = 5";
+    	$stmt = $this->db->prepare($sql);
+    	$stmt->bindParam(':userId', $userId);
+    	$stmt->execute();
+    	$result = $stmt->fetch();
+    	//print_r($result[0])
+    	if($result){
+    		return $result[0];
+    	}else{
+    		return null;
+    	}
 
     }
     public function getNumberOfRatedStoriesByThisUser($userId){
@@ -204,61 +203,26 @@ class dbUser extends dbHelper {
      * @param String $email
      */
     public function sendMail($updated, $email){
-        // $to      = $email;
-        // $subject = 'Velkommen som ny bruker';
-        // $message = 'Hei,' . "\r\n\r\n" . 
-        // 'Takk for at du har registrert deg og velkommen som ny bruker av Javisst. ' . 
-        // 'Vi bekrefter at det er opprettet en brukerprofil med bruker ' . $email . 
-        // ' i vår database.' . "\r\n\r\n" . 'Logg inn med brukernavn <b>' . $email . 
-        // '</b> for å lese historier om kulturarv anbefalt basert på dine preferanser.' . 
-        // "\r\n\r\n" . 'Med vennlig hilsen' . "\r\n" . 'Javisst';
-        // ini_set('SMTP','smtp.gmail.com');
-        // ini_set("smtp_port", "465");
-        // $headers = "MIME-Version: 1.0" . "\r\n";
-        // $headers .= "Content-type: text/html; charset=iso-8859-1" . "\r\n";
-        // $headers .= 'From: noreply@javisst.no' . "\r\n" . 'X-Mailer: PHP/' . phpversion ();
-        
-        // if ($updated) {
-        //     $subject = 'Bruker oppdatert';
-        //     $message = 'Hei,' . "\r\n\r\n" . 'Vi bekrefter at brukerprofil med bruker ' . 
-        //     $email . ' har blitt oppdatert i vår database.' . "\r\n\r\n" . 
-        //     'Du kan nå logge inn med brukernavn <b>' . $email . 
-        //     '</b> for å lese historier om kulturarv anbefalt basert på dine preferanser.' . 
-        //     "\r\n\r\n" . 'Med vennlig hilsen' . "\r\n" . 'Javisst';
-        // }
-        
-
- 
-$mail = new PHPMailer;
- 
-//$mail->isSMTP();                                      // Set mailer to use SMTP
-$mail->Host = 'smtp.gmail.com';                       // Specify main and backup server
-$mail->SMTPAuth = true;                               // Enable SMTP authentication
-$mail->Username = 'javisstsintef@gmail.com';                   // SMTP username
-$mail->Password = 'javisstatsintef';               // SMTP password
-$mail->SMTPSecure = 'tls';                            // Enable encryption, 'ssl' also accepted
-$mail->Port = 587;                                    //Set the SMTP port number - 587 for authenticated TLS
-$mail->setFrom('javisstsintef@gmail.com');     //Set who the message is to be sent from
-$mail->addAddress($email);  // Add a recipient
-$mail->WordWrap = 50;                                 // Set word wrap to 50 characters
-$mail->isHTML(true);                                  // Set email format to HTML
- 
-$mail->Subject = 'Here is the subject';
-$mail->Body    = 'This is the HTML message body <b>in bold!</b>';
-$mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
- 
-//Read an HTML message body from an external file, convert referenced images to embedded,
-//convert HTML into a basic plain-text alternative body
-//$mail->msgHTML(file_get_contents('contents.html'), dirname(__FILE__));
- 
-if(!$mail->send()) {
-  // echo 'Message could not be sent.';
-  // echo 'Mailer Error: ' . $mail->ErrorInfo;
-  // exit;
-}
- 
-//echo 'Message has been sent';
-        //mail($to, $subject, $message, $headers);
+    	$to      = $email;
+    	$subject = 'Velkommen som ny bruker';
+		$message = 'Hei,' . "\r\n\r\n" . 
+		'Takk for at du har registrert deg og velkommen som ny bruker av Javisst. ' . 
+		'Vi bekrefter at det er opprettet en brukerprofil med bruker ' . $email . 
+		' i vår database.' . "\r\n\r\n" . 'Logg inn med brukernavn <b>' . $email . 
+		'</b> for å lese historier om kulturarv anbefalt basert på dine preferanser.' . 
+		"\r\n\r\n" . 'Med vennlig hilsen' . "\r\n" . 'Javisst';
+		$headers = 'From: noreply@javisst.no' . "\r\n" . 'X-Mailer: PHP/' . phpversion ();
+		
+		if ($updated) {
+			$subject = 'Bruker oppdatert';
+			$message = 'Hei,' . "\r\n\r\n" . 'Vi bekrefter at brukerprofil med bruker ' . 
+			$email . ' har blitt oppdatert i vår database.' . "\r\n\r\n" . 
+			'Du kan nå logge inn med brukernavn <b>' . $email . 
+			'</b> for å lese historier om kulturarv anbefalt basert på dine preferanser.' . 
+			"\r\n\r\n" . 'Med vennlig hilsen' . "\r\n" . 'Javisst';
+    	}
+    	
+    	mail($to, $subject, $message, $headers);
     }
 }
 ?>
