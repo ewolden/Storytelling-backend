@@ -274,6 +274,10 @@ switch ($type) {
 	$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 1));
 	break;
 	
+	case "sendEmail":
+		$dbUser->sendEmail(false, $request->email);
+	break;
+	
 	case "getMoreRecommendations":
 	$userModel = new userModel();
 	$userInfo = $dbUser->getUserFromId($request->userId);
