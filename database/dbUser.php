@@ -57,12 +57,14 @@ class dbUser extends dbHelper {
 			}
 			else if($user->getUserId() == -1){ /* User is creating a new user with unique email address */
 				$values = array($user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
+				$this->sendMail(false, $user->getMail());
 			}
 			else if($user->getUserId() != -1 && $user->getMail() == -1){ /*Update user who has not got an email registrated in db*/
 				$values = array($user->getUserId(),null,$user->getAgeGroup(),$user->getGender(),$user->getLocation());
 			}
 			else { /* We are updating a user who have inputed a new unique email address */
 				$values = array($user->getUserId(),$user->getMail(),$user->getAgeGroup(),$user->getGender(),$user->getLocation());
+				$this->sendMail(true, $user->getMail());
 			}
 		} else{ /* There exists a user with the same email in the DB */
 			if($user->getUserId() == -1){ /* User is trying to create a new user and assign an existing email */
@@ -257,6 +259,61 @@ class dbUser extends dbHelper {
         }else{
             return null;
         }
+    }
+    
+    /**
+     * Sends a confirmation email to the given email.
+     * @param boolean $updated
+     * @param String $email
+     */
+    public function sendMail($updated, $email){
+    	$subject = 'Velkommen som ny bruker';
+    	$message = 'Hei, <br><br>
+        Takk for at du har registrert deg og velkommen som ny bruker av Javisst. ' .
+            'Vi bekrefter at det er opprettet en brukerprofil med bruker ' . $email .
+            ' i vår database. <br><br> Logg inn med brukernavn <b>' . $email .
+            '</b> for å lese historier om kulturarv anbefalt basert på dine preferanser.<br><br>
+        Med vennlig hilsen <br>Javisst';
+    	$altMessage = 'Hei,
+        Takk for at du har registrert deg og velkommen som ny bruker av Javisst. ' .
+            'Vi bekrefter at det er opprettet en brukerprofil med bruker ' . $email .
+            ' i vår database. Logg inn med brukernavn ' . $email .
+            ' for å lese historier om kulturarv anbefalt basert på dine preferanser.
+        Med vennlig hilsen Javisst';
+    
+    	if ($updated) {
+    		$subject = 'Bruker oppdatert';
+    		$message = 'Hei, <br><br>Vi bekrefter at brukerprofil med bruker ' .
+    				$email . ' har blitt oppdatert i vår database.<br><br>
+            Du kan nå logge inn med brukernavn <b>' . $email .
+                '</b> for å lese historier om kulturarv anbefalt basert på dine preferanser.
+            <br><br>Med vennlig hilsen <br>Javisst';
+    		$altMessage = 'Hei, Vi bekrefter at brukerprofil med bruker ' .
+    				$email . ' har blitt oppdatert i vår database.
+            Du kan nå logge inn med brukernavn ' . $email .
+                ' for å lese historier om kulturarv anbefalt basert på dine preferanser.
+            Med vennlig hilsen Javisst';
+    	}
+    
+    	$mail = new PHPMailer;
+    	$mail->CharSet = 'UTF-8';
+    	$mail->isSMTP();                                      // Set mailer to use SMTP
+    	$mail->Host = 'smtp.gmail.com';                       // Specify main and backup server
+    	$mail->SMTPAuth = true;                               // Enable SMTP authentication
+    	$mail->Username = 'javisstsintef@gmail.com';                   // SMTP username
+    	$mail->Password = 'javisstatsintef';               // SMTP password
+    	$mail->SMTPSecure = 'tls';                            // Enable encryption, 'ssl' also accepted
+    	$mail->Port = 587;                                    //Set the SMTP port number - 587 for authenticated TLS
+    	$mail->FromName = 'Javisst';     //Set who the message is to be sent from
+    	$mail->AddReplyTo("no-reply@javisst.no","No Reply");
+    	$mail->addAddress($email);  // Add a recipient
+    	$mail->WordWrap = 50;                                 // Set word wrap to 50 characters
+    	$mail->isHTML(true);                                  // Set email format to HTML
+    
+    	$mail->Subject = $subject;
+    	$mail->Body    = $message;
+    	$mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+    	$mail->send();
     }
 }
 ?>
