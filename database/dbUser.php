@@ -297,7 +297,6 @@ class dbUser extends dbHelper {
     	}
     
     	$mail = new PHPMailer;
-    	$mail->CharSet = 'UTF-8';
     	$mail->isSMTP();                                      // Set mailer to use SMTP
     	$mail->Host = 'smtp.gmail.com';                       // Specify main and backup server
     	$mail->SMTPAuth = true;                               // Enable SMTP authentication
@@ -311,9 +310,10 @@ class dbUser extends dbHelper {
     	$mail->WordWrap = 50;                                 // Set word wrap to 50 characters
     	$mail->isHTML(true);                                  // Set email format to HTML
     
-    	$mail->Subject = $subject;
-    	$mail->Body    = $message;
-    	$mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+    	$mail->Subject = utf8_encode($subject);
+    	$mail->Body    = utf8_encode($message);
+    	$mail->AltBody = utf8_encode($altMessage);
+    	$mail->CharSet = 'UTF-8';
     	$mail->send();
     }
 }
