@@ -1,21 +1,44 @@
 <?php
+/*Contributors: Kjersti Fagerholt, Roar Gjøvaag, Ragnhild Krogh, Espen Strømjordet,
+ Audun Sæther, Hanne Marie Trelease, Eivind Halmøy Wolden
+
+ "Copyright 2015 The TAG CLOUD/SINTEF project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License."
+ */
+
 require_once (__DIR__.'/dbHelper.php');
 require_once (__DIR__.'/../models/storyModel.php');
 
 /**
-* This class handles database communication related to stories
-*/
+ * This class handles database communication related to stories
+ * @author Audun Sæther
+ * @author Kjersti Fagerholt
+ * @author Eivind Halmøy Wolden
+ * @author Hanne Marie Trelease
+ */
 class dbStory extends dbHelper{
 		
-	/*Construct a new dbHelper-instance*/
+	/** Construct a new dbHelper-instance */
 	public function __construct() {
 		parent::__construct();
 	}
 	
 	/**
-    * Retrieves story ID's from "digitalt fortalt" with digitaltmuseum.no's API 
-	* and add the stories to the database
-    */
+	 * Retrieves story ID's from "digitalt fortalt" with digitaltmuseum.no's API 
+	 * and add the stories to the database
+	 * @param date $harvestTime	Time of harvest
+	 */
     public function addStoriesToDatabase($harvestTime){
         $startDoc = 0;
         $numberOfDocs = -1;
@@ -40,7 +63,10 @@ class dbStory extends dbHelper{
 		print_r('done harvesting');
     }
 	
-	/*Remove the stories that are no longer there, according to the harvesting*/
+    /**
+     * Remove the stories that are no longer in digitalt fortalt, according to the harvesting
+     * @param date $harvestTime time 
+     */
 	public function deleteNotUpdatedStories($harvestTime){
 		$stories = $this->getSelected('story', array('storyId', 'lastChangedTime'), null, null);
 		foreach($stories as $story){
@@ -70,7 +96,11 @@ class dbStory extends dbHelper{
 		}
 	}
 	
-	/*Inserting story in story table and related tables*/
+	/**
+	 * Inserting story in story table and related tables
+	 * @param storyModel $story
+	 * @param date $harvestTime time of harvest
+	 */
 	public function insertStory($story, $harvestTime){
 		
 		/*Inserting story in story table*/
@@ -125,7 +155,12 @@ class dbStory extends dbHelper{
 		}
 	}
 
-    /**Returns story information stored in database*/
+	/**
+	 * Returns story information and storyinfo related to user stored in database 
+	 * @param String $storyId
+	 * @param int $userId
+	 * @return $rows rows returned from the database query
+	 */
     public function fetchStory($storyId, $userId){
     	$categories = $this->db->prepare(
     		"SELECT group_concat(distinct categoryId) as categories
@@ -144,6 +179,11 @@ class dbStory extends dbHelper{
 		return $data;
     }
 	
+    /**
+     * Gets story recommendations for a user
+     * @param int $userId
+     * @return $rows array of stories
+     */
 	public function getRecommendedStories($userId){
 		$stmt = $this->db->prepare(
 			"select ss.userId, ss.storyId, ss.recommend_ranking, ss.explanation, ss.false_recommend, nes.title, nes.introduction,nes.author,group_concat(distinct nes.categories) as categories, group_concat(distinct nes.mediaId) as mediaId
@@ -169,13 +209,20 @@ class dbStory extends dbHelper{
 		return $rows;
 	}
 	
-	/*Empties the frontend-array*/
+	/**
+	 * Removes stories in the frontend-array for a user
+	 * @param int $userId
+	 */
 	public function emptyFrontendArray($userId){
 		$stmt = $this->db->prepare("UPDATE stored_story SET in_frontend_array=? WHERE userId=?");
 		$stmt->execute(array(0,$userId));
 	}
 	
-	/*Adds the stories in $rows to the frontend-array in the database*/
+	/**
+	 * Adds the stories in $rows to the frontend-array in the database
+	 * @param array $rows recommended stories
+	 * @param int $userId
+	 */
 	private function addToFrontendArray($rows, $userId){		
 		$stmt = $this->db->prepare("UPDATE stored_story SET in_frontend_array=? WHERE userId=? AND storyId=?");
 		foreach($rows as $story) {
@@ -183,7 +230,12 @@ class dbStory extends dbHelper{
 		}		
 	}
 	
-	/*Get all stories a user has tagged with $tagName*/
+	/**
+	 * Get all stories a user has tagged with $tagName
+	 * @param int $userId
+	 * @param String $tagName
+	 * @return $rows rows returned from the database query
+	 */
 	public function getStoryList($userId, $tagName){
 		$query = "SELECT s.storyId, title, author, introduction, date, us.tagName, 
 				group_concat(distinct categoryName) as categories, mediaId
@@ -202,7 +254,11 @@ class dbStory extends dbHelper{
 		return($rows);
 	}
 
-	/*Get the subcategory-IDs connected to each story. Using LEFT JOIN to also get stories not connected to any subcategory*/
+	/**
+	 * Get the subcategory-IDs connected to each story. 
+	 * Using LEFT JOIN to also get stories not connected to any subcategory 
+	 * @return $rows rows returned from the database query
+	 */
 	public function getSubcategoriesPerStory(){
 		$query = "SELECT s.numericalId, group_concat(ss.subcategoryId) as subcategories
 				 FROM story as s
@@ -214,7 +270,10 @@ class dbStory extends dbHelper{
 		return($rows);
 	}
 	
-	/*Get categories for each story, included those without categories*/
+	/**
+	 * Get categories for each story, included those without categories
+	 * @return $rows rows returned from the database query
+	 */
 	public function getStories(){
 		$query = "SELECT s.storyId,numericalId,group_concat(distinct nested.categoryId) as categories
 				 FROM story as s
@@ -228,7 +287,13 @@ class dbStory extends dbHelper{
 		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		return($rows);
 	}
-	/*Retrieve the number of times a story has had a state for a given user and a given story*/
+	
+	/**
+	 * Retrieve the number of times a story has had a state for a given user and a given story
+	 * @param int $userId
+	 * @param String $storyId
+	 * @return $rows rows returned from the database query
+	 */
 	public function getStatesPerStory($userId, $storyId){
 		$query = "SELECT stateId, count(storyId) as numTimesRecorded, max(point_in_time) as latestStateTime
 				  FROM story_state

@@ -1,4 +1,30 @@
 <?php
+
+/*Contributors: Kjersti Fagerholt, Roar Gjøvaag, Ragnhild Krogh, Espen Strømjordet,
+ Audun Sæther, Hanne Marie Trelease, Eivind Halmøy Wolden
+
+ "Copyright 2015 The TAG CLOUD/SINTEF project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License."
+ */
+
+/**
+ * Class containing information related to stories
+ * @author Audun Sæther
+ * @author Kjersti Fagerholt
+ * @author Eivind Halmøy Wolden
+ * @author Hanne Marie Trelease
+ */
 class storyModel{
     private $storyId;
     private $title;
@@ -25,7 +51,11 @@ class storyModel{
     private $numericalId;
     private $userTags = array();
 
-    //Constructor
+    /**
+     * Constructor.
+     * Retrieves story from digitalt fortalt api
+     * @param String $id Digitalt fortalt storyId
+     */
     public function getFromDF($id)
     {
 
@@ -308,8 +338,11 @@ class storyModel{
     public function getRating(){
         return $this->rating;
     }
-
-
+    
+    /**
+     * Returns all info in model as an array
+     * @return storyArray
+     */
     public function getAll(){
         return array(
             'storyId' => $this->getstoryId(),
@@ -370,7 +403,12 @@ class storyModel{
         print_r(PHP_EOL.PHP_EOL);
     }
 
-    private function file_get_contents_utf8($fn) { //needed because the normal file_get_contents is not unicode
+    /**
+     * Needed because the normal file_get_contents is not unicode
+     * @param unknown $fn
+     * @return string
+     */
+    private function file_get_contents_utf8($fn) { //
         $content = file_get_contents($fn);
         return mb_convert_encoding($content, 'UTF-8',
            mb_detect_encoding($content, 'UTF-8, ISO-8859-1', true));

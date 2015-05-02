@@ -1,9 +1,30 @@
 <?php
 
-/**
-* This class define the tables in our database, and the mapping between categories and subcategories.
-*/
+/*Contributors: Kjersti Fagerholt, Roar Gjøvaag, Ragnhild Krogh, Espen Strømjordet,
+ Audun Sæther, Hanne Marie Trelease, Eivind Halmøy Wolden
 
+ "Copyright 2015 The TAG CLOUD/SINTEF project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License."
+ */
+
+/**
+ * This class define the tables in our database, and the mapping between categories and subcategories.
+ * @author Audun Sæther
+ * @author Kjersti Fagerholt
+ * @author Eivind Halmøy Wolden
+ * @author Hanne Marie Trelease
+ */
 class dbConstants {
 	
 	/*false = not auto incremented primary key
@@ -41,7 +62,11 @@ class dbConstants {
 			'science and technology' => array(9,'kjÃ¸retÃ¸y, bil og motor, veitransport', 'skip- og bÃ¥tbygging', 'teknikk, industri og bergverk', 'natur, teknikk og nÃ¦ring', 'media', 'fotografi', 'fiske og fiskeindustri'),
 			);	
 		
-	/*Retrieves columns in table with name $tableName*/
+	/**
+	 * Retrieves columns in table with name $tableName
+	 * @param String $tableName
+	 * @return columns names of columns in table
+	 */
 	function getTableColumns($tableName){
 		if (!array_key_exists($tableName, $this->tableColumns)){
 			return null;
@@ -49,7 +74,11 @@ class dbConstants {
 		return $this->tableColumns[$tableName];
 	}
 	
-	/*Returns an array with the ID's of the categories which contain the given $subcategory*/
+	/**
+	 * Returns an array with the ID's of the categories which contain the given $subcategory
+	 * @param unknown $subcategory
+	 * @return $categories
+	 */
 	function getCategories($subcategory){
 		$categories = array();
 		foreach ($this->categoryMapping as $subCategoryArray){

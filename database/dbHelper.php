@@ -1,18 +1,44 @@
 <?php
-require_once (__DIR__.'/config.php'); // Database setting constants [DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD]
-require_once (__DIR__.'/dbConstants.php');
-header('Content-type: text/plain; charset=utf-8');//Just to make it look nice in the browser
 
-/** 
-* This class controls the connection to the database and provide some general methods
-* for updating, deleting and selecting from the database.
+/*Contributors: Kjersti Fagerholt, Roar Gjøvaag, Ragnhild Krogh, Espen Strømjordet,
+Audun Sæther, Hanne Marie Trelease, Eivind Halmøy Wolden
+
+"Copyright 2015 The TAG CLOUD/SINTEF project
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License."
 */
+
+// Database setting constants [DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD]
+require_once (__DIR__.'/config.php'); 
+require_once (__DIR__.'/dbConstants.php');
+header('Content-type: text/plain; charset=utf-8');
+
+/**
+ * Class to controll the database connection and provide some general methods
+ * for updating, deleting and selecting from the database.
+ * @author Audun Sæther
+ * @author Kjersti Fagerholt
+ * @author Eivind Halmøy Wolden
+ * @author Hanne Marie Trelease
+ */
 
 class DbHelper extends dbConstants {
 
     protected $db;	
 		
-	/*Constructs a new database connection*/
+    /**
+     * Constructs a new database connection
+     */
     public function __construct() {
         $dsn = 'mysql:host='.DB_HOST.';dbname='.DB_NAME.';charset=utf8';
 
@@ -30,16 +56,21 @@ class DbHelper extends dbConstants {
         }
     }
 	
-	/*Closes the database connection by destroying the PDO object*/
+    /**
+     * Closes the database connection by destroying the PDO object
+     */
 	public function close(){
 		$this->db = null;
 	}
-	
+
 	/**
-	* Updates $insertColumn in $tableName with $updateValue
-	* $keyValues define which row to update
-	* $keyValues might be a string or an array, depending on the number of primary keys.
-	*/
+	 * Updates a single column in a table
+	 * @param String $tableName	name of table to update
+	 * @param String $insertColumn	name of column to update
+	 * @param unknown $updateValue	new column value
+	 * @param unknown $keyValues define which row to update, might be a string or an array, depending on the number of primary keys.
+	 * @return boolean returns true if rows were updated, else false
+	 */
 	public function updateOneValue($tableName, $insertColumn, $updateValue, $keyValues){
 		/*Get the columns in the table we are updating*/
 		$tableColumns = $this->getTableColumns($tableName);
@@ -75,11 +106,14 @@ class DbHelper extends dbConstants {
 		else return true;
 	}
 	
-	/**  
-	* Inserts all values in $valuesArray in table $tableName. 
-	* The number of values in $valuesArray needs to match the number of columns in the table.
-	* If the primary key already exists, it updates all other values.
-	*/
+	/**
+	 * Insert or update all fields in a table row in the database.
+	 * Inserts all values in $valuesArray in table $tableName. 
+	 * If the primary key already exists, it updates all other values.
+	 * @param String $tableName
+	 * @param array $valuesArray values to be updated or inserted. The number of values needs to match the number of columns in the table.
+	 * @return boolean returns true if rows were inserted or updated, else false
+	 */
     public function insertUpdateAll($tableName,$valuesArray) {
         $columnsArray = array_slice($this->getTableColumns($tableName),1);//Slice off the primary key number
 		$cols = implode(",", $columnsArray);
@@ -143,6 +177,14 @@ class DbHelper extends dbConstants {
     }
 
 	/* Get $selectColumns in $tableName based on $whereValues*/
+    /**
+     * Returns selected columns from a database table. Get $selectColumns in $tableName based on $whereValues
+     * @param String $tableName
+     * @param unknown $selectColumns names of columns to retrieve, can be array or single column name
+     * @param unknown $whereColumns	names of columns for where statement, can be array or single column name
+     * @param unknown $whereValues	values for where statement, can be array or single value string
+     * @return multitype:|NULL returns 
+     */
 	public function getSelected($tableName, $selectColumns, $whereColumns, $whereValues){
 		$values = array();
 		if (is_array($selectColumns)){
@@ -168,7 +210,12 @@ class DbHelper extends dbConstants {
 		}
 	}
 	
-	/*Constructs a where-string with placeholders and an values array*/
+	/**
+	 * Constructs a where-string with placeholders and an values array
+	 * @param unknown $whereColumns	names of columns for where statement, can be array or single column name
+     * @param unknown $whereValues	values for where statement, can be array or single value string
+	 * @return multitype:string Ambigous <unknown, multitype:unknown >
+	 */
 	public function getWhereStringAndValuesArray($whereColumns, $whereValues){
 		$whereString = "";
 		if (is_array($whereValues)){
@@ -196,7 +243,12 @@ class DbHelper extends dbConstants {
 		return array($whereString, $values);
 	}
 	
-	/*Delete the rows in $tableName that match the where-clauses*/
+	/**
+	 * Delete the rows in $tableName that match the where-clauses
+	 * @param String $tableName
+	 * @param unknown $whereColumns	names of columns for where statement, can be array or single column name
+     * @param unknown $whereValues	values for where statement, can be array or single value string
+	 */
 	public function deleteFromTable($tableName, $whereColumns, $whereValues){
 		list($where, $values) = $this->getWhereStringAndValuesArray($whereColumns, $whereValues);
 		$query = "DELETE FROM ".$tableName." WHERE ".$where."";
@@ -204,9 +256,15 @@ class DbHelper extends dbConstants {
 		$stmt->execute($values);
 	}
 	
-	/*Insert multiple sets of values in $tableName.
-	$placeholderString should look like (?,?,?,?),(?,?,?,?),(?,?,?,?), etc
-	$valuesString should be a string with all the values separated by commas*/
+	/**
+	 * Insert multiple sets of values in $tableName.
+	 * $placeholderString should look like (?,?,?,?),(?,?,?,?),(?,?,?,?), etc
+	 * $valuesString should be a string with all the values separated by commas
+	 * @param String $tableName
+	 * @param String $columns
+	 * @param String $placeholderString
+	 * @param String $valuesString should be a string with all the values separated by commas
+	 */
 	public function batchInsert($tableName, $columns, $placeholderString, $valuesString){
 		$query = "INSERT INTO ".$tableName." (".$columns.") VALUES ".$placeholderString."";
 		$stmt = $this->db->prepare($query);
