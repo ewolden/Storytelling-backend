@@ -20,6 +20,10 @@
 
 /**
 *Script that intercepts and interprets angular http requests and perform the desired action
+* @author Audun Sæther
+* @author Kjersti Fagerholt
+* @author Eivind Halmøy Wolden
+* @author Hanne Marie Trelease
 */
 require_once(__DIR__."/../models/storyModel.php");
 require_once(__DIR__."/../models/userModel.php");
@@ -47,10 +51,10 @@ switch ($type) {
 	$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 4));
 	print_r (json_encode($storyModel->getAll()));
 	break;
-
-	case "getStories":
+	
 	/*This method is called when front end wants new recommendations. In such cases, the front end array
-	should be counted as empty in the database. This methods empties the front end array for this user*/
+	 should be counted as empty in the database. This methods empties the front end array for this user*/
+	case "getStories":
 	$dbStory->emptyFrontendArray($request->userId);
 	$data = $dbStory->getRecommendedStories($request->userId);
 	$returnArray = array();
@@ -86,13 +90,13 @@ switch ($type) {
 	}
 	print_r(json_encode($returnArray));
 	break;
-
-/** Recieves request from frotned, adds a new user to the database with autoincremented userId **/
+	
+	/** Recieves request from frotned, adds a new user to the database with autoincremented userId */
 	case "addUser":
 	$userModel = new userModel();
 	$userModel->addUser(-1, $request->email);
 	$userId = $dbUser->updateUserInfo($userModel);
-	if($userId){ /** User sucessfully added, returns returns sucess message and newly assigned userId **/
+	if($userId){ /* User sucessfully added, returns returns sucess message and newly assigned userId */
 		print_r(json_encode(array('status' => "sucessfull",'userId' => $userId)));
 	}
 	else { /* User entered an email that is already in the DB, returns status failed */
@@ -100,6 +104,7 @@ switch ($type) {
 	}
 	break;
 
+	/** Updates a user with new values from frontend */
 	case "updateUser":
 	$userModel = new userModel();
 	$userInfo = $dbUser->getUserFromId($request->userId);
@@ -108,7 +113,7 @@ switch ($type) {
 		$request->use_of_location, $request->category_preference);
 
 	$userId = $dbUser->updateUserInfo($userModel);
-	if($userId){/** User sucessfully updated, returns sucess message and userId **/
+	if($userId){/* User sucessfully updated, returns sucess message and userId */
 		/* Running the recommender only if the update include categories to avoid running it 
 		when the user sets gender and age.*/
 		$output = $userId;
@@ -124,39 +129,38 @@ switch ($type) {
 		}
 		print_r(json_encode(array('status' => "successfull",'userId' => $output)));
 	}
-	else { /** User entered an email that is already in the DB, returns status failed **/
+	else { /* User entered an email that is already in the DB, returns status failed */
 		print_r(json_encode(array('status' => "failed")));
 	}
 	break;
 
-/** Invoked when frontend is trying to retrive a user instance using email as identifier **/
+/** Invoked when frontend is trying to retrive a user instance using email as identifier */
 	case "getUserFromEmail":
 	$userFromDB = $dbUser->getUserFromEmail($request->email);
-	if($userFromDB[0]) { /** user exists returning status successfull and user instance **/
+	if($userFromDB[0]) { /* user exists returning status successfull and user instance */
 		$userModel = new userModel();
 		$userModel->addFromDB($userFromDB);
 		print_r(json_encode(array('status' => "successfull", 'userModel' => $userModel->printAll())));
 	}
-	else { /** user does not exist, returning status failed**/
+	else { /* user does not exist, returning status failed*/
 		print_r(json_encode(array('status' => "failed")));
 	}
 	break;
 
-/** Invoked when frontend is trying to retrive a user instance using a userId as identifier **/
+/** Invoked when frontend is trying to retrive a user instance using a userId as identifier */
 	case "getUserFromId":
 	$userFromDB = $dbUser->getUserFromId($request->userId);
-	if($userFromDB[0]) { /** user exists returning status successfull and user instance **/
+	if($userFromDB[0]) { /* user exists returning status successfull and user instance */
 		$userModel = new userModel();
 		$userModel->addFromDB($userFromDB);
 		print_r(json_encode(array('status' => "successfull", 'userModel' => $userModel->printAll())));
 	}
-	else { /** user does not exist, returning status failed**/
+	else { /* user does not exist, returning status failed*/
 		print_r(json_encode(array('status' => "failed")));
 	}
 	break;
 
-	/**Saves a users rating of a story. A story is only marked as read if the user rates the story,
-	if user does not rate the story will be recommended later*/
+	/** Saves a users rating of a story. */
 	case "rating":
 	if($request->rating > 0){
 		$updated = $dbStory->updateOneValue('stored_story', 'rating', $request->rating, array($request->userId, $request->storyId));
@@ -182,13 +186,13 @@ switch ($type) {
 	}
 	break;
 
-	/*Add a new tag and connect it to the user, and the story*/
+	/** Add a new tag and connect it to the user, and the story*/
 	case "addNewTag":
 	$dbUser->insertUpdateAll('user_tag', array($request->userId, $request->tagName));
 	$dbUser->insertUpdateAll('user_storytag', array($request->userId, $request->storyId, $request->tagName));
 	break;
 
-	/*Tag a story*/
+	/** Tag a story*/
 	case "tagStory":
 	if($request->tagName == "Les senere"){
 		$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 3));
@@ -196,7 +200,7 @@ switch ($type) {
 	$dbUser->insertUpdateAll('user_storytag', array($request->userId, $request->storyId, $request->tagName));
 	break;
 
-	/*Get all stories connected to a user and the tagName*/
+	/** Get all stories connected to a user and the tagName*/
 	case "getList":
 	$data = $dbStory->getStoryList($request->userId, $request->tagName);
 	$returnArray = array();
@@ -232,7 +236,7 @@ switch ($type) {
 	print_r(json_encode($returnArray));
 	break;
 
-	/*Get all tags connected to a user*/
+	/** Get all tags connected to a user*/
 	case "getAllLists":
 	$data = $dbUser->getSelected('user_tag', 'tagName', array('userId'), array($request->userId));
 	$returnArray = array();
@@ -248,7 +252,7 @@ switch ($type) {
 	print_r(json_encode($returnArray));
 	break;
 
-	/*Get all tags connected to a story for a user*/
+	/** Get all tags connected to a story for a user*/
 	case "getStoryTags":
 	$data = $dbUser->getSelected('user_storytag', 'tagName', array('userId', 'storyId'), array($request->userId, $request->storyId));
 	$returnArray = array();
@@ -264,21 +268,23 @@ switch ($type) {
 	print_r(json_encode($returnArray));
 	break;
 
-	/*Remove a tag connected to a story (remove from list)*/
+	/** Remove a tag connected to a story (remove from list)*/
 	case "removeTagStory":
 	$dbUser->deleteFromTable('user_storytag', array('userId', 'storyId', 'tagName'), array($request->userId, $request->storyId, $request->tagName));
 	break;
 
-	/*Remove a tag (list) altogether for a user, both the connection to the user and for all stories connected to the tag*/
+	/** Remove a tag (list) altogether for a user, both the connection to the user and for all stories connected to the tag*/
 	case "removeTag":
 	$dbUser->deleteFromTable('user_storytag', array('userId', 'tagName'), array($request->userId, $request->tagName));
 	$dbUser->deleteFromTable('user_tag', array('userId', 'tagName'), array($request->userId, $request->tagName));
 	break;
 
+	/** Set reject state in the database */
 	case "rejectStory":
 	$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 2));
 	break;
 	
+	/** Register users usage of app in the database */
 	case "appUsage":
 	$return = $dbStory->insertUpdateAll('user_usage', array($request->userId, $request->usageType));
 	if($return){
@@ -289,10 +295,12 @@ switch ($type) {
 	}
 	break;
 	
+	/** Set recommended state for story in database */ 
 	case "recommendedStory":
 	$dbStory->insertUpdateAll('story_state', array($request->storyId, $request->userId, 1));
 	break;
 	
+	/** Get more stories after the 10 initial recommendations*/
 	case "getMoreRecommendations":
 	$userModel = new userModel();
 	$userInfo = $dbUser->getUserFromId($request->userId);

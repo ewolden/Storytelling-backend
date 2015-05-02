@@ -1,4 +1,23 @@
 <?php
+
+/*Contributors: Kjersti Fagerholt, Roar Gjøvaag, Ragnhild Krogh, Espen Strømjordet,
+ Audun Sæther, Hanne Marie Trelease, Eivind Halmøy Wolden
+
+ "Copyright 2015 The TAG CLOUD/SINTEF project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License."
+ */
+
 require_once (__DIR__.'/../models/userModel.php');
 require_once (__DIR__.'/../models/preferenceValue.php');
 require_once (__DIR__.'/../database/dbStory.php');
@@ -10,19 +29,27 @@ $user->addUserValues(null,null,null,null,array(2,4,5));
 $cpv = new computePreferenceValues($user);
 $cpv->computeAllValues();*/
 
+/**
+ * Class for computing users' preference values for stories
+ */
 class computePreferenceValues {
 	
 	private $user;
 	private $dbStory;
 	private $latestStateTime;
 	
-	/*The input $user must be a userModel-instance*/
+	/**
+	 * The input $user must be a userModel-instance
+	 * @param userModel $user
+	 */
 	public function __construct($user){
 		$this->user = $user;
 		$this->dbStory = new dbStory();
 	}
 
-	/*Compute preferences for all stories for this user*/
+	/**
+	 * Compute preferences for all stories for this user
+	 */
 	public function computeAllValues(){
 		$stories = $this->dbStory->getStories();
 		$values = array();
@@ -43,8 +70,12 @@ class computePreferenceValues {
 		$this->dbStory->batchInsert('preference_value',$columnsString,implode(',',$placeHolderArray),implode(',',$values));
 	}
 
-	/**Compute the user's preference for the input $storyModel
-	 *If calling this method directly, the storyModel need to have set the categoryList (and storyId) beforehand
+	/**
+	 * Compute the user's preference for the input $storyModel
+	 * If calling this method directly, the storyModel need to have set the categoryList (and storyId) beforehand
+	 * @param storyModel $storyModel
+	 * @param boolean $calledFromComputeAllValues
+	 * @return string
 	 */
 	public function computeOneValue($storyModel, $calledFromComputeAllValues){
 		$rating = $this->dbStory->getSelected('stored_story', 'rating', array('storyId', 'userId'),array($storyModel->getstoryId(), $this->user->getUserId()));
@@ -92,7 +123,10 @@ class computePreferenceValues {
 		return $value;
 	}
 		
-	/*Setting the variables for how often the states have occurred for this story by this user*/
+	/**
+	 * Setting the variables for how often the states have occurred for this story by this user
+	 * @param unknown $preferenceValue
+	 */
 	private function setPreferenceValueVariables($preferenceValue){
 		$this->latestStateTime = null;
 		$states = $this->dbStory->getStatesPerStory($preferenceValue->getUser()->getUserId(), $preferenceValue->getStory()->getstoryId());
@@ -128,7 +162,7 @@ class computePreferenceValues {
 	}
 	
 
-	/*Helper function*/
+	/** Helper function*/
 	private function setStateVariable($row, $preferenceValue){
 		$stateId = $row['stateId'];
 		$numberOfOccurrences = $row['numTimesRecorded'];
