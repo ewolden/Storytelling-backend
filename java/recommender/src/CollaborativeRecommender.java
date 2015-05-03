@@ -32,6 +32,7 @@ public class CollaborativeRecommender {
 		
 		/* Database setup */
 		DatabaseConnection db = new DatabaseConnection("collaborative_view");
+		db.setConnection();
     	db.setDataModel();
     	DataModel model = db.getDataModel();
 		

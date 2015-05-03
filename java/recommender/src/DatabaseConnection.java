@@ -29,14 +29,17 @@ public class DatabaseConnection {
 	/**Creates a connection to the database*/
 	public DatabaseConnection(String viewName) throws TasteException{
 		this.viewName = viewName;
-		
 		dataSource = new MysqlConnectionPoolDataSource();
-
+	}
+	
+	public void setConnection(){
 		dataSource.setServerName(Globals.DB_HOST);
 		dataSource.setUser(Globals.DB_USERNAME);
 		//dataSource.setPotNumber(3306);
 		dataSource.setPassword(Globals.DB_PASSWORD);
-		dataSource.setDatabaseName(Globals.DB_NAME);
+		if (dataSource.getDatabaseName().isEmpty()){
+			dataSource.setDatabaseName(Globals.DB_NAME);			
+		}
 		try {
 			dataSource.setCachePreparedStatements(true);
 			dataSource.setCachePrepStmts(true);
@@ -252,6 +255,10 @@ public class DatabaseConnection {
 		}
 	}
 
+	/**Method just for testing purposes, need to set the database as testingDatabase when testing*/
+	public void setDatabaseName(String name){
+		dataSource.setDatabaseName(name);
+	}
 
 	
 }

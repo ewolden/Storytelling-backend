@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A XML-representation of what the stored_story table is supposed to look like after doing the database operations in insertUpdateTest() in DatabaseConnectionTest.java -->
+<dataset>
+	<stored_story userId="1" storyId="DF.1709" explanation="updated" rating="" false_recommend="1" type_of_recommendation="1" recommend_ranking="3" in_frontend_array="0" estimated_Rating="4.5"/>
+	<stored_story userId="1" storyId="DF.1812" explanation="mahout" rating="3" false_recommend="0" type_of_recommendation="0" recommend_ranking="1" in_frontend_array="0" estimated_Rating="0.00000"/>
+	<stored_story userId="1" storyId="DF.1849" explanation="updated" rating="" false_recommend="0" type_of_recommendation="1" recommend_ranking="4" in_frontend_array="1" estimated_Rating="2.5"/>
+	<stored_story userId="1" storyId="DF.1901" explanation="mahout" rating="5" false_recommend="0" type_of_recommendation="0" recommend_ranking="2" in_frontend_array="1" estimated_Rating="0.00000"/> 
+	<stored_story userId="2" storyId="DF.1812" explanation="mahout" rating="" false_recommend="0" type_of_recommendation="0" recommend_ranking="1" in_frontend_array="1" estimated_Rating="0.00000"/>
+	<stored_story userId="2" storyId="DF.1901" explanation="mahout" rating="" false_recommend="0" type_of_recommendation="1" recommend_ranking="2" in_frontend_array="0" estimated_Rating="0.00000"/>
+</dataset>

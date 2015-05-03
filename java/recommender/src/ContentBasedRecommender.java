@@ -41,6 +41,7 @@ public class ContentBasedRecommender
 		}
 		/*"content"+userId is the name of the view we shall create*/
 		conn = new DatabaseConnection("content"+userId);
+		conn.setConnection();
 		
     	/*Create a temporary view the includes all preferences values for this user*/
     	conn.createView((int)userId);
@@ -91,7 +92,7 @@ public class ContentBasedRecommender
     		
     		/*If the item has not been rated or is not already in the recommendation list at front end we insert it*/
     		if ((ratedStories.get((int)recommendation.getItemID())==null) && !frontendStories.contains((int)recommendation.getItemID())){
-    			List<RecommendedItem> becauseItems = recommender.recommendedBecause(userId, recommendation.getItemID(), model.getNumItems());
+    			List<RecommendedItem> becauseItems = recommender.recommendedBecause(userId, recommendation.getItemID(), 30);
     			int counter = 1;
     			ArrayList<RecommendedItem> explanationItems = new ArrayList<>();
     			for (RecommendedItem because : becauseItems){ 
