@@ -28,9 +28,10 @@ public class ContentBasedRecommender
 	 * or if we should make recommendations of items that is not in the frontend array (="true")*/
 	String add;
 	
-    public ContentBasedRecommender(long userId, String add) {
+    public ContentBasedRecommender(long userId, String add) throws TasteException {
     	this.userId = userId;
     	this.add = add;
+		conn = new DatabaseConnection("content"+userId);
     }
     
     public void runContentBasedRecommender() throws TasteException{
@@ -40,7 +41,6 @@ public class ContentBasedRecommender
 			e.printStackTrace();
 		}
 		/*"content"+userId is the name of the view we shall create*/
-		conn = new DatabaseConnection("content"+userId);
 		conn.setConnection();
 		
     	/*Create a temporary view the includes all preferences values for this user*/
@@ -90,7 +90,7 @@ public class ContentBasedRecommender
     			continue;
     		}
     		
-    		/*If the item has not been rated or is not already in the recommendation list at front end we insert it*/
+    		/*If the item has not been rated and is not already in the recommendation list at front end we insert it*/
     		if ((ratedStories.get((int)recommendation.getItemID())==null) && !frontendStories.contains((int)recommendation.getItemID())){
     			List<RecommendedItem> becauseItems = recommender.recommendedBecause(userId, recommendation.getItemID(), 30);
     			int counter = 1;

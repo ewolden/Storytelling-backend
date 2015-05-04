@@ -18,4 +18,11 @@
 	<stored_story userId="2" storyId="DF.1901" explanation="mahout" false_recommend="0" type_of_recommendation="1" recommend_ranking="2" in_frontend_array="0"/>
 	<story_state recordedStateId="1" storyId="DF.1812" userId="1" stateId="1" />
 	<story_state recordedStateId="2" storyId="DF.1849" userId="1" stateId="1" />
+	<preference_value userId="1" storyId="DF.1098" numericalId="1098" preferenceValue="5.4"/>
+	<preference_value userId="1" storyId="DF.1501" numericalId="1501" preferenceValue="2.5"/>
+	<preference_value userId="1" storyId="DF.1812" numericalId="1812" preferenceValue="4.56"/>
+	<preference_value userId="1" storyId="DF.1849" numericalId="1849" preferenceValue="2.75"/>
+	<preference_value userId="1" storyId="DF.1901" numericalId="1901" preferenceValue="3.4"/>
+	<preference_value userId="2" storyId="DF.1849" numericalId="1849" preferenceValue="3.76"/>
+	<preference_value userId="2" storyId="DF.1812" numericalId="1812" preferenceValue="5.76"/>
 </dataset>

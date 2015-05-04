@@ -90,7 +90,7 @@ public class DatabaseConnectionTest {
 	public void insertUpdateTest() throws SQLException, Exception{
 		ArrayList<DatabaseInsertObject> recommendations = new ArrayList<>();
 		
-		/*Create two recommendations that should change the values for a recommendation inserted in the setUp*/
+		/*Create two recommendations that should change the values for two recommendations inserted in the setUp*/
 		DatabaseInsertObject recommend3 = new DatabaseInsertObject(1, "DF.1709", "updated", 1, 1, 3, 4.5);
 		DatabaseInsertObject recommend4 = new DatabaseInsertObject(1, "DF.1849", "updated", 0, 1, 4, 2.5);
 		recommendations.add(recommend3);
@@ -144,10 +144,7 @@ public class DatabaseConnectionTest {
 		expectedRatings.put(1812, 3);
 		expectedRatings.put(1901, 5);
 		
-		assertEquals(expectedRatings.size(),ratedStories.size());
-		
-		assertEquals(expectedRatings.get(1812),ratedStories.get(1812));
-		assertEquals(expectedRatings.get(1901),ratedStories.get(1901));
+		assertEquals(expectedRatings,ratedStories);
 	}
 	
 	/**Test if the method return the expected list of stories in front end array*/
