@@ -21,6 +21,7 @@ limitations under the License."
 require_once (__DIR__.'/dbHelper.php');
 require_once (__DIR__.'/../models/userModel.php');
 require_once (__DIR__.'/../phpmailer/PHPMailerAutoload.php');
+require_once (__DIR__.'/config.php'); 
 
 /**
  * This class handles database communication related to users
@@ -300,11 +301,11 @@ class dbUser extends dbHelper {
     	$mail->isSMTP();                                      // Set mailer to use SMTP
     	$mail->Host = 'smtp.gmail.com';                       // Specify main and backup server
     	$mail->SMTPAuth = true;                               // Enable SMTP authentication
-    	$mail->Username = 'javisstsintef@gmail.com';                   // SMTP username
-    	$mail->Password = 'javisstatsintef';               // SMTP password
+    	$mail->Username = APP_MAIL;                   // SMTP username
+    	$mail->Password = APP_MAIL_PASS;               // SMTP password
     	$mail->SMTPSecure = 'tls';                            // Enable encryption, 'ssl' also accepted
     	$mail->Port = 587;                                    //Set the SMTP port number - 587 for authenticated TLS
-    	$mail->FromName = 'Javisst';     //Set who the message is to be sent from
+    	$mail->FromName = 'Vettu hva';     //Set who the message is to be sent from
     	$mail->AddReplyTo("no-reply@javisst.no","No Reply");
     	$mail->addAddress($email);  // Add a recipient
     	$mail->WordWrap = 50;                                 // Set word wrap to 50 characters
