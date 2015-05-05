@@ -123,20 +123,29 @@ public class ContentBasedRecommender{
     	int randomDislikedRanking = rand.nextInt(6)+5;
     	
     	ArrayList<DatabaseInsertObject> itemsToBeInserted = new ArrayList<>();
+    	ArrayList<Long> idsToBeInserted = new ArrayList<>();
     	for (RecommendedItem recommendation : recommendations) {
     		/* To get a story outside of the users preferences, finds the least recommended story */
     		if(randomDislikedRanking == ranking){
-    			itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+recommendations.get(recommendations.size() - 1).getItemID(), "FalseRecommendation", 1, 0, ranking,recommendations.get(recommendations.size() - 1).getValue()));
-    			System.out.print("False recommend: ");
-    			System.out.println(recommendations.get(recommendations.size() - 1));
+    			/*Make sure the false recommendation is not already in the front end array or already among the top ten recommendation (may happen if the user doesn't have many not seen/not rated stories left) */
+    			for(int i=1; i<recommendations.size(); i++){
+    				long dislikedStoryId = recommendations.get(recommendations.size() - i).getItemID();
+    				if (!frontendStories.contains((int)dislikedStoryId) && !idsToBeInserted.contains(dislikedStoryId) && ratedStories.get((int)dislikedStoryId) == null){
+    					itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+dislikedStoryId, "FalseRecommendation", 1, 0, ranking,recommendations.get(recommendations.size() - 1).getValue()));
+    					idsToBeInserted.add(dislikedStoryId);
+    					System.out.print("False recommend: ");
+    					System.out.println(dislikedStoryId);    				
+    					break;
+    				}
+    			}
     			ranking++;
     			continue;
     		}
     		
-    		/*If the item has not been rated and is not already in the recommendation list at front end we insert it*/
-    		if ((ratedStories.get((int)recommendation.getItemID())==null) && !frontendStories.contains((int)recommendation.getItemID())){
-    			/*Get the 20 items that had most influence on the recommendation*/
-    			List<RecommendedItem> becauseItems = recommender.recommendedBecause(userId, recommendation.getItemID(), 20);
+    		/*If the item has not been rated,is not already in the recommendation list at front end or already a false recommendation we insert it*/
+    		if ((ratedStories.get((int)recommendation.getItemID())==null) && !frontendStories.contains((int)recommendation.getItemID()) && !idsToBeInserted.contains(recommendation.getItemID())){
+    			/*Get the 30 items that had most influence on the recommendation*/
+    			List<RecommendedItem> becauseItems = recommender.recommendedBecause(userId, recommendation.getItemID(), 30);
     			int counter = 1;
     			ArrayList<RecommendedItem> explanationItems = new ArrayList<>();
     			for (RecommendedItem because : becauseItems){ 
@@ -152,6 +161,7 @@ public class ContentBasedRecommender{
     			/*Gets the titles of the explanation-stories and creates a string*/
     			String explanation = conn.createExplanation(explanationItems);
     			itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+recommendation.getItemID(), explanation, 0, 0, ranking, recommendation.getValue()));
+    			idsToBeInserted.add(recommendation.getItemID());
     			System.out.println(recommendation); 
         		ranking++;
     		}

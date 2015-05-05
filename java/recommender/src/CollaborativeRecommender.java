@@ -137,24 +137,33 @@ public class CollaborativeRecommender {
     	System.out.println("FrontendStories: "+frontendStories);
 		/* Take the top 10 recommendations and and prepare to insert them into database */
 		ArrayList<DatabaseInsertObject> itemsToBeInserted = new ArrayList<>();
+		ArrayList<Long> idsToBeInserted = new ArrayList<>();
 		int ranking = 1;
 		Random rand = new Random();
     	int randomDislikedRanking = rand.nextInt(6)+5;
 		for(CollaborativeRecommendation recommendation : collaborativeRecommendations){	
 			/* To get a story outside of the users preferences, finds the least recommended story */
     		if(randomDislikedRanking == ranking){
-    			itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+collaborativeRecommendations.get(collaborativeRecommendations.size() - 1).getItem().getItemID(), "FalseRecommendation", 1, 1, ranking,collaborativeRecommendations.get(collaborativeRecommendations.size() - 1).getItem().getValue()));
-    			System.out.print("False recommend: ");
-    			System.out.println(collaborativeRecommendations.get(collaborativeRecommendations.size() - 1).getItem());
+    			/*Make sure the false recommendation is not already in the front end array or already among the top ten recommendation (may happen if the user doesn't have many not seen/not rated stories left) */
+    			for(int i=1; i<collaborativeRecommendations.size(); i++){
+    				long dislikedStoryId = collaborativeRecommendations.get(collaborativeRecommendations.size() - i).getItem().getItemID();
+    				if (!frontendStories.contains((int)dislikedStoryId) && !idsToBeInserted.contains(dislikedStoryId) && ratedStories.get((int)dislikedStoryId) == null){
+    					itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+dislikedStoryId, "FalseRecommendation", 1, 0, ranking,collaborativeRecommendations.get(collaborativeRecommendations.size() - 1).getItem().getValue()));
+    					idsToBeInserted.add(dislikedStoryId);
+    					System.out.print("False recommend: ");
+    					System.out.println(dislikedStoryId);    				
+    					break;
+    				}
+    			}
     			ranking++;
     			continue;
     		}
     		
-			/*If the item has not been rated or is not already in the recommendation list at front end we insert it*/
-    		if ((ratedStories.get((int)recommendation.getItem().getItemID())==null) && !frontendStories.contains((int)recommendation.getItem().getItemID())){
-    			/* To get which stories influenced this recommendation */
+    		/*If the item has not been rated,is not already in the recommendation list at front end or already a false recommendation we insert it*/
+    		if ((ratedStories.get((int)recommendation.getItem().getItemID())==null) && !frontendStories.contains((int)recommendation.getItem().getItemID()) && !idsToBeInserted.contains(recommendation.getItem().getItemID())){
+    			/*Get the 30 items that had most influence on the recommendation*/
     			if(recommendation.getExplanation().equals("item")){
-    				List<RecommendedItem> becauseItems = IR.getRecommender().recommendedBecause(userId, recommendation.getItem().getItemID(), 20);
+    				List<RecommendedItem> becauseItems = IR.getRecommender().recommendedBecause(userId, recommendation.getItem().getItemID(), 30);
         			int counter = 1;
         			ArrayList<RecommendedItem> explanationItems = new ArrayList<>();
         			for (RecommendedItem because : becauseItems){ 
@@ -169,6 +178,7 @@ public class CollaborativeRecommender {
         			}
         			String explanation = db.createExplanation(explanationItems);
         			itemsToBeInserted.add(new DatabaseInsertObject((int)this.userId, "DF."+recommendation.getItem().getItemID(), explanation, 0, 1, ranking,recommendation.getItem().getValue()));
+        			idsToBeInserted.add(recommendation.getItem().getItemID());
         			System.out.println(recommendation.getItem());
         			ranking++;
     			} else {
