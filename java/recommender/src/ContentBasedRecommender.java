@@ -17,25 +17,68 @@ import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.similarity.ItemSimilarity;
 
+/*Contributors: Kjersti Fagerholt, Roar Gjøvaag, Ragnhild Krogh, Espen Strømjordet,
+Audun Sæther, Hanne Marie Trelease, Eivind Halmøy Wolden
 
-public class ContentBasedRecommender
-{
+"Copyright 2015 The TAG CLOUD/SINTEF project
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License."
+*/
+
+/** 
+ * Creates a list of recommendations for a user based on the recommendation technique of content based filtering.
+ * The recommendations are inserted into the database.
+ * 
+ * @author Audun Sæther
+ * @author Kjersti Fagerholt 
+ * @author Eivind Halmøy Wolden
+ * @author Hanne Marie Trelease
+ */
+
+public class ContentBasedRecommender{
+	/** The location of this file. Used to locate the similarities.csv-file */
 	File fileLocation = null;
+	/** The connection to the database */
 	DatabaseConnection conn = null;
+	/** The user we are making the recommendations for */
 	long userId;
+	/** The list of recommendations we are producing */
 	List<RecommendedItem> recommendations;
-	/*Tells us whether we should make brand new recommendations (="false")
-	 * or if we should make recommendations of items that is not in the frontend array (="true")*/
+	/** Tells us whether we should make brand new recommendations (="false") or if we should make recommendations of items that is not in the front end array (="true") */
 	String add;
 	
+    /**
+     * Constructor
+     * 
+     * @param userId			the user we are making recommendations for
+     * @param add				tells us if we should add to existing list or make a new recommendations list
+     * @throws TasteException	thrown if there is something wrong with the DatabaseConnection
+     */
     public ContentBasedRecommender(long userId, String add) throws TasteException {
     	this.userId = userId;
     	this.add = add;
 		conn = new DatabaseConnection("content"+userId);
     }
     
+    /**
+     * Method the creates a list of recommendations.
+     * Already rated stories are excluded, as are stories present in the front end array if add="true"
+     * 
+     * @throws TasteException	thrown if there if something went wrong with Mahout
+     */
     public void runContentBasedRecommender() throws TasteException{
-		try {
+		/*Find out where this file is located*/
+    	try {
 			fileLocation = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
@@ -70,7 +113,7 @@ public class ContentBasedRecommender
 
     	ArrayList<Integer> frontendStories = new ArrayList<>();
 
-    	/*Find the stories already present in the recommendations list at front end
+    	/* Find the stories already present in the recommendations list at front end
     	 * These stories should not be recommended again*/
     	if(add.equals("true")){
     		frontendStories = conn.getStoriesInFrontendArray((int) userId);
@@ -92,7 +135,8 @@ public class ContentBasedRecommender
     		
     		/*If the item has not been rated and is not already in the recommendation list at front end we insert it*/
     		if ((ratedStories.get((int)recommendation.getItemID())==null) && !frontendStories.contains((int)recommendation.getItemID())){
-    			List<RecommendedItem> becauseItems = recommender.recommendedBecause(userId, recommendation.getItemID(), 30);
+    			/*Get the 20 items that had most influence on the recommendation*/
+    			List<RecommendedItem> becauseItems = recommender.recommendedBecause(userId, recommendation.getItemID(), 20);
     			int counter = 1;
     			ArrayList<RecommendedItem> explanationItems = new ArrayList<>();
     			for (RecommendedItem because : becauseItems){ 
@@ -105,6 +149,7 @@ public class ContentBasedRecommender
     					break;
     				}
     			}
+    			/*Gets the titles of the explanation-stories and creates a string*/
     			String explanation = conn.createExplanation(explanationItems);
     			itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+recommendation.getItemID(), explanation, 0, 0, ranking, recommendation.getValue()));
     			System.out.println(recommendation); 
@@ -129,7 +174,11 @@ public class ContentBasedRecommender
     	
     }
 
-    /*Reading the story similarities from file and adding them to a collection of ItemItemSimilarity-objects*/
+    /**
+     * Reading the story similarities from file and adding them to a collection of ItemItemSimilarity-objects
+	 * 
+	 * @return	the collection of ItemItemSimilarity-objects
+	 */
 	private Collection<ItemItemSimilarity> getStorySimilarities() {
 		Collection<ItemItemSimilarity> res = new ArrayList<ItemItemSimilarity>();
 		BufferedReader br = null;
@@ -158,6 +207,11 @@ public class ContentBasedRecommender
 		return res;
 	}
 	
+	/**
+	 * Return the list of recommendations
+	 * 
+	 * @return the list of recommendations created above
+	 */
 	public List<RecommendedItem> getRecommendations(){
 		return this.recommendations;
 	}

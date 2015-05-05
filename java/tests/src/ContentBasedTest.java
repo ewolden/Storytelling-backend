@@ -18,13 +18,43 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+/*Contributors: Kjersti Fagerholt, Roar Gjøvaag, Ragnhild Krogh, Espen Strømjordet,
+Audun Sæther, Hanne Marie Trelease, Eivind Halmøy Wolden
+
+"Copyright 2015 The TAG CLOUD/SINTEF project
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License."
+*/
+
+/** 
+ * Tests the ContentBasedRecommender-class
+ * 
+ * @author Audun Sæther
+ * @author Kjersti Fagerholt 
+ * @author Eivind Halmøy Wolden
+ * @author Hanne Marie Trelease
+ */
 
 public class ContentBasedTest {
 
+	/** An instance of the ContentBasedRecommender-class used in the test */
 	static ContentBasedRecommender recommender;
+	/** A connection to the database used for testing */
 	static IDatabaseTester tester;
 
-	/**Run only once; before the first test*/
+	/**
+	 * Run only once; before the first test
+	 */
 	@BeforeClass
 	public static void initialSetUp(){
 		try {
@@ -35,25 +65,40 @@ public class ContentBasedTest {
 		}
 	}
 	
-	/**Run before each test to make the database clean*/
+	/**
+	 * Run before each test to make the database clean
+	 * 
+	 * @throws Exception
+	 */
 	@Before
 	public void setUp() throws Exception{
 		FlatXmlDataSetBuilder builder = new FlatXmlDataSetBuilder();
 		builder.setColumnSensing(true);
 		/*Insert our test data*/
 		IDataSet dataSet = builder.build(new FileInputStream("xml-files/setUp.xml"));
+		/*CLEAN_INSERT deletes all data in the database before inserting new*/
 		tester.setSetUpOperation(DatabaseOperation.CLEAN_INSERT);
 		tester.setDataSet(dataSet);
 		tester.onSetup();
 	}
 	
-	/**This is run after the last test*/
+	/**
+	 * This is run after the last test
+	 * 
+	 * @throws Exception
+	 */
 	@AfterClass
 	public static void finalTearDown() throws Exception {
 		tester.onTearDown();
 	}
 
-	/**Test to check if the recommender produced the correct number of recommendations when it should create new ones*/
+	/**
+	 * Test to check if the recommender produced the correct number of recommendations when it should create new ones
+	 * 
+	 * @throws DataSetException
+	 * @throws SQLException
+	 * @throws Exception
+	 */
 	@Test
 	public void NewContentBasedRecommendationsTest() throws DataSetException, SQLException, Exception{
 		/*Create a recommender for user 1. We are not adding recommendations*/
@@ -80,7 +125,13 @@ public class ContentBasedTest {
 		assertEquals(3,insertedRecommendations.getRowCount());
 	}
 	
-	/**Test to check if the recommender produced the correct number of recommendations when it's adding recommendations to existing ones*/
+	/**
+	 * Test to check if the recommender produced the correct number of recommendations when it's adding recommendations to existing ones
+	 * 
+	 * @throws DataSetException
+	 * @throws SQLException
+	 * @throws Exception
+	 */
 	@Test
 	public void AddContentBasedRecommendationsTest() throws DataSetException, SQLException, Exception{
 		/*Create a recommender for user 1. We are now adding recommendations*/
