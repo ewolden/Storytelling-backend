@@ -97,7 +97,7 @@ class computePreferenceValues {
 	}
 	
 	/*Not sure if the weights are used correctly here */
-	private function computePreferenceValue($preferenceValue){
+	public function computePreferenceValue($preferenceValue){
 		$value = 0;
 		
 		/*getCommonCategoryPercentage describe how similar the user's category preference is to a story's categories*/

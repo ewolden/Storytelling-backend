@@ -94,7 +94,6 @@ class updateRatingsIntegrationTest extends PHPUnit_Framework_TestCase{
 		print_r("\n".$response);
 		curl_close($ch);
 
-		////TEST MORE HERE? DONT KNOW WHAT TO TEST//////
 	}
 }
 ?>	

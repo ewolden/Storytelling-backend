@@ -19,22 +19,25 @@ class dbStoryTest extends PHPUnit_Framework_TestCase{
 	public function testFetchStory(){
 
 		////////Testing fetching Story////////////////////
-		///////////
-		$storyId = $this->arrayOfStories[array_rand($this->arrayOfStories)];
-		$userId = rand(1,312);
+		//////////////////////////////////////////////////
+		$storyId = 'DF.1812';
+		$userId = 105;
 		
 		$data = $this->db->fetchStory($storyId, $userId);
-		print_r($data); 
-		//$this->assertTrue($this->db->updateOneValue($tableName, $insertColumn, $updateValue, $keyValues));
-
-
+		print_r("fetch story");
+		print_r($data);
+		//This user has tagged this story so this should be returned
+		$this->assertArrayHasKey("categories",$data);
+		$this->assertArrayHasKey("tags",$data);
+		$this->assertArrayHasKey("tagName",$data['tags'][0]);
 
 	}
 	public function testGetRecommendedStories(){
 		$userId = rand(1,312);
 		
 		$rows = $this->db->getRecommendedStories($userId);
-		print_r($rows); 
+		print_r($rows);
+		$this->assertEquals(10,count($rows));
 		for ($i=0; $i < count($rows); $i++) { 
 			$this->assertArrayHasKey("userId", $rows[$i]);
 			$this->assertArrayHasKey("storyId", $rows[$i]);
@@ -50,6 +53,75 @@ class dbStoryTest extends PHPUnit_Framework_TestCase{
 		}
 
 		//SHOULD GET 100 Assertions. 
+	}
+
+	public function testGetStoryList(){
+	//using a user that actually has a tagList.
+		$exampleUserId = 103;
+		$tagName = 'NyTestTag';
+
+		$result = $this->db->getStoryList($exampleUserId, $tagName);
+
+		for ($i=0; $i < count($result); $i++) { 
+			$this->assertArrayHasKey("storyId", $result[$i]);
+			$this->assertArrayHasKey("title", $result[$i]);
+			$this->assertArrayHasKey("author", $result[$i]);
+			$this->assertArrayHasKey("introduction", $result[$i]);
+			$this->assertArrayHasKey("date", $result[$i]);
+			$this->assertArrayHasKey("tagName", $result[$i]);
+			$this->assertArrayHasKey("categories", $result[$i]);
+			$this->assertArrayHasKey("mediaId", $result[$i]);
+
+		}
+
+	}
+
+	public function testGetSubcategoriesPerStory(){
+		$result = $this->db->getSubcategoriesPerStory();
+
+		//Should return an array of 167 stories with numericalId and subcategories.//
+		$this->assertInternalType("array", $result);
+		$this->assertInternalType("array", $result[0]);
+
+		$this->assertEquals(167, count($result));
+		for ($i=0; $i < count($result); $i++) { 
+			$this->assertArrayHasKey("numericalId", $result[0]);
+			$this->assertArrayHasKey("subcategories", $result[0]);
+		}
+		
+
+	}
+
+	public function testGetStories(){
+		$result = $this->db->getStories();
+		//Should return an array with the 167 stories with storyId, numericalId and categories//
+
+		$this->assertInternalType("array", $result);
+		$this->assertInternalType("array", $result[0]);
+
+		$this->assertEquals(167, count($result));
+		for ($i=0; $i < count($result); $i++) { 
+			$this->assertArrayHasKey("storyId", $result[$i]);
+			$this->assertArrayHasKey("numericalId", $result[$i]);
+			$this->assertArrayHasKey("categories", $result[$i]);
+		}
+	}
+
+	public function testGetStatesPerStory(){
+		$userId = 258;
+		$storyId = 'DF.1600';
+
+		$result = $this->db->getStatesPerStory($userId, $storyId);
+		//Test if the array include the right elements
+		//print_r($result);
+		if($result != null){
+			for ($i=0; $i < count($result); $i++) { 
+				$this->assertArrayHasKey("stateId", $result[$i]);
+				$this->assertArrayHasKey("numTimesRecorded", $result[$i]);
+				$this->assertArrayHasKey("latestStateTime", $result[$i]);
+
+			}
+		}
 	}
 }
 ?>

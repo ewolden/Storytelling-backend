@@ -10,16 +10,13 @@ class LoginIntegrationTest extends PHPUnit_Framework_TestCase{
 	public $updatedUser;
 
 	public function setUp(){
-		//TODO: simuler http requests som sendes til controller.php
 		$this->dbUser = new dbUser();
-
-
 	}
 
 	public function testLoginFirstTime(){
 		//Add new user with http request
 		$url = 'http://188.113.108.37/requests/controller.php';
-		$postarray = json_encode(array('type'=>'addUser','email' => 'testnr11'));
+		$postarray = json_encode(array('type'=>'addUser','email' => 'testnr16@bleh.com'));
  
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
@@ -38,8 +35,13 @@ class LoginIntegrationTest extends PHPUnit_Framework_TestCase{
 		//response message should be sucessful
 		$this->assertEquals("sucessfull", $data['status']);
 
-		$row = $this->dbUser->getUserFromEmail("testnr11");
-		$userId = $row[1]['userId'];
+		$row = $this->dbUser->getUserFromEmail("testnr16@bleh.com");
+		print_r($row);
+		if(!$row[1]['userId']){
+			$userId = null;
+		}else{
+			$userId = $row[1]['userId'];
+		}
 		
 		//check that the user got an id 
 		$this->assertInternalType("int", intval($userId));
