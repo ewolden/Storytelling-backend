@@ -36,7 +36,6 @@ class computePreferenceValues {
 	
 	private $user;
 	private $dbStory;
-	private $latestStateTime;
 	
 	/**
 	 * The input $user must be a userModel-instance
@@ -106,6 +105,9 @@ class computePreferenceValues {
 		/*getNumToBeRead is how many times the story have been put in the to-be-read list*/
 		$value += READ_LATER*$preferenceValue->getNumToBeRead();
 		
+		/*getNumRead is to number of times a story has been opened*/
+		$value += READ*$preferenceValue->getNumRead();
+		
 		/*getNumRecommended is the number of times the story have been recommended. 
 		  If a story have been recommended several times this should have a negative impact*/
 		$value -= CATEGORY_NO_ANSWER*$preferenceValue->getNumRecommended();
@@ -128,36 +130,9 @@ class computePreferenceValues {
 	 * @param unknown $preferenceValue
 	 */
 	private function setPreferenceValueVariables($preferenceValue){
-		$this->latestStateTime = null;
 		$states = $this->dbStory->getStatesPerStory($preferenceValue->getUser()->getUserId(), $preferenceValue->getStory()->getstoryId());
 		foreach($states as $row){
 			$this->setStateVariable($row, $preferenceValue);
-		}
-		
-		/*This if-statement decides whether a user has set a story to "Not interested" or not*/
-		if(!is_null($this->latestStateTime)){
-			/*If the user never has set the story to "Not interested"*/
-			if(!array_key_exists(6, $this->latestStateTime)){
-				$preferenceValue->setNotInterested(false);
-			}
-			/*If the user has set a story to "Not interested" at some point*/
-			else {
-				/*If the user has set the story to "Not interested" and never rated it*/
-				if (!array_key_exists(5,$this->latestStateTime)){
-					$preferenceValue->setNotInterested(true);
-				}
-				/*If the user has set the story to "Not interested" and rated it at some point*/
-				else {
-					/*If the last "Not interested" happened after the last rating, the user is not interested in this story*/
-					if ($this->latestStateTime[6]>$this->latestStateTime[5]){
-						$preferenceValue->setNotInterested(true);
-					}
-					/*If the last rating happened after the last "Not interested", the user should be considered interested in the story*/
-					else{
-						$preferenceValue->setNotInterested(false);
-					}
-				}
-			}
 		}
 	}
 	
@@ -166,7 +141,6 @@ class computePreferenceValues {
 	private function setStateVariable($row, $preferenceValue){
 		$stateId = $row['stateId'];
 		$numberOfOccurrences = $row['numTimesRecorded'];
-		$this->latestStateTime[$stateId] = $row['latestStateTime'];
 		switch ($stateId) {
 			
 			case 1:
