@@ -28,10 +28,7 @@ class PreferenceValue {
 	private $numRead;
 	private $numRated;
 	private $numToBeRead;
-	private $numSwipedPast;
-	private $numRejected;
-	private $notInterested = false;
-	
+	private $numSwipedPast;	
 	private $numCommonCategories;
 
 	public function __construct($story, $user){
@@ -66,15 +63,7 @@ class PreferenceValue {
 	public function setNumSwipedPast($numSwipedPast){
 		$this->numSwipedPast = $numSwipedPast;
 	}
-	
-	public function setNumRejected($numRejected){
-		$this->numRejected = $numRejected;
-	}
-	
-	public function setNotInterested($notInterested){
-		$this->notInterested = $notInterested;
-	}
-	
+		
 	public function getUser(){
 		return $this->user;
 	}
@@ -103,14 +92,6 @@ class PreferenceValue {
 		return $this->numSwipedPast;
 	}
 	
-	public function getNumRejected(){
-		return $this->numRejected;
-	}
-	
-	public function getNotInterested(){
-		return $this->notInterested;
-	}
-	
 	public function getNumCommonCategories(){
 		$userCat = $this->getUser()->getCategoryPrefs();
 		$storyCat = explode(',',$this->getStory()->getCategoryList());
@@ -133,9 +114,6 @@ class PreferenceValue {
 		if($actualRating == null){
 			$actualRating = 2.5;
 		}	
-		if ($this->getNotInterested() == true){
-			$actualRating = 0;
-		}
 		return $actualRating;
 	}
 }

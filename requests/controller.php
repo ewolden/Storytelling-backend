@@ -53,8 +53,9 @@ switch ($type) {
 	break;
 	
 	/*This method is called when front end wants new recommendations. In such cases, the front end array
-	 should be counted as empty in the database. This methods empties the front end array for this user*/
+	 should be counted as empty in the database. */
 	case "getStories":
+	/*This methods empties the front end array for this user*/
 	$dbStory->emptyFrontendArray($request->userId);
 	$data = $dbStory->getRecommendedStories($request->userId);
 	$returnArray = array();
@@ -288,6 +289,15 @@ switch ($type) {
 	case "appUsage":
 	$return = $dbStory->insertUpdateAll('user_usage', array($request->userId, $request->usageType));
 	if($return){
+		/* If the user is leaving the application, update recommendations in database so they are ready for next log on*/
+		if($request->usageType == "Closed"){
+			$dbStory->emptyFrontendArray($request->userId);
+			$userModel = new userModel();
+			$userInfo = $dbUser->getUserFromId($request->userId);
+			$userModel->addFromDB($userInfo);
+			$recommend = new runRecommender($userModel);
+			$recommend->runRecommender();
+		}
 		print_r(json_encode(array('status' => "successfull")));
 	}
 	else {

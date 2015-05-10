@@ -156,7 +156,6 @@ INSERT INTO `state`(`stateName`) VALUES ('rejected');
 INSERT INTO `state`(`stateName`) VALUES ('to-be-read');
 INSERT INTO `state`(`stateName`) VALUES ('read');
 INSERT INTO `state`(`stateName`) VALUES ('rated');
-INSERT INTO `state`(`stateName`) VALUES ('not interested');
 
 #Every story that has been linked to a user by recommendation
 CREATE TABLE stored_story
@@ -166,11 +165,11 @@ CREATE TABLE stored_story
 	 rating				INT			DEFAULT NULL,		
 	 #To know if the recommendation is true or false (suprise me-stories).
 	 false_recommend		BOOLEAN		NOT NULL,
-	 #Content-based eller collaborative (hybrid) filtering.
-	 type_of_recommendation	BOOLEAN		NOT NULL,
-	 recommend_ranking 		INT DEFAULT NULL,
+	 #Content-based eller collaborative filtering.
+	 type_of_recommendation		BOOLEAN		NOT NULL,
+	 recommend_ranking 		INT 		DEFAULT NULL,
 	 in_frontend_array		BOOLEAN		DEFAULT 0,
-	 estimated_Rating DECIMAL(8,5) DEFAULT 0,
+	 estimated_Rating 		DECIMAL(8,5) 	DEFAULT 0,
 
 	PRIMARY KEY (userId, storyId),
 	FOREIGN KEY (userId) REFERENCES user(userId),

@@ -271,17 +271,17 @@ class dbUser extends dbHelper {
     public function sendMail($updated, $email){
     	$subject = 'Velkommen som ny bruker';
     	$message = 'Hei, <br><br>
-        Takk for at du har registrert deg og velkommen som ny bruker av Javisst. ' .
+        Takk for at du har registrert deg og velkommen som ny bruker av Vettu hva?. ' .
             'Vi bekrefter at det er opprettet en brukerprofil med bruker ' . $email .
             ' i vår database. <br><br> Logg inn med brukernavn <b>' . $email .
             '</b> for å lese historier om kulturarv anbefalt basert på dine preferanser.<br><br>
-        Med vennlig hilsen <br>Javisst';
+        Med vennlig hilsen <br>Vettu hva?';
     	$altMessage = 'Hei,
-        Takk for at du har registrert deg og velkommen som ny bruker av Javisst. ' .
+        Takk for at du har registrert deg og velkommen som ny bruker av Vettu hva?. ' .
             'Vi bekrefter at det er opprettet en brukerprofil med bruker ' . $email .
             ' i vår database. Logg inn med brukernavn ' . $email .
             ' for å lese historier om kulturarv anbefalt basert på dine preferanser.
-        Med vennlig hilsen Javisst';
+        Med vennlig hilsen Vettu hva?';
     
     	if ($updated) {
     		$subject = 'Bruker oppdatert';
@@ -289,12 +289,12 @@ class dbUser extends dbHelper {
     				$email . ' har blitt oppdatert i vår database.<br><br>
             Du kan nå logge inn med brukernavn <b>' . $email .
                 '</b> for å lese historier om kulturarv anbefalt basert på dine preferanser.
-            <br><br>Med vennlig hilsen <br>Javisst';
+            <br><br>Med vennlig hilsen <br>Vettu hva?';
     		$altMessage = 'Hei, Vi bekrefter at brukerprofil med bruker ' .
     				$email . ' har blitt oppdatert i vår database.
             Du kan nå logge inn med brukernavn ' . $email .
                 ' for å lese historier om kulturarv anbefalt basert på dine preferanser.
-            Med vennlig hilsen Javisst';
+            Med vennlig hilsen Vettu hva?';
     	}
     
     	$mail = new PHPMailer;
@@ -305,8 +305,8 @@ class dbUser extends dbHelper {
     	$mail->Password = APP_MAIL_PASS;               // SMTP password
     	$mail->SMTPSecure = 'tls';                            // Enable encryption, 'ssl' also accepted
     	$mail->Port = 587;                                    //Set the SMTP port number - 587 for authenticated TLS
-    	$mail->FromName = 'Vettu hva';     //Set who the message is to be sent from
-    	$mail->AddReplyTo("no-reply@javisst.no","No Reply");
+    	$mail->FromName = 'Vettu hva?';     //Set who the message is to be sent from
+    	$mail->AddReplyTo("no-reply@vettuhva.no","No Reply");
     	$mail->addAddress($email);  // Add a recipient
     	$mail->WordWrap = 50;                                 // Set word wrap to 50 characters
     	$mail->isHTML(true);                                  // Set email format to HTML

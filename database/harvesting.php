@@ -56,9 +56,9 @@ fclose($simFile);
 print_r(" ** Done writing the similarities file");
 
 /**
- * Compute the similarities between stories. Using cosine similarity for now
- * @param unknown $storyOne
- * @param unknown $storyTwo
+ * Compute the similarities between stories. Using cosine similarity 
+ * @param array $storyOne	Array of subcategories for the first story
+ * @param array $storyTwo	Array of subcategories for the second story
  * @return number similarity value
  */
 function computeSimilarity($storyOne, $storyTwo){

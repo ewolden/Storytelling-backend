@@ -45,7 +45,6 @@ class runRecommender {
 	 * Find out which recommendation type to run, collaborative or content-based.
 	 */
 	public function findMethod(){
-		//TODO: find out what type of recommendation to run
 		$this->db = new dbUser();
 		//print_r($numberOfRatesByThisUser);
 		/*If there is more than ten stories rated by more than 10 people shared by this user their other recommendations are valid*/

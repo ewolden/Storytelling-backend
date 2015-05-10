@@ -131,7 +131,7 @@ public class ContentBasedRecommender{
     			for(int i=1; i<recommendations.size(); i++){
     				long dislikedStoryId = recommendations.get(recommendations.size() - i).getItemID();
     				if (!frontendStories.contains((int)dislikedStoryId) && !idsToBeInserted.contains(dislikedStoryId) && ratedStories.get((int)dislikedStoryId) == null){
-    					itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+dislikedStoryId, "FalseRecommendation", 1, 0, ranking,recommendations.get(recommendations.size() - 1).getValue()));
+    					itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+dislikedStoryId, "FalseRecommendation", 1, 0, ranking,recommendations.get(recommendations.size() - i).getValue()));
     					idsToBeInserted.add(dislikedStoryId);
     					System.out.print("False recommend: ");
     					System.out.println(dislikedStoryId);    				
@@ -139,6 +139,9 @@ public class ContentBasedRecommender{
     				}
     			}
     			ranking++;
+    			if(ranking > 10){
+    				break;
+    			}
     			continue;
     		}
     		

@@ -134,7 +134,6 @@ public class CollaborativeRecommender {
     	if(add.equals("true")){
     		frontendStories = db.getStoriesInFrontendArray((int) userId);
     	}
-    	System.out.println("FrontendStories: "+frontendStories);
 		/* Take the top 10 recommendations and and prepare to insert them into database */
 		ArrayList<DatabaseInsertObject> itemsToBeInserted = new ArrayList<>();
 		ArrayList<Long> idsToBeInserted = new ArrayList<>();
@@ -148,7 +147,7 @@ public class CollaborativeRecommender {
     			for(int i=1; i<collaborativeRecommendations.size(); i++){
     				long dislikedStoryId = collaborativeRecommendations.get(collaborativeRecommendations.size() - i).getItem().getItemID();
     				if (!frontendStories.contains((int)dislikedStoryId) && !idsToBeInserted.contains(dislikedStoryId) && ratedStories.get((int)dislikedStoryId) == null){
-    					itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+dislikedStoryId, "FalseRecommendation", 1, 0, ranking,collaborativeRecommendations.get(collaborativeRecommendations.size() - 1).getItem().getValue()));
+    					itemsToBeInserted.add(new DatabaseInsertObject((int)userId, "DF."+dislikedStoryId, "FalseRecommendation", 1, 0, ranking,collaborativeRecommendations.get(collaborativeRecommendations.size() - i).getItem().getValue()));
     					idsToBeInserted.add(dislikedStoryId);
     					System.out.print("False recommend: ");
     					System.out.println(dislikedStoryId);    				
@@ -156,6 +155,9 @@ public class CollaborativeRecommender {
     				}
     			}
     			ranking++;
+    			if(ranking > 10){
+    				break;
+    			}
     			continue;
     		}
     		
