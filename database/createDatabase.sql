@@ -138,6 +138,7 @@ CREATE TABLE user_storytag
 	(userId				INT			NOT NULL,
 	 storyId			VARCHAR(15)	NOT NULL,
 	 tagName			VARCHAR(255)	NOT NULL,
+	 insertion_time			TIMESTAMP	DEFAULT CURRENT_TIMESTAMP,
 
 	PRIMARY KEY (userId, storyId, tagName),
 	FOREIGN KEY (userId) REFERENCES user(userId),

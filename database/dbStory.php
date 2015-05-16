@@ -247,7 +247,8 @@ class dbStory extends dbHelper{
 				AND ss.subcategoryId = cm.subcategoryId
 				AND cm.categoryId = c.categoryId
 				AND s.storyId = sm.storyId
-				GROUP BY s.storyId";
+				GROUP BY s.storyId
+				ORDER BY us.insertion_time";
 		$stmt = $this->db->prepare($query);
 		$stmt->execute(array($userId, $tagName));
 		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
