@@ -90,7 +90,9 @@ class dbStory extends dbHelper{
 					}
 				}
 				$this->deleteFromTable('preference_value', 'storyId', $story['storyId']);
-				
+				$this->deleteFromTable('stored_story', 'storyId', $story['storyId']);
+				$this->deleteFromTable('story_state', 'storyId', $story['storyId']);
+				$this->deleteFromTable('user_storytag', 'storyId', $story['storyId']);
 				$this->deleteFromTable('story', 'storyId', $story['storyId']);
 			}
 		}
